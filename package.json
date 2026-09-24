@@ -1,0 +1,20 @@
+{
+  "name": "rainroute",
+  "version": "1.0.0",
+  "description": "RainRoute - Weather-Adaptive Food Rescue & Surplus Donation Platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "food-rescue",
+    "zero-waste",
+    "weather-adaptive",
+    "ngo",
+    "volunteers",
+    "surplus-food"
+  ],
+  "author": "RainRoute Team",
+  "license": "MIT"
+}

@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RainRoute — Weather-Adaptive Food Rescue & Surplus Donation Platform</title>
+  <meta name="description" content="RainRoute connects restaurants, banquets, and caterers with excess cooked food to shelters and volunteers with climate-adaptive smart routing.">
+
+  <!-- Bootstrap 5 CSS & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- RainRoute Design System CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Demo Simulation Watermark Banner -->
+  <div class="demo-top-banner">
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge-sim">🚀 Hackathon Demo Mode</span>
+      <span class="d-none d-sm-inline">FY001: Food Rescue & Surplus Platform — Simulated Integrations Labeled</span>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <button class="demo-scenario-runner-btn" onclick="window.RainRouteApp.showDemoWalkthroughModal()">
+        <i class="bi bi-play-circle-fill"></i> Judge 7-Step Demo Guide
+      </button>
+      <button class="btn btn-sm btn-outline-light py-0 px-2" style="font-size:0.75rem;" onclick="window.RainRouteApp.promptResetDemoData()" title="Reset Demo Data">
+        <i class="bi bi-arrow-counterclockwise"></i> Reset Data
+      </button>
+    </div>
+  </div>
+
+  <!-- App Header / Navigation Bar -->
+  <header class="app-header">
+    <div class="container d-flex align-items-center justify-content-between py-2">
+      <a href="#home" class="navbar-brand-custom" onclick="window.RainRouteApp.navigateTo('home')">
+        <img src="assets/logo.png" alt="RainRoute Logo">
+        <div>
+          <div class="brand-title">RainRoute</div>
+          <div class="brand-tagline">Rescue Food • Reduce Waste • Reach Those in Need</div>
+        </div>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <nav class="d-none d-lg-flex align-items-center gap-1">
+        <a href="#home" class="nav-link-custom" data-route="home" onclick="window.RainRouteApp.navigateTo('home')">
+          <i class="bi bi-house"></i> Home
+        </a>
+        <a href="#weather-rescue" class="nav-link-custom" data-route="weather-rescue" onclick="window.RainRouteApp.navigateTo('weather-rescue')">
+          <i class="bi bi-cloud-rain-heavy text-primary"></i> Weather Rescue
+        </a>
+        <a href="#browse-food" class="nav-link-custom" data-route="browse-food" onclick="window.RainRouteApp.navigateTo('browse-food')">
+          <i class="bi bi-basket2"></i> Browse Food
+        </a>
+        <a href="#holding-hubs" class="nav-link-custom" data-route="holding-hubs" onclick="window.RainRouteApp.navigateTo('holding-hubs')">
+          <i class="bi bi-snow"></i> Safe Hubs
+        </a>
+        <a href="#impact-dashboard" class="nav-link-custom" data-route="impact-dashboard" onclick="window.RainRouteApp.navigateTo('impact-dashboard')">
+          <i class="bi bi-graph-up-arrow"></i> Impact
+        </a>
+        <a href="#how-it-works" class="nav-link-custom" data-route="how-it-works" onclick="window.RainRouteApp.navigateTo('how-it-works')">
+          <i class="bi bi-info-circle"></i> How It Works
+        </a>
+      </nav>
+
+      <!-- User Area & Notifications -->
+      <div class="d-flex align-items-center gap-2">
+        <a href="#notifications" class="btn btn-sm btn-light border rounded-circle p-2 position-relative" onclick="window.RainRouteApp.navigateTo('notifications')" title="Notifications">
+          <i class="bi bi-bell-fill text-primary"></i>
+          <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+        </a>
+        <div id="navbarUserArea">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main View Container -->
+  <main class="main-wrapper">
+
+    <!-- 1. LANDING PAGE VIEW -->
+    <div id="home-view" class="app-view">
+      <!-- Hero Section -->
+      <section class="hero-section">
+        <div class="container">
+          <div class="row align-items-center g-4">
+            <div class="col-lg-6">
+              <div class="hero-pill">
+                <i class="bi bi-shield-check text-success"></i> FY001 Food Rescue Platform
+              </div>
+              <h1 class="hero-title">
+                Rescue Food. <br>
+                <span class="hero-highlight">Beat The Rain.</span> <br>
+                Nourish Lives.
+              </h1>
+              <p class="hero-subtitle">
+                RainRoute connects restaurants, banquets, and kitchens having <strong>existing surplus food</strong> with nearby shelters and volunteers through <strong>weather-adaptive smart rerouting</strong>.
+              </p>
+
+              <!-- Prominent CTA Action Buttons -->
+              <div class="d-flex flex-wrap gap-3 mb-4">
+                <button class="btn btn-purple" onclick="window.RainRouteApp.navigateTo('donor-portal')">
+                  <i class="bi bi-plus-circle"></i> Post Surplus Food
+                </button>
+                <button class="btn btn-green" onclick="window.RainRouteApp.navigateTo('browse-food')">
+                  <i class="bi bi-search"></i> Browse Available Food
+                </button>
+                <button class="btn btn-soft-purple" onclick="window.RainRouteApp.navigateTo('weather-rescue')">
+                  <i class="bi bi-cloud-rain-heavy"></i> Weather Rescue
+                </button>
+              </div>
+
+              <!-- Quick Live Ticker -->
+              <div class="p-3 bg-white rounded border d-flex justify-content-around text-center shadow-sm">
+                <div>
+                  <div class="fs-4 fw-bold" id="homePortionsRescued" style="color:var(--deep-purple);">90</div>
+                  <div class="small text-muted text-uppercase" style="font-size:0.72rem;">Meals Rescued</div>
+                </div>
+                <div class="border-start"></div>
+                <div>
+                  <div class="fs-4 fw-bold" id="homeWastePrevented" style="color:var(--deep-green);">29.5 kg</div>
+                  <div class="small text-muted text-uppercase" style="font-size:0.72rem;">Waste Prevented</div>
+                </div>
+                <div class="border-start"></div>
+                <div>
+                  <div class="fs-4 fw-bold" id="homeBeneficiaries" style="color:#1E5180;">90</div>
+                  <div class="small text-muted text-uppercase" style="font-size:0.72rem;">People Nourished</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-6">
+              <div class="hero-image-card">
+                <img src="assets/hero_banner.jpg" alt="RainRoute Community Rescue Banner">
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Four Dedicated Portals Section -->
+      <section class="py-5">
+        <div class="container">
+          <div class="text-center mb-5">
+            <span class="badge badge-portal badge-donor mb-2">Dedicated Ecosystem Portals</span>
+            <h2 class="fw-bold" style="color:var(--deep-purple);">Tailored Interfaces For Every Stakeholder</h2>
+            <p class="text-muted">Direct access with role permissions, OTP simulation, and verification workflows.</p>
+          </div>
+
+          <div class="row g-4">
+            <!-- Donor Card -->
+            <div class="col-lg-3 col-md-6">
+              <div class="role-grid-card">
+                <div>
+                  <div class="role-icon-box icon-purple"><i class="bi bi-shop"></i></div>
+                  <h5 class="fw-bold" style="color:var(--deep-purple);">1. Donor Portal</h5>
+                  <p class="small text-muted">Restaurants, caterers, and banquets list existing surplus meals with countdown timers and generate secure pickup codes.</p>
+                </div>
+                <button class="btn btn-purple btn-sm w-100" onclick="window.RainRouteApp.quickLogin('donor')">
+                  <i class="bi bi-box-arrow-in-right"></i> Open Donor Portal
+                </button>
+              </div>
+            </div>
+
+            <!-- NGO Card -->
+            <div class="col-lg-3 col-md-6">
+              <div class="role-grid-card">
+                <div>
+                  <div class="role-icon-box icon-green"><i class="bi bi-building"></i></div>
+                  <h5 class="fw-bold" style="color:var(--deep-purple);">2. NGO Shelter Portal</h5>
+                  <p class="small text-muted">Shelters and community kitchens browse nearby available surplus, claim donations, issue QR vouchers, and confirm beneficiary meals.</p>
+                </div>
+                <button class="btn btn-green btn-sm w-100" onclick="window.RainRouteApp.quickLogin('ngo')">
+                  <i class="bi bi-box-arrow-in-right"></i> Open NGO Portal
+                </button>
+              </div>
+            </div>
+
+            <!-- Volunteer Card -->
+            <div class="col-lg-3 col-md-6">
+              <div class="role-grid-card">
+                <div>
+                  <div class="role-icon-box icon-blue"><i class="bi bi-bicycle"></i></div>
+                  <h5 class="fw-bold" style="color:var(--deep-purple);">3. Volunteer Portal</h5>
+                  <p class="small text-muted">Certified couriers accept dispatch tasks, verify donor handoff with security codes, and deliver meals safely.</p>
+                </div>
+                <button class="btn btn-soft-purple btn-sm w-100" onclick="window.RainRouteApp.quickLogin('volunteer')">
+                  <i class="bi bi-box-arrow-in-right"></i> Open Volunteer Portal
+                </button>
+              </div>
+            </div>
+
+            <!-- Admin Card -->
+            <div class="col-lg-3 col-md-6">
+              <div class="role-grid-card">
+                <div>
+                  <div class="role-icon-box icon-amber"><i class="bi bi-shield-lock"></i></div>
+                  <h5 class="fw-bold" style="color:var(--deep-purple);">4. Admin Console</h5>
+                  <p class="small text-muted">Moderation desk for reviewing KYC licenses, moderating listings, managing holding hubs, and inspecting activity audit logs.</p>
+                </div>
+                <button class="btn btn-outline-purple btn-sm w-100" onclick="window.RainRouteApp.quickLogin('admin')">
+                  <i class="bi bi-box-arrow-in-right"></i> Open Admin Portal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Signature Innovation Feature Highlight -->
+      <section class="py-5" style="background:linear-gradient(135deg, rgba(233,221,251,0.3) 0%, rgba(221,243,228,0.3) 100%);">
+        <div class="container">
+          <div class="row align-items-center g-4">
+            <div class="col-lg-6">
+              <span class="badge bg-danger text-white mb-2">⭐ Signature Innovation</span>
+              <h2 class="fw-bold mb-3" style="color:var(--deep-purple);">Weather-Adaptive Food Rescue</h2>
+              <p class="text-muted mb-4">
+                Extreme weather and sudden downpours are the #1 cause of surplus food spoilage during delivery delays. RainRoute's predictive engine computes transparent 0–100 risk scores and dynamically triggers safe alternative contingencies:
+              </p>
+              <ul class="list-unstyled d-flex flex-column gap-3 mb-4">
+                <li class="d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                  <div><strong>Nearest Safe Holding Hubs:</strong> Auto-routes surplus to temperature-controlled community fridges within 1.5 km before rain intensifies.</div>
+                </li>
+                <li class="d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                  <div><strong>Direct NGO 4-Wheeler Dispatch:</strong> Switches from two-wheeler couriers to rain-protected vans during waterlogging.</div>
+                </li>
+                <li class="d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                  <div><strong>Instant QR Vouchers:</strong> Enables immediate walking-distance pickup by local beneficiaries during severe flooding.</div>
+                </li>
+              </ul>
+              <button class="btn btn-purple" onclick="window.RainRouteApp.navigateTo('weather-rescue')">
+                <i class="bi bi-cloud-rain-heavy"></i> Test Weather Simulation Engine
+              </button>
+            </div>
+            <div class="col-lg-6">
+              <div class="custom-card border-2 shadow p-4" style="border-color:var(--light-purple)!important;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-activity text-primary"></i> Live Climate Disruption Engine</h6>
+                  <span class="badge bg-warning text-dark">Simulated Mode</span>
+                </div>
+                <div class="p-3 bg-light rounded border mb-3">
+                  <div class="small fw-bold text-muted mb-1">Scenario: Heavy Rain (45 mm/hr)</div>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span class="fs-4 fw-bold text-danger">68 / 100 Risk</span>
+                    <span class="badge bg-danger">Moderate Alert</span>
+                  </div>
+                  <div class="small text-muted mt-2">
+                    <em>"Two-wheeler volunteer transit slowed by waterlogged arterial roads. Rerouting to Indiranagar Safe Fridge Hub."</em>
+                  </div>
+                </div>
+                <div class="d-flex justify-content-between small text-muted">
+                  <span><i class="bi bi-shield-check text-success"></i> Zero Food Waste Goal</span>
+                  <span><i class="bi bi-stopwatch text-primary"></i> Real-Time Expiry Guard</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Why Food Rescue Matters Section -->
+      <section class="py-5">
+        <div class="container">
+          <div class="text-center mb-5">
+            <span class="badge badge-portal badge-ngo mb-2">The Mission</span>
+            <h2 class="fw-bold" style="color:var(--deep-purple);">Why Surplus Food Rescue Matters</h2>
+            <p class="text-muted max-w-600 mx-auto">Connecting already-cooked excess food to hungry people before safe deadlines expire.</p>
+          </div>
+
+          <div class="row g-4">
+            <div class="col-md-4">
+              <div class="custom-card text-center h-100">
+                <div class="stat-icon icon-purple mx-auto mb-3"><i class="bi bi-trash3"></i></div>
+                <h5 class="fw-bold mb-2">Reduce Landfill Waste</h5>
+                <p class="small text-muted">Food decomposition in landfills generates potent methane gas. Rescuing surplus food directly combats climate change.</p>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="custom-card text-center h-100">
+                <div class="stat-icon icon-green mx-auto mb-3"><i class="bi bi-heart-fill"></i></div>
+                <h5 class="fw-bold mb-2">Zero Hunger & Nutrition</h5>
+                <p class="small text-muted">Nutritious, freshly prepared banquet and restaurant meals reach shelter homes, orphans, and daily wage earners safely.</p>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="custom-card text-center h-100">
+                <div class="stat-icon icon-blue mx-auto mb-3"><i class="bi bi-clock-history"></i></div>
+                <h5 class="fw-bold mb-2">Zero-Waste Logistics</h5>
+                <p class="small text-muted">Not an ordering app. Every feature ensures existing surplus is consumed safely before safe-use deadlines.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 2. DONOR PORTAL VIEW -->
+    <div id="donor-portal-view" class="app-view d-none">
+      <!-- Rendered dynamically by js/donations.js -->
+    </div>
+
+    <!-- 3. NGO PORTAL VIEW -->
+    <div id="ngo-portal-view" class="app-view d-none">
+      <!-- Rendered dynamically by js/ngo.js -->
+    </div>
+
+    <!-- 4. VOLUNTEER PORTAL VIEW -->
+    <div id="volunteer-portal-view" class="app-view d-none">
+      <!-- Rendered dynamically by js/volunteer.js -->
+    </div>
+
+    <!-- 5. ADMIN PORTAL VIEW -->
+    <div id="admin-portal-view" class="app-view d-none">
+      <!-- Rendered dynamically by js/admin.js -->
+    </div>
+
+    <!-- 6. WEATHER RESCUE VIEW -->
+    <div id="weather-rescue-view" class="app-view d-none">
+      <!-- Rendered dynamically by js/weather.js -->
+    </div>
+
+    <!-- 7. IMPACT DASHBOARD VIEW -->
+    <div id="impact-dashboard-view" class="app-view d-none">
+      <!-- Rendered dynamically by js/impact.js -->
+    </div>
+
+    <!-- 8. SAFE HOLDING HUBS VIEW -->
+    <div id="holding-hubs-view" class="app-view d-none">
+      <!-- Rendered dynamically by js/hubs.js -->
+    </div>
+
+    <!-- 9. PUBLIC BROWSE FOOD VIEW -->
+    <div id="browse-food-view" class="app-view d-none">
+      <!-- Rendered dynamically by js/app.js -->
+    </div>
+
+    <!-- 10. HOW IT WORKS VIEW -->
+    <div id="how-it-works-view" class="app-view d-none">
+      <div class="container py-4">
+        <div class="text-center mb-5">
+          <span class="badge badge-portal badge-donor mb-2">Step-by-Step Flow</span>
+          <h2 class="fw-bold" style="color:var(--deep-purple);">How RainRoute Rescues Surplus Food</h2>
+          <p class="text-muted">A complete safe chain of custody from commercial kitchen to beneficiary plate.</p>
+        </div>
+
+        <div class="row g-4">
+          <div class="col-md-3">
+            <div class="custom-card text-center h-100">
+              <div class="stepper-num mx-auto mb-3">1</div>
+              <h5 class="fw-bold mb-2">Surplus Listed</h5>
+              <p class="small text-muted">A verified restaurant or banquet posts existing surplus food with portion counts, diet type, and safe-use deadline.</p>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="custom-card text-center h-100">
+              <div class="stepper-num mx-auto mb-3">2</div>
+              <h5 class="fw-bold mb-2">Smart Rerouting</h5>
+              <p class="small text-muted">The weather-adaptive engine assesses local rainfall, waterlogging, and transit availability to select the safest corridor.</p>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="custom-card text-center h-100">
+              <div class="stepper-num mx-auto mb-3">3</div>
+              <h5 class="fw-bold mb-2">Claim & Handoff</h5>
+              <p class="small text-muted">An NGO claims the surplus. A volunteer or direct van picks up the food using a secure one-time verification code.</p>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="custom-card text-center h-100">
+              <div class="stepper-num mx-auto mb-3">4</div>
+              <h5 class="fw-bold mb-2">Impact Updated</h5>
+              <p class="small text-muted">NGO confirms safe distribution to beneficiaries. Rescued meals, waste prevented, and carbon offsets update live.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-center mt-5">
+          <button class="btn btn-purple" onclick="window.RainRouteApp.showDemoWalkthroughModal()">
+            <i class="bi bi-play-circle-fill"></i> Launch Interactive Hackathon Demo
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 11. AUTH VIEWS (Login / Register) -->
+    <div id="login-view" class="app-view d-none"></div>
+    <div id="register-view" class="app-view d-none"></div>
+
+    <!-- 12. NOTIFICATIONS VIEW -->
+    <div id="notifications-view" class="app-view d-none"></div>
+
+  </main>
+
+  <!-- Mobile Bottom Navigation Bar (Phones & Small Devices) -->
+  <nav class="mobile-bottom-bar">
+    <a href="#home" class="mobile-nav-item" data-route="home" onclick="window.RainRouteApp.navigateTo('home')">
+      <i class="bi bi-house-door"></i>
+      <span>Home</span>
+    </a>
+    <a href="#browse-food" class="mobile-nav-item" data-route="browse-food" onclick="window.RainRouteApp.navigateTo('browse-food')">
+      <i class="bi bi-basket2"></i>
+      <span>Food</span>
+    </a>
+    <a href="#weather-rescue" class="mobile-nav-item" data-route="weather-rescue" onclick="window.RainRouteApp.navigateTo('weather-rescue')">
+      <i class="bi bi-cloud-rain-heavy"></i>
+      <span>Weather</span>
+    </a>
+    <a href="#impact-dashboard" class="mobile-nav-item" data-route="impact-dashboard" onclick="window.RainRouteApp.navigateTo('impact-dashboard')">
+      <i class="bi bi-graph-up"></i>
+      <span>Impact</span>
+    </a>
+    <a href="#donor-portal" class="mobile-nav-item" data-route="donor-portal" onclick="window.RainRouteApp.navigateTo('donor-portal')">
+      <i class="bi bi-person-circle"></i>
+      <span>Portal</span>
+    </a>
+  </nav>
+
+  <!-- Global Modal for QR, Demo Guide & Confirmations -->
+  <div class="modal fade" id="globalModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content" style="border-radius:var(--radius-lg); overflow:hidden; border:1px solid var(--light-purple);">
+        <div class="custom-modal-header d-flex justify-content-between align-items-center">
+          <h5 class="custom-modal-title" id="globalModalTitle">RainRoute Dialog</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4" id="globalModalBody">
+          <!-- Content injected dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Toast Notification Container -->
+  <div class="toast-container-custom" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Leaflet Map JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Application Modules -->
+  <script src="js/data.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/weather.js"></script>
+  <script src="js/donations.js"></script>
+  <script src="js/ngo.js"></script>
+  <script src="js/volunteer.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/hubs.js"></script>
+  <script src="js/impact.js"></script>
+  <script src="js/kyc.js"></script>
+  <script src="js/qr.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
