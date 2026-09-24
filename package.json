@@ -1,7 +1,7 @@
 {
-  "name": "rainroute",
+  "name": "save-to-serve",
   "version": "1.0.0",
-  "description": "RainRoute - Weather-Adaptive Food Rescue & Surplus Donation Platform",
+  "description": "Save to Serve - Food Rescue & Surplus Donation Platform with Weather-Adaptive Rerouting",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -13,8 +13,9 @@
     "weather-adaptive",
     "ngo",
     "volunteers",
-    "surplus-food"
+    "surplus-food",
+    "save-to-serve"
   ],
-  "author": "RainRoute Team",
+  "author": "Save to Serve Team",
   "license": "MIT"
 }

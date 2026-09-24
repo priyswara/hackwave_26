@@ -1,6 +1,7 @@
 /**
- * RainRoute - Donor Portal Logic
+ * Save to Serve - Donor Portal Logic
  * Surplus Listing Creation, Countdown Badges, Listing Management & Pickup Tracking
+ * Tagline: Save Food. Serve People. Reduce Waste.
  */
 
 class DonorPortalManager {
@@ -9,8 +10,8 @@ class DonorPortalManager {
   }
 
   initEventListeners() {
-    window.addEventListener('rainroute:statechange', () => {
-      if (window.RainRouteApp?.currentRoute === 'donor-portal') {
+    window.addEventListener('savetoserve:statechange', () => {
+      if (window.SaveToServeApp?.currentRoute === 'donor-portal') {
         this.render();
       }
     });
@@ -37,46 +38,63 @@ class DonorPortalManager {
     const container = document.getElementById('donor-portal-view');
     if (!container) return;
 
-    const user = window.RainRouteAuth.getCurrentUser();
+    const user = window.SaveToServeAuth.getCurrentUser();
     if (!user || user.role !== 'donor') {
       container.innerHTML = `
         <div class="container py-5 text-center">
-          <div class="alert alert-danger d-inline-block px-4 py-3">
-            <i class="bi bi-lock-fill fs-2 d-block mb-2"></i>
-            <h5>Donor Access Required</h5>
-            <p class="mb-3">Please log in as a registered food donor to view this portal.</p>
-            <button class="btn btn-purple" onclick="window.RainRouteApp.navigateTo('login')">Go to Login</button>
+          <div class="alert alert-danger d-inline-block px-4 py-3 shadow-sm">
+            <i class="bi bi-lock-fill fs-2 d-block mb-2 text-danger"></i>
+            <h5 class="fw-bold">Donor Access Required</h5>
+            <p class="mb-3 text-muted">Please log in as a registered food donor to view this portal.</p>
+            <button class="btn btn-purple" onclick="window.SaveToServeApp.navigateTo('login')">Go to Login</button>
           </div>
         </div>`;
       return;
     }
 
-    const allDonations = window.RainRouteDB.getDonations();
+    const allDonations = window.SaveToServeDB.getDonations();
     const myDonations = allDonations.filter(d => d.donorId === user.id || d.donorName === user.name);
     const activeCount = myDonations.filter(d => ['available', 'claimed', 'in-transit'].includes(d.status)).length;
     const completedCount = myDonations.filter(d => d.status === 'completed').length;
     const totalPortions = myDonations.reduce((acc, d) => acc + (d.status === 'completed' ? d.portions : 0), 0);
+    const isApproved = user.kycStatus === 'approved';
 
     container.innerHTML = `
       <div class="container py-4">
+        <!-- Verification Banner if not approved -->
+        ${!isApproved ? `
+          <div class="alert ${user.kycStatus === 'rejected' ? 'alert-danger' : 'alert-warning'} d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4 shadow-sm">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi ${user.kycStatus === 'rejected' ? 'bi-x-octagon-fill' : 'bi-hourglass-split'} fs-4"></i>
+              <div>
+                <strong>Account Verification Status: <span class="text-uppercase">${user.kycStatus}</span></strong>
+                <div class="small">${user.kycStatus === 'rejected' ? `Rejection reason: "${user.verificationDetails?.rejectionReason || 'Please resubmit valid documentation'}"` : 'Your account is under admin review. Once approved, you can post surplus listings.'}</div>
+              </div>
+            </div>
+            <button class="btn btn-sm btn-outline-dark" onclick="window.SaveToServeDonor.switchTab('kyc')">
+              View Verification Dossier
+            </button>
+          </div>
+        ` : ''}
+
         <!-- Donor Profile Header -->
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-3 border-bottom">
           <div class="d-flex align-items-center gap-3">
-            <div class="stat-icon icon-purple" style="width:56px;height:56px;border-radius:16px;">
+            <div class="stat-icon icon-purple" style="width:54px;height:54px;border-radius:14px;">
               <i class="bi bi-shop-window fs-2"></i>
             </div>
             <div>
-              <div class="d-flex align-items-center gap-2">
-                <h3 class="mb-0" style="color:var(--deep-purple);">${user.orgName || user.name}</h3>
-                <span class="badge ${user.kycStatus === 'approved' ? 'badge-ngo' : 'badge-admin'}">
-                  ${user.kycStatus === 'approved' ? '✓ Verified Kitchen' : '⏳ Verification Pending'}
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <h3 class="mb-0 fw-bold" style="color:var(--deep-purple);">${user.orgName || user.name}</h3>
+                <span class="badge ${isApproved ? 'badge-ngo' : user.kycStatus === 'rejected' ? 'bg-danger text-white' : 'badge-admin'}">
+                  ${isApproved ? '✓ Verified Kitchen' : user.kycStatus === 'rejected' ? '✕ Verification Rejected' : '⏳ Verification Pending'}
                 </span>
               </div>
               <p class="text-muted small mb-0"><i class="bi bi-geo-alt"></i> ${user.address || 'Bengaluru Kitchen'}</p>
             </div>
           </div>
           <div class="d-flex gap-2">
-            <button class="btn btn-purple" onclick="window.RainRouteDonor.switchTab('post-donation')">
+            <button class="btn btn-purple" onclick="window.SaveToServeDonor.switchTab('post-donation')" ${!isApproved ? 'disabled title="Verification required to post surplus"' : ''}>
               <i class="bi bi-plus-circle"></i> Post Surplus Food
             </button>
           </div>
@@ -84,7 +102,7 @@ class DonorPortalManager {
 
         <!-- Metric Cards -->
         <div class="row g-3 mb-4">
-          <div class="col-md-4">
+          <div class="col-md-4 col-6">
             <div class="stat-card">
               <div class="stat-icon icon-purple"><i class="bi bi-box2-heart"></i></div>
               <div>
@@ -93,7 +111,7 @@ class DonorPortalManager {
               </div>
             </div>
           </div>
-          <div class="col-md-4">
+          <div class="col-md-4 col-6">
             <div class="stat-card stat-green">
               <div class="stat-icon icon-green"><i class="bi bi-check2-circle"></i></div>
               <div>
@@ -102,7 +120,7 @@ class DonorPortalManager {
               </div>
             </div>
           </div>
-          <div class="col-md-4">
+          <div class="col-md-4 col-12">
             <div class="stat-card">
               <div class="stat-icon icon-blue"><i class="bi bi-people"></i></div>
               <div>
@@ -115,23 +133,23 @@ class DonorPortalManager {
 
         <!-- Subnav Navigation Tabs -->
         <div class="portal-subnav">
-          <button class="subnav-btn ${activeTab === 'my-donations' ? 'active' : ''}" onclick="window.RainRouteDonor.switchTab('my-donations')">
+          <button class="subnav-btn ${activeTab === 'my-donations' ? 'active' : ''}" onclick="window.SaveToServeDonor.switchTab('my-donations')">
             <i class="bi bi-list-ul"></i> My Food Listings (${myDonations.length})
           </button>
-          <button class="subnav-btn ${activeTab === 'post-donation' ? 'active' : ''}" onclick="window.RainRouteDonor.switchTab('post-donation')">
+          <button class="subnav-btn ${activeTab === 'post-donation' ? 'active' : ''}" onclick="window.SaveToServeDonor.switchTab('post-donation')">
             <i class="bi bi-plus-square"></i> Post New Surplus Food
           </button>
-          <button class="subnav-btn ${activeTab === 'track-pickups' ? 'active' : ''}" onclick="window.RainRouteDonor.switchTab('track-pickups')">
+          <button class="subnav-btn ${activeTab === 'track-pickups' ? 'active' : ''}" onclick="window.SaveToServeDonor.switchTab('track-pickups')">
             <i class="bi bi-truck"></i> Track Pickups & Codes
           </button>
-          <button class="subnav-btn ${activeTab === 'kyc' ? 'active' : ''}" onclick="window.RainRouteDonor.switchTab('kyc')">
+          <button class="subnav-btn ${activeTab === 'kyc' ? 'active' : ''}" onclick="window.SaveToServeDonor.switchTab('kyc')">
             <i class="bi bi-shield-check"></i> Verification Status
           </button>
         </div>
 
         <!-- Tab Content -->
         <div id="donor-tab-content">
-          ${this.renderTabContent(activeTab, myDonations, user)}
+          ${this.renderTabContent(activeTab, myDonations, user, isApproved)}
         </div>
       </div>
     `;
@@ -141,8 +159,23 @@ class DonorPortalManager {
     this.render(tabName);
   }
 
-  renderTabContent(tabName, myDonations, user) {
+  renderTabContent(tabName, myDonations, user, isApproved) {
     if (tabName === 'post-donation') {
+      if (!isApproved) {
+        return `
+          <div class="custom-card text-center py-4">
+            <i class="bi bi-shield-exclamation fs-1 text-warning mb-2 d-block"></i>
+            <h5 class="fw-bold">Verification Required to Post Surplus Food</h5>
+            <p class="text-muted small max-w-500 mx-auto mb-3">
+              To ensure food safety compliance, your kitchen license must be verified by an administrator before publishing surplus listings.
+            </p>
+            <button class="btn btn-purple btn-sm" onclick="window.SaveToServeDonor.switchTab('kyc')">
+              Submit / Review Verification Documents
+            </button>
+          </div>
+        `;
+      }
+
       return `
         <div class="custom-card">
           <div class="custom-card-header">
@@ -151,10 +184,10 @@ class DonorPortalManager {
           </div>
 
           <div class="alert alert-info py-2 small mb-4">
-            <i class="bi bi-info-circle-fill me-1"></i> <strong>Food Rescue Rule:</strong> Only list <em>already-prepared, safe existing surplus food</em>. Never prepare new meals for donation.
+            <i class="bi bi-info-circle-fill me-1"></i> <strong>Save to Serve Principle:</strong> Only list <em>already-prepared, safe existing surplus food</em>. Do not prepare fresh food for donation.
           </div>
 
-          <form id="postDonationForm" onsubmit="window.RainRouteDonor.handlePostSubmit(event)">
+          <form id="postDonationForm" onsubmit="window.SaveToServeDonor.handlePostSubmit(event)">
             <div class="row g-3 mb-3">
               <div class="col-md-8">
                 <label class="form-label-custom">Food Item Name & Details *</label>
@@ -199,7 +232,7 @@ class DonorPortalManager {
 
             <div class="row g-3 mb-3">
               <div class="col-md-6">
-                <label class="form-label-custom">Pickup Location / Address *</label>
+                <label class="form-label-custom">Pickup Location / Kitchen Address *</label>
                 <input type="text" id="donorAddress" class="form-control-custom w-100" value="${user.address || '24 MG Road, Indiranagar, Bengaluru'}" required>
               </div>
               <div class="col-md-6">
@@ -222,7 +255,7 @@ class DonorPortalManager {
             </div>
 
             <div class="d-flex justify-content-end gap-2">
-              <button type="button" class="btn btn-outline-secondary" onclick="window.RainRouteDonor.switchTab('my-donations')">Cancel</button>
+              <button type="button" class="btn btn-outline-secondary" onclick="window.SaveToServeDonor.switchTab('my-donations')">Cancel</button>
               <button type="submit" class="btn btn-purple">
                 <i class="bi bi-cloud-arrow-up"></i> Publish Surplus Listing
               </button>
@@ -242,7 +275,7 @@ class DonorPortalManager {
           </div>
 
           <div class="alert alert-secondary py-2 small mb-3">
-            <i class="bi bi-shield-lock-fill text-primary me-1"></i> <strong>Safe Handoff Rule:</strong> Only release food when the arriving NGO representative or volunteer presents their ID and recites the unique <strong>Pickup Verification Code</strong> shown below.
+            <i class="bi bi-shield-lock-fill text-primary me-1"></i> <strong>Safe Handoff Rule:</strong> Only release surplus food when the arriving NGO courier recites the unique <strong>Pickup Verification Code</strong> shown below.
           </div>
 
           ${claimedItems.length === 0 ? `
@@ -281,7 +314,7 @@ class DonorPortalManager {
     }
 
     if (tabName === 'kyc') {
-      return window.RainRouteKYC ? window.RainRouteKYC.renderView(user) : '<div class="p-4">KYC Module Loaded</div>';
+      return window.SaveToServeKYC ? window.SaveToServeKYC.renderView(user) : '<div class="p-4">KYC Module Loaded</div>';
     }
 
     // Default: my-donations
@@ -292,7 +325,7 @@ class DonorPortalManager {
             <i class="bi bi-basket2 fs-1 text-muted mb-3 d-block"></i>
             <h4>No Active Surplus Listings</h4>
             <p class="text-muted mb-4">You have not listed any surplus food yet. Help prevent food waste by posting your existing surplus.</p>
-            <button class="btn btn-purple" onclick="window.RainRouteDonor.switchTab('post-donation')">
+            <button class="btn btn-purple" onclick="window.SaveToServeDonor.switchTab('post-donation')">
               <i class="bi bi-plus-circle"></i> Post Your First Surplus Listing
             </button>
           </div>
@@ -338,11 +371,11 @@ class DonorPortalManager {
 
                     <div class="mt-auto d-flex gap-2 pt-2 border-top">
                       ${d.status === 'available' ? `
-                        <button class="btn btn-sm btn-outline-danger w-100" onclick="window.RainRouteDonor.cancelDonation('${d.id}')">
+                        <button class="btn btn-sm btn-outline-danger w-100" onclick="window.SaveToServeDonor.cancelDonation('${d.id}')">
                           <i class="bi bi-x-circle"></i> Cancel
                         </button>
                       ` : `
-                        <button class="btn btn-sm btn-soft-purple w-100" onclick="window.RainRouteDonor.switchTab('track-pickups')">
+                        <button class="btn btn-sm btn-soft-purple w-100" onclick="window.SaveToServeDonor.switchTab('track-pickups')">
                           <i class="bi bi-eye"></i> View Code & Status
                         </button>
                       `}
@@ -359,8 +392,13 @@ class DonorPortalManager {
 
   handlePostSubmit(event) {
     event.preventDefault();
-    const user = window.RainRouteAuth.getCurrentUser();
+    const user = window.SaveToServeAuth.getCurrentUser();
     if (!user) return;
+
+    if (user.kycStatus !== 'approved') {
+      window.SaveToServeApp?.showToast('Your account is pending admin verification.', 'warning');
+      return;
+    }
 
     const foodName = document.getElementById('foodName').value.trim();
     const category = document.getElementById('foodCategory').value;
@@ -372,13 +410,13 @@ class DonorPortalManager {
     const imageUrl = document.getElementById('imageUrl').value.trim();
 
     if (!foodName || !portions || portions <= 0) {
-      window.RainRouteApp?.showToast('Please enter valid food details and portions.', 'warning');
+      window.SaveToServeApp?.showToast('Please enter valid food details and portions.', 'warning');
       return;
     }
 
     const safeUntil = new Date(Date.now() + safeHours * 3600000).toISOString();
 
-    const newDonation = window.RainRouteDB.addDonation({
+    window.SaveToServeDB.addDonation({
       foodName,
       category,
       portions,
@@ -395,19 +433,20 @@ class DonorPortalManager {
       imageUrl
     });
 
-    window.RainRouteApp?.showToast(`Successfully listed ${portions} portions of ${foodName}!`, 'success');
+    window.SaveToServeApp?.showToast(`Successfully listed ${portions} portions of ${foodName}!`, 'success');
     this.switchTab('my-donations');
   }
 
   cancelDonation(donationId) {
     if (confirm('Are you sure you want to cancel this surplus food listing?')) {
-      const res = window.RainRouteDB.cancelDonation(donationId, 'Cancelled by donor');
+      const res = window.SaveToServeDB.cancelDonation(donationId, 'Cancelled by donor');
       if (res) {
-        window.RainRouteApp?.showToast('Surplus food listing cancelled.', 'info');
+        window.SaveToServeApp?.showToast('Surplus food listing cancelled.', 'info');
         this.render('my-donations');
       }
     }
   }
 }
 
-window.RainRouteDonor = new DonorPortalManager();
+window.SaveToServeDonor = new DonorPortalManager();
+window.RainRouteDonor = window.SaveToServeDonor;

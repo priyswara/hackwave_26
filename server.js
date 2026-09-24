@@ -31,7 +31,6 @@ const server = http.createServer((req, res) => {
 
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {
-      // Fallback to index.html for SPA-like experience
       const indexPath = path.join(__dirname, 'index.html');
       fs.readFile(indexPath, (readErr, content) => {
         if (readErr) {
@@ -65,7 +64,7 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log(`====================================================`);
-  console.log(`🌧️ RainRoute Server running at http://localhost:${PORT}`);
-  console.log(`🌱 Rescue Food. Reduce Waste. Reach Those in Need.`);
+  console.log(`🍲 Save to Serve Server running at http://localhost:${PORT}`);
+  console.log(`🌱 Save Food. Serve People. Reduce Waste.`);
   console.log(`====================================================`);
 });

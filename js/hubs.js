@@ -1,6 +1,7 @@
 /**
- * RainRoute - Safe Temporary Holding Hubs Module
+ * Save to Serve - Safe Temporary Holding Hubs Module
  * Community Fridges, Cold Storage Partner Lockers, Capacity Tracking & Temperature Integrity
+ * Tagline: Save Food. Serve People. Reduce Waste.
  */
 
 class HoldingHubsManager {
@@ -9,8 +10,8 @@ class HoldingHubsManager {
   }
 
   initEventListeners() {
-    window.addEventListener('rainroute:statechange', () => {
-      if (window.RainRouteApp?.currentRoute === 'holding-hubs') {
+    window.addEventListener('savetoserve:statechange', () => {
+      if (window.SaveToServeApp?.currentRoute === 'holding-hubs') {
         this.render();
       }
     });
@@ -20,8 +21,8 @@ class HoldingHubsManager {
     const container = document.getElementById('holding-hubs-view');
     if (!container) return;
 
-    const hubs = window.RainRouteDB.getHoldingHubs();
-    const isAdmin = window.RainRouteAuth.hasRole('admin');
+    const hubs = window.SaveToServeDB.getHoldingHubs();
+    const isAdmin = window.SaveToServeAuth.hasRole('admin');
 
     container.innerHTML = `
       <div class="container py-4">
@@ -36,11 +37,11 @@ class HoldingHubsManager {
         <!-- Header -->
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
           <div>
-            <h2 class="mb-1" style="color:var(--deep-purple);">❄️ Safe Temporary Holding Hubs</h2>
+            <h2 class="mb-1 fw-bold" style="color:var(--deep-purple);">❄️ Safe Temporary Holding Hubs</h2>
             <p class="text-muted mb-0">Certified cold chain micro-facilities for weather-contingency storage.</p>
           </div>
           ${isAdmin ? `
-            <button class="btn btn-purple" onclick="window.RainRouteHubs.showAddHubModal()">
+            <button class="btn btn-purple" onclick="window.SaveToServeHubs.showAddHubModal()">
               <i class="bi bi-plus-circle"></i> Add New Holding Hub
             </button>
           ` : ''}
@@ -94,11 +95,11 @@ class HoldingHubsManager {
 
                   <div class="pt-2 border-top d-flex gap-2">
                     ${isAdmin ? `
-                      <button class="btn btn-sm btn-outline-danger w-100" onclick="window.RainRouteHubs.toggleHubStatus('${hub.id}')">
+                      <button class="btn btn-sm btn-outline-danger w-100" onclick="window.SaveToServeHubs.toggleHubStatus('${hub.id}')">
                         ${hub.status === 'approved' ? 'Deactivate' : 'Approve'}
                       </button>
                     ` : `
-                      <button class="btn btn-sm btn-soft-purple w-100" onclick="window.RainRouteHubs.viewHubDetails('${hub.id}')">
+                      <button class="btn btn-sm btn-soft-purple w-100" onclick="window.SaveToServeHubs.viewHubDetails('${hub.id}')">
                         <i class="bi bi-info-circle"></i> View Hub Info
                       </button>
                     `}
@@ -113,12 +114,12 @@ class HoldingHubsManager {
   }
 
   renderHubsManagementView() {
-    const hubs = window.RainRouteDB.getHoldingHubs();
+    const hubs = window.SaveToServeDB.getHoldingHubs();
     return `
       <div class="custom-card">
         <div class="custom-card-header">
           <h5 class="card-title-custom"><i class="bi bi-snow text-primary"></i> Safe Holding Hubs Registry</h5>
-          <button class="btn btn-purple btn-sm" onclick="window.RainRouteHubs.showAddHubModal()">
+          <button class="btn btn-purple btn-sm" onclick="window.SaveToServeHubs.showAddHubModal()">
             <i class="bi bi-plus-circle"></i> Add Hub
           </button>
         </div>
@@ -147,7 +148,7 @@ class HoldingHubsManager {
                   <td class="small">${h.manager} (${h.contactPhone})</td>
                   <td><span class="badge ${h.status === 'approved' ? 'bg-success' : 'bg-secondary'}">${h.status}</span></td>
                   <td>
-                    <button class="btn btn-sm ${h.status === 'approved' ? 'btn-outline-warning' : 'btn-outline-success'}" onclick="window.RainRouteHubs.toggleHubStatus('${h.id}')">
+                    <button class="btn btn-sm ${h.status === 'approved' ? 'btn-outline-warning' : 'btn-outline-success'}" onclick="window.SaveToServeHubs.toggleHubStatus('${h.id}')">
                       ${h.status === 'approved' ? 'Deactivate' : 'Approve'}
                     </button>
                   </td>
@@ -169,7 +170,7 @@ class HoldingHubsManager {
     const temp = prompt('Enter Temperature Zone:', 'Chilled (2°C - 4°C)');
     const phone = prompt('Enter Contact Phone:', '+91 98765 00112');
 
-    window.RainRouteDB.addHoldingHub({
+    window.SaveToServeDB.addHoldingHub({
       name,
       location,
       capacityTotalPortions: capacity,
@@ -180,25 +181,26 @@ class HoldingHubsManager {
       coords: [12.9350, 77.6250]
     });
 
-    window.RainRouteApp?.showToast('New Safe Holding Hub added successfully!', 'success');
+    window.SaveToServeApp?.showToast('New Safe Holding Hub added successfully!', 'success');
     this.render();
   }
 
   toggleHubStatus(hubId) {
-    const hub = window.RainRouteDB.getHoldingHubs().find(h => h.id === hubId);
+    const hub = window.SaveToServeDB.getHoldingHubs().find(h => h.id === hubId);
     if (!hub) return;
 
     const newStatus = hub.status === 'approved' ? 'inactive' : 'approved';
-    window.RainRouteDB.updateHoldingHub(hubId, { status: newStatus });
-    window.RainRouteApp?.showToast(`Hub status changed to ${newStatus}.`, 'info');
+    window.SaveToServeDB.updateHoldingHub(hubId, { status: newStatus });
+    window.SaveToServeApp?.showToast(`Hub status changed to ${newStatus}.`, 'info');
     this.render();
   }
 
   viewHubDetails(hubId) {
-    const hub = window.RainRouteDB.getHoldingHubs().find(h => h.id === hubId);
+    const hub = window.SaveToServeDB.getHoldingHubs().find(h => h.id === hubId);
     if (!hub) return;
     alert(`Safe Holding Hub Details:\n\nName: ${hub.name}\nLocation: ${hub.location}\nCapacity: ${hub.currentOccupancy}/${hub.capacityTotalPortions} portions\nTemp Zone: ${hub.temperatureZone}\nManager: ${hub.manager}\nPhone: ${hub.contactPhone}`);
   }
 }
 
-window.RainRouteHubs = new HoldingHubsManager();
+window.SaveToServeHubs = new HoldingHubsManager();
+window.RainRouteHubs = window.SaveToServeHubs;

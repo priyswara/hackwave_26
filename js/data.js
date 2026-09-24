@@ -1,9 +1,10 @@
 /**
- * RainRoute - Centralized Data Store & State Management
+ * Save to Serve - Centralized Data Store & State Management
  * Persistent across all 4 portals via localStorage
+ * Tagline: Save Food. Serve People. Reduce Waste.
  */
 
-const STORAGE_KEY = 'rainroute_state_v1';
+const STORAGE_KEY = 'savetoserve_state_v1';
 
 // Seed initial data
 const INITIAL_STATE = {
@@ -12,11 +13,18 @@ const INITIAL_STATE = {
       id: 'usr-donor-1',
       name: 'Chef Rajesh Sharma',
       orgName: 'Spice Symphony Grand Banquet',
-      email: 'donor@rainroute.org',
+      email: 'donor@savetoserve.org',
       phone: '+91 98765 43210',
       role: 'donor',
       password: 'password123',
       kycStatus: 'approved',
+      verificationDetails: {
+        docType: 'FSSAI License / Food Safety Registration',
+        docNumber: 'FSSAI-KA-10020043000123',
+        submittedAt: '2026-09-01T10:00:00Z',
+        reviewedAt: '2026-09-02T11:00:00Z',
+        rejectionReason: ''
+      },
       address: '24 MG Road, Indiranagar, Bengaluru',
       coords: [12.9784, 77.6408],
       registeredAt: '2026-09-01T10:00:00Z',
@@ -26,11 +34,18 @@ const INITIAL_STATE = {
       id: 'usr-ngo-1',
       name: 'Sister Ananya Roy',
       orgName: 'Asha Food & Hope Shelter',
-      email: 'ngo@rainroute.org',
+      email: 'ngo@savetoserve.org',
       phone: '+91 98765 11223',
       role: 'ngo',
       password: 'password123',
       kycStatus: 'approved',
+      verificationDetails: {
+        docType: 'NGO Darpan / 80G Certificate',
+        docNumber: 'DARPAN-KA-2021-02981',
+        submittedAt: '2026-09-05T11:30:00Z',
+        reviewedAt: '2026-09-06T09:00:00Z',
+        rejectionReason: ''
+      },
       address: '42 Shelter Lane, Austin Town, Bengaluru',
       coords: [12.9611, 77.6145],
       beneficiaryCapacity: 120,
@@ -40,12 +55,19 @@ const INITIAL_STATE = {
     {
       id: 'usr-vol-1',
       name: 'Karan Verma',
-      orgName: 'RainRoute Volunteer Corps',
-      email: 'volunteer@rainroute.org',
+      orgName: 'Save to Serve Volunteer Corps',
+      email: 'volunteer@savetoserve.org',
       phone: '+91 98765 88990',
       role: 'volunteer',
       password: 'password123',
       kycStatus: 'approved',
+      verificationDetails: {
+        docType: 'Volunteer Identity & Safety Card',
+        docNumber: 'VOL-SEC-2026-8819',
+        submittedAt: '2026-09-10T14:15:00Z',
+        reviewedAt: '2026-09-11T10:00:00Z',
+        rejectionReason: ''
+      },
       address: '15 Koramangala 4th Block, Bengaluru',
       coords: [12.9352, 77.6245],
       vehicleType: 'Two-Wheeler (Insulated Delivery Bag)',
@@ -54,31 +76,67 @@ const INITIAL_STATE = {
     },
     {
       id: 'usr-admin-1',
-      name: 'Super Admin Officer',
-      orgName: 'RainRoute Central Operations',
-      email: 'admin@rainroute.org',
+      name: 'Operations Admin Officer',
+      orgName: 'Save to Serve Central Command',
+      email: 'admin@savetoserve.org',
       phone: '+91 98765 00000',
       role: 'admin',
       password: 'password123',
       kycStatus: 'approved',
-      address: 'RainRoute Command Center, Bengaluru',
+      verificationDetails: {
+        docType: 'Platform Operations Clearance',
+        docNumber: 'ADMIN-AUTH-001',
+        submittedAt: '2026-08-15T09:00:00Z',
+        reviewedAt: '2026-08-15T09:00:00Z',
+        rejectionReason: ''
+      },
+      address: 'Save to Serve Command Center, Bengaluru',
       coords: [12.9716, 77.5946],
       registeredAt: '2026-08-15T09:00:00Z',
       verifiedDoc: 'Platform Operations Clearance'
     },
     {
-      id: 'usr-donor-new',
+      id: 'usr-donor-pending',
       name: 'Priya Iyer',
       orgName: 'Greenwood Corporate Cafeteria',
-      email: 'newdonor@rainroute.org',
+      email: 'newdonor@savetoserve.org',
       phone: '+91 98765 77711',
       role: 'donor',
       password: 'password123',
       kycStatus: 'pending',
+      verificationDetails: {
+        docType: 'FSSAI License / Food Safety Registration',
+        docNumber: 'FSSAI-KA-2026-99014',
+        submittedAt: '2026-09-24T08:00:00Z',
+        reviewedAt: null,
+        rejectionReason: ''
+      },
       address: 'Outer Ring Road, Bellandur, Bengaluru',
       coords: [12.9260, 77.6762],
       registeredAt: '2026-09-24T08:00:00Z',
-      verifiedDoc: 'Pending Admin Verification'
+      verifiedDoc: 'FSSAI License #KA-2026-99014 (Pending Review)'
+    },
+    {
+      id: 'usr-vol-pending',
+      name: 'Rohit Deshmukh',
+      orgName: 'Community First Volunteers',
+      email: 'newvolunteer@savetoserve.org',
+      phone: '+91 98765 33445',
+      role: 'volunteer',
+      password: 'password123',
+      kycStatus: 'pending',
+      verificationDetails: {
+        docType: 'Volunteer Identity & Safety Card',
+        docNumber: 'VOL-SAFETY-BLR-4412',
+        submittedAt: '2026-09-24T09:30:00Z',
+        reviewedAt: null,
+        rejectionReason: ''
+      },
+      address: 'HSR Layout Sector 2, Bengaluru',
+      coords: [12.9121, 77.6446],
+      vehicleType: 'Covered Four-Wheeler (Eco Van)',
+      registeredAt: '2026-09-24T09:30:00Z',
+      verifiedDoc: 'Safety Training Certificate (Pending Review)'
     }
   ],
 
@@ -91,7 +149,7 @@ const INITIAL_STATE = {
       quantityKg: 17.5,
       foodType: 'veg',
       prepTime: new Date(Date.now() - 2 * 3600000).toISOString(),
-      safeUntil: new Date(Date.now() + 3.5 * 3600000).toISOString(), // 3.5 hours from now
+      safeUntil: new Date(Date.now() + 3.5 * 3600000).toISOString(),
       donorId: 'usr-donor-1',
       donorName: 'Chef Rajesh Sharma',
       donorOrg: 'Spice Symphony Grand Banquet',
@@ -106,12 +164,12 @@ const INITIAL_STATE = {
       claimTimestamp: null,
       assignedVolunteerId: null,
       assignedVolunteerName: null,
-      pickupCode: 'RR-7492',
+      pickupCode: 'STS-7492',
       pickupTimestamp: null,
       deliveryTimestamp: null,
       distributionTimestamp: null,
       beneficiariesReached: 0,
-      qrVoucherCode: 'VOUCHER-RR-101',
+      qrVoucherCode: 'VOUCHER-STS-101',
       qrVoucherRedeemed: false,
       holdingHubId: null,
       weatherRescuePlan: null,
@@ -126,7 +184,7 @@ const INITIAL_STATE = {
       quantityKg: 12.0,
       foodType: 'veg',
       prepTime: new Date(Date.now() - 3 * 3600000).toISOString(),
-      safeUntil: new Date(Date.now() + 2 * 3600000).toISOString(), // 2 hours from now
+      safeUntil: new Date(Date.now() + 2 * 3600000).toISOString(),
       donorId: 'usr-donor-1',
       donorName: 'Chef Rajesh Sharma',
       donorOrg: 'Spice Symphony Grand Banquet',
@@ -141,12 +199,12 @@ const INITIAL_STATE = {
       claimTimestamp: new Date(Date.now() - 40 * 60000).toISOString(),
       assignedVolunteerId: 'usr-vol-1',
       assignedVolunteerName: 'Karan Verma',
-      pickupCode: 'RR-8831',
+      pickupCode: 'STS-8831',
       pickupTimestamp: null,
       deliveryTimestamp: null,
       distributionTimestamp: null,
       beneficiariesReached: 0,
-      qrVoucherCode: 'VOUCHER-RR-102',
+      qrVoucherCode: 'VOUCHER-STS-102',
       qrVoucherRedeemed: false,
       holdingHubId: null,
       weatherRescuePlan: null,
@@ -175,12 +233,12 @@ const INITIAL_STATE = {
       claimTimestamp: new Date(Date.now() - 5 * 3600000).toISOString(),
       assignedVolunteerId: 'usr-vol-1',
       assignedVolunteerName: 'Karan Verma',
-      pickupCode: 'RR-3319',
+      pickupCode: 'STS-3319',
       pickupTimestamp: new Date(Date.now() - 4 * 3600000).toISOString(),
       deliveryTimestamp: new Date(Date.now() - 3 * 3600000).toISOString(),
       distributionTimestamp: new Date(Date.now() - 2 * 3600000).toISOString(),
       beneficiariesReached: 40,
-      qrVoucherCode: 'VOUCHER-RR-103',
+      qrVoucherCode: 'VOUCHER-STS-103',
       qrVoucherRedeemed: true,
       holdingHubId: null,
       weatherRescuePlan: null,
@@ -252,11 +310,11 @@ const INITIAL_STATE = {
       recipientRole: 'all',
       recipientId: null,
       title: '🌧️ Weather Alert Active',
-      message: 'Monsoon showers anticipated. RainRoute Weather-Adaptive Engine is dynamically rerouting rescue tasks.',
+      message: 'Monsoon showers anticipated. Save to Serve Weather-Adaptive Engine is dynamically rerouting rescue tasks.',
       type: 'weather',
       timestamp: new Date(Date.now() - 15 * 60000).toISOString(),
       read: false,
-      smsPreview: 'SIMULATED SMS: RainRoute Weather Alert - Heavy showers predicted in East Zone. Check alternative rescue plans in dashboard.'
+      smsPreview: 'SIMULATED SMS: Save to Serve Weather Alert - Heavy showers predicted in East Zone. Check alternative rescue plans in dashboard.'
     },
     {
       id: 'NOTIF-02',
@@ -307,7 +365,7 @@ const INITIAL_STATE = {
   ],
 
   weatherState: {
-    activeScenario: 'normal', // 'normal' | 'heavy_rain' | 'flood_warning' | 'volunteer_shortage'
+    activeScenario: 'normal',
     lastUpdated: new Date().toISOString(),
     scenarios: {
       normal: {
@@ -343,22 +401,21 @@ const INITIAL_STATE = {
 
   settings: {
     kgPerPortion: 0.35,
-    co2SavedPerKg: 2.5, // 2.5 kg CO2 avoided per kg of food rescued
-    waterSavedPerKg: 350 // Litres of water footprint preserved per kg
+    co2SavedPerKg: 2.5,
+    waterSavedPerKg: 350
   }
 };
 
-class RainRouteStore {
+class SaveToServeStore {
   constructor() {
     this.state = this.loadState();
   }
 
   loadState() {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('rainroute_state_v1');
       if (stored) {
         const parsed = JSON.parse(stored);
-        // Ensure structure integrity
         if (parsed.users && parsed.donations && parsed.holdingHubs) {
           return parsed;
         }
@@ -381,7 +438,6 @@ class RainRouteStore {
 
   resetDemoData() {
     this.state = JSON.parse(JSON.stringify(INITIAL_STATE));
-    // refresh timestamps to current
     this.state.donations[0].prepTime = new Date(Date.now() - 1 * 3600000).toISOString();
     this.state.donations[0].safeUntil = new Date(Date.now() + 3.5 * 3600000).toISOString();
     this.state.donations[1].prepTime = new Date(Date.now() - 2 * 3600000).toISOString();
@@ -392,7 +448,7 @@ class RainRouteStore {
   }
 
   notifySubscribers(eventType, data) {
-    const event = new CustomEvent('rainroute:statechange', {
+    const event = new CustomEvent('savetoserve:statechange', {
       detail: { type: eventType, data: data, state: this.state }
     });
     window.dispatchEvent(event);
@@ -408,21 +464,49 @@ class RainRouteStore {
       id: 'usr-' + Date.now().toString(36),
       registeredAt: new Date().toISOString(),
       kycStatus: 'pending',
+      verificationDetails: {
+        docType: userData.docType || (userData.role === 'donor' ? 'FSSAI License / Food Safety Registration' : 'Volunteer Photo ID & Safety Card'),
+        docNumber: userData.docNumber || 'DOC-PENDING-' + Math.floor(1000 + Math.random()*9000),
+        submittedAt: new Date().toISOString(),
+        reviewedAt: null,
+        rejectionReason: ''
+      },
       ...userData
     };
     this.state.users.push(newUser);
     this.saveState();
-    this.logActivity(newUser.name, 'Registered new ' + newUser.role + ' account', newUser.id, 'New User');
+    this.logActivity(newUser.name, `Registered new ${newUser.role.toUpperCase()} account (Verification Pending)`, newUser.id, 'New User');
     this.notifySubscribers('USER_ADDED', newUser);
     return newUser;
   }
 
-  updateUserKyc(userId, status) {
+  updateUserVerification(userId, status, rejectionReason = '') {
     const user = this.getUserById(userId);
     if (user) {
       user.kycStatus = status;
+      if (!user.verificationDetails) user.verificationDetails = {};
+      user.verificationDetails.reviewedAt = new Date().toISOString();
+      user.verificationDetails.rejectionReason = rejectionReason;
+      
       this.saveState();
-      this.logActivity('Admin Operations', `${status === 'approved' ? 'Approved' : 'Rejected'} KYC verification for ${user.name} (${user.orgName || user.role})`, user.id, status === 'approved' ? 'KYC Approved' : 'KYC Rejected');
+
+      const actionText = status === 'approved' 
+        ? `Approved verification for ${user.name} (${user.orgName || user.role})`
+        : `Rejected verification for ${user.name}: "${rejectionReason || 'Incomplete documentation'}"`;
+      
+      this.logActivity('Admin Operations', actionText, user.id, status === 'approved' ? 'KYC Approved' : 'KYC Rejected');
+
+      this.addNotification({
+        recipientRole: user.role,
+        recipientId: user.id,
+        title: status === 'approved' ? '✅ Verification Approved!' : '⚠️ Verification Update',
+        message: status === 'approved' 
+          ? `Your ${user.role.toUpperCase()} account has been verified. Full rescue and donation permissions granted.`
+          : `Your verification request was reviewed. Reason: ${rejectionReason || 'Please resubmit valid credentials.'}`,
+        type: 'verification',
+        smsPreview: `SIMULATED SMS: Save to Serve Verification - Your ${user.role} account status is now ${status.toUpperCase()}.`
+      });
+
       this.notifySubscribers('USER_UPDATED', user);
       return true;
     }
@@ -446,7 +530,7 @@ class RainRouteStore {
       claimTimestamp: null,
       assignedVolunteerId: null,
       assignedVolunteerName: null,
-      pickupCode: 'RR-' + Math.floor(1000 + Math.random() * 9000),
+      pickupCode: 'STS-' + Math.floor(1000 + Math.random() * 9000),
       pickupTimestamp: null,
       deliveryTimestamp: null,
       distributionTimestamp: null,
@@ -463,13 +547,12 @@ class RainRouteStore {
 
     this.logActivity(newDonation.donorName, `Posted surplus food: ${newDonation.foodName} (${newDonation.portions} portions)`, newDonation.id, 'Surplus Posted');
     
-    // Create notification for NGOs
     this.addNotification({
       recipientRole: 'ngo',
       title: '🍲 New Surplus Food Available',
       message: `${newDonation.donorOrg} listed ${newDonation.portions} portions of ${newDonation.foodName}.`,
       type: 'donation',
-      smsPreview: `SIMULATED SMS: RainRoute Alert - ${newDonation.portions} portions of ${newDonation.foodName} available near ${newDonation.donorAddress}.`
+      smsPreview: `SIMULATED SMS: Save to Serve Alert - ${newDonation.portions} portions of ${newDonation.foodName} available near ${newDonation.donorAddress}.`
     });
 
     this.notifySubscribers('DONATION_ADDED', newDonation);
@@ -506,7 +589,6 @@ class RainRouteStore {
       return { success: false, message: `Cannot claim: this donation is currently ${donation.status}.` };
     }
 
-    // Safe deadline check
     if (new Date(donation.safeUntil).getTime() < Date.now()) {
       donation.status = 'expired';
       this.saveState();
@@ -518,7 +600,7 @@ class RainRouteStore {
     donation.claimedByNgoName = ngoUser.orgName || ngoUser.name;
     donation.claimTimestamp = new Date().toISOString();
 
-    // Automatically generate volunteer task
+    // Auto-assign available verified volunteer if present
     const availableVol = this.state.users.find(u => u.role === 'volunteer' && u.kycStatus === 'approved');
     if (availableVol) {
       donation.assignedVolunteerId = availableVol.id;
@@ -533,7 +615,7 @@ class RainRouteStore {
       recipientRole: 'donor',
       recipientId: donation.donorId,
       title: '✅ Surplus Food Claimed',
-      message: `${donation.claimedByNgoName} has claimed ${donation.foodName}. Pickup code: ${donation.pickupCode}`,
+      message: `${donation.claimedByNgoName} has claimed ${donation.foodName}. Pickup verification code: ${donation.pickupCode}`,
       type: 'claim',
       smsPreview: `SIMULATED SMS: ${donation.claimedByNgoName} claimed your ${donation.portions} portions. Pickup code is ${donation.pickupCode}.`
     });
@@ -572,7 +654,7 @@ class RainRouteStore {
     if (!donation) return { success: false, message: 'Donation not found.' };
 
     if (donation.pickupCode !== codeEntered.trim().toUpperCase()) {
-      return { success: false, message: 'Invalid pickup verification code. Check with donor.' };
+      return { success: false, message: 'Invalid pickup verification code. Check with donor kitchen.' };
     }
 
     donation.status = 'in-transit';
@@ -651,7 +733,7 @@ class RainRouteStore {
       title: `⛈️ Weather Shift: ${scenario.name}`,
       message: `Risk level ${scenario.riskScore}/100. ${scenario.advisory}`,
       type: 'weather',
-      smsPreview: `SIMULATED SMS: Weather update - ${scenario.name} active. RainRoute adaptive routing updated.`
+      smsPreview: `SIMULATED SMS: Weather update - ${scenario.name} active. Save to Serve adaptive routing updated.`
     });
 
     this.notifySubscribers('WEATHER_CHANGED', { scenarioKey, scenario });
@@ -663,7 +745,7 @@ class RainRouteStore {
     if (!donation) return { success: false, message: 'Donation not found.' };
 
     donation.weatherRescuePlan = {
-      planType, // 'safe_hub' | 'direct_ngo' | 'assign_volunteer' | 'qr_voucher'
+      planType,
       appliedAt: new Date().toISOString(),
       details: planDetails
     };
@@ -816,5 +898,7 @@ class RainRouteStore {
   }
 }
 
-// Singleton global instance
-window.RainRouteDB = new RainRouteStore();
+// Global singleton instance
+window.SaveToServeDB = new SaveToServeStore();
+// Legacy alias for backwards compatibility
+window.RainRouteDB = window.SaveToServeDB;

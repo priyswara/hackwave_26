@@ -1,6 +1,7 @@
 /**
- * RainRoute - Signature Innovation: Weather-Adaptive Food Rescue Engine
+ * Save to Serve - Signature Innovation: Weather-Adaptive Food Rescue Engine
  * Transparent Risk Score, Real-time Disruption Matching, Smart Alternative Plans & Route Map
+ * Tagline: Save Food. Serve People. Reduce Waste.
  */
 
 class WeatherAdaptiveRescueEngine {
@@ -11,43 +12,41 @@ class WeatherAdaptiveRescueEngine {
   }
 
   getScenario() {
-    const key = window.RainRouteDB.state.weatherState.activeScenario || 'normal';
+    const key = window.SaveToServeDB.state.weatherState.activeScenario || 'normal';
     return {
       key,
-      ...window.RainRouteDB.state.weatherState.scenarios[key]
+      ...window.SaveToServeDB.state.weatherState.scenarios[key]
     };
   }
 
   setScenario(scenarioKey) {
-    const res = window.RainRouteDB.setWeatherScenario(scenarioKey);
+    const res = window.SaveToServeDB.setWeatherScenario(scenarioKey);
     this.renderWeatherDashboard();
     return res;
   }
 
-  // Transparent, explainable Risk Score (0 - 100)
   calculateDisruptionScore(scenarioKey) {
-    const scenario = window.RainRouteDB.state.weatherState.scenarios[scenarioKey] || window.RainRouteDB.state.weatherState.scenarios.normal;
+    const scenario = window.SaveToServeDB.state.weatherState.scenarios[scenarioKey] || window.SaveToServeDB.state.weatherState.scenarios.normal;
     
-    // Formula components
     let rainWeight = 0;
     let floodWeight = 0;
     let volDeficitWeight = 0;
 
     switch (scenarioKey) {
       case 'heavy_rain':
-        rainWeight = 75; // 45mm/hr intense rain
-        floodWeight = 60; // moderate street waterlogging
-        volDeficitWeight = 70; // 2-wheelers cannot transit safely
+        rainWeight = 75;
+        floodWeight = 60;
+        volDeficitWeight = 70;
         break;
       case 'flood_warning':
-        rainWeight = 95; // 90mm/hr cloudburst
-        floodWeight = 95; // critical flood alert
-        volDeficitWeight = 85; // high road transit disruption
+        rainWeight = 95;
+        floodWeight = 95;
+        volDeficitWeight = 85;
         break;
       case 'volunteer_shortage':
-        rainWeight = 20; // light drizzle
-        floodWeight = 15; // low risk
-        volDeficitWeight = 80; // 80% volunteers unavailable
+        rainWeight = 20;
+        floodWeight = 15;
+        volDeficitWeight = 80;
         break;
       case 'normal':
       default:
@@ -70,13 +69,11 @@ class WeatherAdaptiveRescueEngine {
     };
   }
 
-  // Get donations in danger of spoilage / delay
   getAffectedDonations() {
-    const scenarioKey = window.RainRouteDB.state.weatherState.activeScenario;
-    const donations = window.RainRouteDB.getDonations();
+    const scenarioKey = window.SaveToServeDB.state.weatherState.activeScenario;
+    const donations = window.SaveToServeDB.getDonations();
     const now = Date.now();
 
-    // Active donations that are available or in progress
     const activeDonations = donations.filter(d => ['available', 'claimed', 'in-transit'].includes(d.status));
 
     if (scenarioKey === 'normal') {
@@ -95,8 +92,7 @@ class WeatherAdaptiveRescueEngine {
       if (scenarioKey === 'heavy_rain') {
         reason = 'Two-wheeler volunteer transit slowed by waterlogged arterial roads.';
         if (d.portions <= 40) {
-          // Direct nearest safe holding hub
-          const hubs = window.RainRouteDB.getHoldingHubs().filter(h => h.status === 'approved' && (h.capacityTotalPortions - h.currentOccupancy) >= d.portions);
+          const hubs = window.SaveToServeDB.getHoldingHubs().filter(h => h.status === 'approved' && (h.capacityTotalPortions - h.currentOccupancy) >= d.portions);
           if (hubs.length > 0) {
             recommendedPlanType = 'safe_hub';
             planDetails = {
@@ -142,7 +138,6 @@ class WeatherAdaptiveRescueEngine {
     });
   }
 
-  // Initialize and update Leaflet Map
   initMap(elementId = 'weatherMap') {
     const mapEl = document.getElementById(elementId);
     if (!mapEl) return;
@@ -152,15 +147,13 @@ class WeatherAdaptiveRescueEngine {
       this.map = null;
     }
 
-    // Default Bengaluru coordinates
     const defaultCoords = [12.9716, 77.6200];
     
-    // Check if Leaflet is loaded
     if (typeof L === 'undefined') {
       mapEl.innerHTML = `
         <div class="p-4 text-center bg-light rounded">
           <i class="bi bi-map text-primary fs-1"></i>
-          <p class="mt-2 text-muted">Interactive Weather Route Map (Leaflet / OpenStreetMap simulation ready)</p>
+          <p class="mt-2 text-muted">Interactive Weather Route Map (Leaflet / OpenStreetMap simulation)</p>
         </div>`;
       return;
     }
@@ -182,17 +175,15 @@ class WeatherAdaptiveRescueEngine {
   updateMapMarkers() {
     if (!this.map || typeof L === 'undefined') return;
 
-    // Clear existing
     this.markers.forEach(m => this.map.removeLayer(m));
     this.routeLayers.forEach(r => this.map.removeLayer(r));
     this.markers = [];
     this.routeLayers = [];
 
-    const donations = window.RainRouteDB.getDonations();
-    const hubs = window.RainRouteDB.getHoldingHubs();
-    const scenarioKey = window.RainRouteDB.state.weatherState.activeScenario;
+    const donations = window.SaveToServeDB.getDonations();
+    const hubs = window.SaveToServeDB.getHoldingHubs();
+    const scenarioKey = window.SaveToServeDB.state.weatherState.activeScenario;
 
-    // Custom icons
     const donorIcon = L.divIcon({
       html: '<div style="background:#7653A6;color:#fff;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.3);font-size:16px;">🍲</div>',
       className: '',
@@ -214,7 +205,6 @@ class WeatherAdaptiveRescueEngine {
       iconAnchor: [17, 17]
     });
 
-    // Add Donors
     donations.forEach(d => {
       if (d.donorCoords && d.donorCoords.length === 2) {
         const marker = L.marker(d.donorCoords, { icon: donorIcon }).addTo(this.map);
@@ -230,7 +220,6 @@ class WeatherAdaptiveRescueEngine {
       }
     });
 
-    // Add Safe Hubs
     hubs.forEach(h => {
       if (h.coords && h.coords.length === 2) {
         const marker = L.marker(h.coords, { icon: hubIcon }).addTo(this.map);
@@ -246,16 +235,15 @@ class WeatherAdaptiveRescueEngine {
       }
     });
 
-    // Add simulated routes
     const routeCoords = [
-      [12.9784, 77.6408], // Donor
-      [12.9698, 77.6432], // Safe Hub
-      [12.9611, 77.6145]  // NGO Shelter
+      [12.9784, 77.6408],
+      [12.9698, 77.6432],
+      [12.9611, 77.6145]
     ];
 
-    let routeColor = '#356B4A'; // Green normal
-    if (scenarioKey === 'heavy_rain') routeColor = '#D97706'; // Orange caution
-    if (scenarioKey === 'flood_warning') routeColor = '#DC2626'; // Red high alert
+    let routeColor = '#356B4A';
+    if (scenarioKey === 'heavy_rain') routeColor = '#D97706';
+    if (scenarioKey === 'flood_warning') routeColor = '#DC2626';
 
     const routeLine = L.polyline(routeCoords, {
       color: routeColor,
@@ -267,7 +255,6 @@ class WeatherAdaptiveRescueEngine {
     this.routeLayers.push(routeLine);
   }
 
-  // Render complete Weather Rescue UI
   renderWeatherDashboard() {
     const container = document.getElementById('weather-rescue-view');
     if (!container) return;
@@ -292,7 +279,7 @@ class WeatherAdaptiveRescueEngine {
         <!-- Header -->
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
           <div>
-            <h2 class="mb-1" style="color:var(--deep-purple);">🌧️ Weather-Adaptive Food Rescue</h2>
+            <h2 class="mb-1 fw-bold" style="color:var(--deep-purple);">🌧️ Weather-Adaptive Food Rescue</h2>
             <p class="text-muted mb-0">Dynamic multi-path rerouting to prevent surplus food spoilage during extreme climate events.</p>
           </div>
           <span class="badge bg-light text-muted border px-3 py-2">
@@ -304,16 +291,16 @@ class WeatherAdaptiveRescueEngine {
         <div class="weather-control-box">
           <h5 class="fw-bold mb-3" style="color:var(--deep-purple);">Select Climate Simulation Scenario:</h5>
           <div class="scenario-btn-group mb-3">
-            <button class="scenario-btn ${currentScenario.key === 'normal' ? 'active' : ''}" onclick="window.RainRouteWeather.setScenario('normal')">
+            <button class="scenario-btn ${currentScenario.key === 'normal' ? 'active' : ''}" onclick="window.SaveToServeWeather.setScenario('normal')">
               <i class="bi bi-sun"></i> Normal Weather
             </button>
-            <button class="scenario-btn ${currentScenario.key === 'heavy_rain' ? 'active' : ''}" onclick="window.RainRouteWeather.setScenario('heavy_rain')">
+            <button class="scenario-btn ${currentScenario.key === 'heavy_rain' ? 'active' : ''}" onclick="window.SaveToServeWeather.setScenario('heavy_rain')">
               <i class="bi bi-cloud-rain-heavy"></i> Heavy Rain (45 mm/hr)
             </button>
-            <button class="scenario-btn ${currentScenario.key === 'flood_warning' ? 'active' : ''}" onclick="window.RainRouteWeather.setScenario('flood_warning')">
+            <button class="scenario-btn ${currentScenario.key === 'flood_warning' ? 'active' : ''}" onclick="window.SaveToServeWeather.setScenario('flood_warning')">
               <i class="bi bi-tsunami"></i> Flood Warning (Red Alert)
             </button>
-            <button class="scenario-btn ${currentScenario.key === 'volunteer_shortage' ? 'active' : ''}" onclick="window.RainRouteWeather.setScenario('volunteer_shortage')">
+            <button class="scenario-btn ${currentScenario.key === 'volunteer_shortage' ? 'active' : ''}" onclick="window.SaveToServeWeather.setScenario('volunteer_shortage')">
               <i class="bi bi-people"></i> Volunteer Shortage
             </button>
           </div>
@@ -421,7 +408,7 @@ class WeatherAdaptiveRescueEngine {
                     </div>
 
                     <div class="d-flex gap-2">
-                      <button class="btn btn-sm btn-green w-100" onclick="window.RainRouteWeather.applyAlternativePlan('${item.donation.id}', '${item.recommendedPlanType}', ${JSON.stringify(item.planDetails).replace(/"/g, '&quot;')})">
+                      <button class="btn btn-sm btn-green w-100" onclick="window.SaveToServeWeather.applyAlternativePlan('${item.donation.id}', '${item.recommendedPlanType}', ${JSON.stringify(item.planDetails).replace(/"/g, '&quot;')})">
                         <i class="bi bi-check2-circle"></i> Apply Alternative Plan
                       </button>
                     </div>
@@ -434,21 +421,21 @@ class WeatherAdaptiveRescueEngine {
       </div>
     `;
 
-    // Re-init map
     setTimeout(() => {
       this.initMap('weatherMap');
     }, 100);
   }
 
   applyAlternativePlan(donationId, planType, planDetails) {
-    const res = window.RainRouteDB.applyRescuePlan(donationId, planType, planDetails);
+    const res = window.SaveToServeDB.applyRescuePlan(donationId, planType, planDetails);
     if (res.success) {
-      window.RainRouteApp?.showToast(`Adaptive Rescue Plan Applied for ${res.donation.foodName}!`, 'success');
+      window.SaveToServeApp?.showToast(`Adaptive Rescue Plan Applied for ${res.donation.foodName}!`, 'success');
       this.renderWeatherDashboard();
     } else {
-      window.RainRouteApp?.showToast(res.message, 'danger');
+      window.SaveToServeApp?.showToast(res.message, 'danger');
     }
   }
 }
 
-window.RainRouteWeather = new WeatherAdaptiveRescueEngine();
+window.SaveToServeWeather = new WeatherAdaptiveRescueEngine();
+window.RainRouteWeather = window.SaveToServeWeather;

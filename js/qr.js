@@ -1,12 +1,11 @@
 /**
- * RainRoute - QR Vouchers & Redemption Engine
- * Generate dynamic QR codes for direct collection & simulated redemption terminal
+ * Save to Serve - QR Vouchers & Direct Redemption Engine
+ * Dynamic QR generation for direct surplus food collection & simulated verification terminal
+ * Tagline: Save Food. Serve People. Reduce Waste.
  */
 
 class QrVoucherManager {
-  // Simple SVG QR pattern generator for robust offline execution without external libraries
   generateSvgQr(text) {
-    // Generate deterministic pseudo-matrix based on hash of text
     let hash = 0;
     for (let i = 0; i < text.length; i++) {
       hash = (hash << 5) - hash + text.charCodeAt(i);
@@ -16,7 +15,6 @@ class QrVoucherManager {
     const size = 17;
     let rects = '';
     
-    // Fixed corner squares
     const addCorner = (x, y) => {
       rects += `<rect x="${x}" y="${y}" width="4" height="4" fill="#543675"/>`;
       rects += `<rect x="${x+1}" y="${y+1}" width="2" height="2" fill="#FFFFFF"/>`;
@@ -27,7 +25,6 @@ class QrVoucherManager {
 
     for (let r = 0; r < size; r++) {
       for (let c = 0; c < size; c++) {
-        // Avoid corners
         if ((r <= 5 && c <= 5) || (r <= 5 && c >= 11) || (r >= 11 && c <= 5)) continue;
         const bit = ((hash ^ (r * 31 + c * 17)) & (1 << ((r + c) % 16))) !== 0;
         if (bit) {
@@ -44,14 +41,14 @@ class QrVoucherManager {
   }
 
   showVoucherModal(donationId) {
-    const donation = window.RainRouteDB.getDonationById(donationId);
+    const donation = window.SaveToServeDB.getDonationById(donationId);
     if (!donation) return;
 
     const modalTitle = document.getElementById('globalModalTitle');
     const modalBody = document.getElementById('globalModalBody');
     if (!modalTitle || !modalBody) return;
 
-    modalTitle.innerHTML = `<i class="bi bi-qr-code text-primary me-2"></i> Instant Rescue QR Voucher`;
+    modalTitle.innerHTML = `<i class="bi bi-qr-code text-primary me-2"></i> Save to Serve Instant Rescue Voucher`;
     modalBody.innerHTML = `
       <div class="qr-voucher-box">
         <div class="mb-3">
@@ -95,14 +92,14 @@ class QrVoucherManager {
               <i class="bi bi-camera fs-1 text-primary mb-2 d-block"></i>
               <h6 class="fw-bold mb-2">Simulated Live QR Scanner</h6>
               <p class="small text-muted mb-3">Camera access is simulated for testing. Enter the voucher code manually or click one of the active vouchers below.</p>
-              <button class="btn btn-purple btn-sm" onclick="window.RainRouteQR.simulateCameraScan()">
+              <button class="btn btn-purple btn-sm" onclick="window.SaveToServeQR.simulateCameraScan()">
                 <i class="bi bi-upc-scan"></i> Simulate Scan (Auto-Redeem Active Voucher)
               </button>
             </div>
           </div>
 
           <div class="col-lg-6">
-            <form onsubmit="window.RainRouteQR.handleManualRedeem(event)">
+            <form onsubmit="window.SaveToServeQR.handleManualRedeem(event)">
               <label class="form-label-custom">Enter Voucher Code Manually</label>
               <div class="input-group mb-3">
                 <input type="text" id="manualVoucherCode" class="form-control form-control-custom font-monospace text-uppercase" placeholder="e.g. VOUCHER-DON-2026-101" required>
@@ -115,7 +112,7 @@ class QrVoucherManager {
             <div class="small text-muted">
               <strong>Quick Test Active Vouchers:</strong>
               <div class="d-flex flex-wrap gap-2 mt-2">
-                ${window.RainRouteDB.getDonations().filter(d => !d.qrVoucherRedeemed).map(d => `
+                ${window.SaveToServeDB.getDonations().filter(d => !d.qrVoucherRedeemed).map(d => `
                   <button class="btn btn-sm btn-outline-secondary font-monospace" onclick="document.getElementById('manualVoucherCode').value='${d.qrVoucherCode}'">
                     ${d.qrVoucherCode}
                   </button>
@@ -133,28 +130,29 @@ class QrVoucherManager {
     const code = document.getElementById('manualVoucherCode').value.trim();
     if (!code) return;
 
-    const res = window.RainRouteDB.redeemVoucher(code);
+    const res = window.SaveToServeDB.redeemVoucher(code);
     if (res.success) {
-      window.RainRouteApp?.showToast(`Voucher ${code} successfully redeemed for ${res.donation.foodName}!`, 'success');
+      window.SaveToServeApp?.showToast(`Voucher ${code} successfully redeemed for ${res.donation.foodName}!`, 'success');
       document.getElementById('manualVoucherCode').value = '';
-      if (window.RainRouteNGO) window.RainRouteNGO.render('qr-redemption');
+      if (window.SaveToServeNGO) window.SaveToServeNGO.render('qr-redemption');
     } else {
-      window.RainRouteApp?.showToast(res.message, 'danger');
+      window.SaveToServeApp?.showToast(res.message, 'danger');
     }
   }
 
   simulateCameraScan() {
-    const unredeemed = window.RainRouteDB.getDonations().find(d => !d.qrVoucherRedeemed);
+    const unredeemed = window.SaveToServeDB.getDonations().find(d => !d.qrVoucherRedeemed);
     if (unredeemed) {
-      const res = window.RainRouteDB.redeemVoucher(unredeemed.qrVoucherCode);
+      const res = window.SaveToServeDB.redeemVoucher(unredeemed.qrVoucherCode);
       if (res.success) {
-        window.RainRouteApp?.showToast(`[Simulated Scan] Verified & redeemed ${unredeemed.qrVoucherCode}!`, 'success');
-        if (window.RainRouteNGO) window.RainRouteNGO.render('qr-redemption');
+        window.SaveToServeApp?.showToast(`[Simulated Scan] Verified & redeemed ${unredeemed.qrVoucherCode}!`, 'success');
+        if (window.SaveToServeNGO) window.SaveToServeNGO.render('qr-redemption');
       }
     } else {
-      window.RainRouteApp?.showToast('All sample vouchers are already redeemed!', 'info');
+      window.SaveToServeApp?.showToast('All sample vouchers are already redeemed!', 'info');
     }
   }
 }
 
-window.RainRouteQR = new QrVoucherManager();
+window.SaveToServeQR = new QrVoucherManager();
+window.RainRouteQR = window.SaveToServeQR;

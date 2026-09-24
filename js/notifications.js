@@ -1,11 +1,12 @@
 /**
- * RainRoute - Notification Center & Low-Connectivity Simulated SMS / WhatsApp Drawer
+ * Save to Serve - Notification Center & Low-Connectivity Simulated SMS / WhatsApp Drawer
+ * Tagline: Save Food. Serve People. Reduce Waste.
  */
 
 class NotificationManager {
   renderView() {
-    const user = window.RainRouteAuth.getCurrentUser();
-    const notifications = window.RainRouteDB.getNotifications(user ? user.role : null, user ? user.id : null);
+    const user = window.SaveToServeAuth.getCurrentUser();
+    const notifications = window.SaveToServeDB.getNotifications(user ? user.role : null, user ? user.id : null);
 
     return `
       <div class="container py-4">
@@ -13,16 +14,16 @@ class NotificationManager {
         <div class="alert alert-secondary py-2 small d-flex align-items-center gap-2 mb-4">
           <i class="bi bi-broadcast text-primary fs-5"></i>
           <div>
-            <strong>LOW CONNECTIVITY & SMS DISCLOSURE:</strong> In low-bandwidth disaster situations, RainRoute falls back to compressed SMS & lightweight push notifications. Displayed SMS / WhatsApp alerts are <strong>SIMULATED DEMO PREVIEWS</strong>.
+            <strong>LOW CONNECTIVITY & SMS DISCLOSURE:</strong> In low-bandwidth disaster situations, Save to Serve falls back to compressed SMS & lightweight push alerts. Displayed SMS / WhatsApp alerts are <strong>SIMULATED DEMO PREVIEWS</strong>.
           </div>
         </div>
 
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
           <div>
-            <h2 class="mb-1" style="color:var(--deep-purple);">🔔 Notifications & Communication Logs</h2>
+            <h2 class="mb-1 fw-bold" style="color:var(--deep-purple);">🔔 Notifications & Communication Logs</h2>
             <p class="text-muted mb-0">Live feed of weather alerts, surplus handoff verifications & pickup tasks.</p>
           </div>
-          <button class="btn btn-outline-secondary btn-sm" onclick="window.RainRouteNotifications.markAllRead()">
+          <button class="btn btn-outline-secondary btn-sm" onclick="window.SaveToServeNotifications.markAllRead()">
             <i class="bi bi-check2-all"></i> Mark All as Read
           </button>
         </div>
@@ -74,16 +75,16 @@ class NotificationManager {
               <div class="p-3 bg-dark text-white rounded mb-3" style="border-radius:18px; box-shadow:inset 0 2px 8px rgba(0,0,0,0.5);">
                 <div class="small text-muted mb-2 text-center">📱 Cellular Broadcast Simulation</div>
                 <div class="p-2 rounded mb-2" style="background:#1E293B; font-size:0.8rem; border-left:3px solid #10B981;">
-                  <div class="text-success fw-bold">RainRoute Rescue Bot:</div>
-                  <div>"Surplus 50 Portions Veg Biryani claimed. Safe deadline 14:30. Pickup code: RR-7492."</div>
+                  <div class="text-success fw-bold">Save to Serve Rescue Bot:</div>
+                  <div>"Surplus 50 Portions Veg Biryani claimed. Safe deadline 14:30. Pickup code: STS-7492."</div>
                 </div>
                 <div class="p-2 rounded" style="background:#1E293B; font-size:0.8rem; border-left:3px solid #F59E0B;">
-                  <div class="text-warning fw-bold">RainRoute Weather Alert:</div>
+                  <div class="text-warning fw-bold">Save to Serve Weather Alert:</div>
                   <div>"Heavy rain active. Two-wheeler transit re-routed to Indiranagar Holding Hub."</div>
                 </div>
               </div>
 
-              <button class="btn btn-soft-purple btn-sm w-100" onclick="window.RainRouteNotifications.sendTestSms()">
+              <button class="btn btn-soft-purple btn-sm w-100" onclick="window.SaveToServeNotifications.sendTestSms()">
                 <i class="bi bi-send"></i> Send Test Simulated SMS
               </button>
             </div>
@@ -94,22 +95,23 @@ class NotificationManager {
   }
 
   markAllRead() {
-    window.RainRouteDB.markAllNotificationsRead();
-    window.RainRouteApp?.showToast('All notifications marked as read.', 'info');
+    window.SaveToServeDB.markAllNotificationsRead();
+    window.SaveToServeApp?.showToast('All notifications marked as read.', 'info');
     this.render();
   }
 
   sendTestSms() {
-    window.RainRouteDB.addNotification({
+    window.SaveToServeDB.addNotification({
       recipientRole: 'all',
       title: '📲 Test Simulated SMS Dispatched',
       message: 'This is a simulated instant notification dispatched to verify offline courier connectivity.',
       type: 'system',
-      smsPreview: 'SIMULATED SMS: RainRoute Network Test Ping - System operational.'
+      smsPreview: 'SIMULATED SMS: Save to Serve Network Test Ping - System operational.'
     });
-    window.RainRouteApp?.showToast('Simulated SMS alert created!', 'success');
+    window.SaveToServeApp?.showToast('Simulated SMS alert created!', 'success');
     this.render();
   }
 }
 
-window.RainRouteNotifications = new NotificationManager();
+window.SaveToServeNotifications = new NotificationManager();
+window.RainRouteNotifications = window.SaveToServeNotifications;

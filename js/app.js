@@ -1,30 +1,27 @@
 /**
- * RainRoute - Master Application Controller & Router
+ * Save to Serve - Master Application Controller & Router
  * Role State Coordination, Toast Engine & Guided Hackathon Demo Runner
+ * Tagline: Save Food. Serve People. Reduce Waste.
  */
 
-class RainRouteAppController {
+class SaveToServeAppController {
   constructor() {
     this.currentRoute = 'home';
     this.init();
   }
 
   init() {
-    // Listen to hash changes
     window.addEventListener('hashchange', () => this.handleRouting());
     
-    // Auth state listener
-    window.addEventListener('rainroute:authchange', () => {
+    window.addEventListener('savetoserve:authchange', () => {
       this.updateNavbarUserBadge();
       this.handleRouting();
     });
 
-    // Start periodic countdown refresh
     setInterval(() => {
       this.refreshCountdowns();
     }, 30000);
 
-    // Initial render
     document.addEventListener('DOMContentLoaded', () => {
       this.updateNavbarUserBadge();
       this.handleRouting();
@@ -42,11 +39,9 @@ class RainRouteAppController {
       window.location.hash = route;
     }
 
-    // Hide all view containers
     const views = document.querySelectorAll('.app-view');
     views.forEach(v => v.classList.add('d-none'));
 
-    // Update active nav links
     document.querySelectorAll('.nav-link-custom, .mobile-nav-item').forEach(el => {
       if (el.getAttribute('data-route') === route) {
         el.classList.add('active');
@@ -55,41 +50,39 @@ class RainRouteAppController {
       }
     });
 
-    // Show target view
     const targetEl = document.getElementById(`${route}-view`);
     if (targetEl) {
       targetEl.classList.remove('d-none');
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
-      // Trigger view-specific renderers
       switch (route) {
         case 'donor-portal':
-          window.RainRouteDonor?.render();
+          window.SaveToServeDonor?.render();
           break;
         case 'ngo-portal':
-          window.RainRouteNGO?.render();
+          window.SaveToServeNGO?.render();
           break;
         case 'volunteer-portal':
-          window.RainRouteVolunteer?.render();
+          window.SaveToServeVolunteer?.render();
           break;
         case 'admin-portal':
-          window.RainRouteAdmin?.render();
+          window.SaveToServeAdmin?.render();
           break;
         case 'weather-rescue':
-          window.RainRouteWeather?.renderWeatherDashboard();
+          window.SaveToServeWeather?.renderWeatherDashboard();
           break;
         case 'impact-dashboard':
-          window.RainRouteImpact?.render();
+          window.SaveToServeImpact?.render();
           break;
         case 'holding-hubs':
-          window.RainRouteHubs?.render();
+          window.SaveToServeHubs?.render();
           break;
         case 'browse-food':
           this.renderPublicBrowseFood();
           break;
         case 'notifications':
           const notifEl = document.getElementById('notifications-view');
-          if (notifEl) notifEl.innerHTML = window.RainRouteNotifications.renderView();
+          if (notifEl) notifEl.innerHTML = window.SaveToServeNotifications.renderView();
           break;
         case 'login':
           this.renderAuthView('login');
@@ -106,7 +99,7 @@ class RainRouteAppController {
   }
 
   updateNavbarUserBadge() {
-    const user = window.RainRouteAuth.getCurrentUser();
+    const user = window.SaveToServeAuth.getCurrentUser();
     const navUserContainer = document.getElementById('navbarUserArea');
     if (!navUserContainer) return;
 
@@ -117,7 +110,7 @@ class RainRouteAppController {
             <div class="fw-bold small" style="color:var(--deep-purple);">${user.name}</div>
             <span class="badge badge-${user.role}" style="font-size:0.68rem;">${user.role.toUpperCase()}</span>
           </div>
-          <button class="btn btn-sm btn-outline-secondary" onclick="window.RainRouteApp.logout()">
+          <button class="btn btn-sm btn-outline-secondary" onclick="window.SaveToServeApp.logout()">
             <i class="bi bi-box-arrow-right"></i> Logout
           </button>
         </div>
@@ -125,10 +118,10 @@ class RainRouteAppController {
     } else {
       navUserContainer.innerHTML = `
         <div class="d-flex align-items-center gap-2">
-          <button class="btn btn-sm btn-soft-purple" onclick="window.RainRouteApp.navigateTo('login')">
+          <button class="btn btn-sm btn-soft-purple" onclick="window.SaveToServeApp.navigateTo('login')">
             <i class="bi bi-person"></i> Log In
           </button>
-          <button class="btn btn-sm btn-purple" onclick="window.RainRouteApp.navigateTo('register')">
+          <button class="btn btn-sm btn-purple" onclick="window.SaveToServeApp.navigateTo('register')">
             Register
           </button>
         </div>
@@ -137,7 +130,7 @@ class RainRouteAppController {
   }
 
   logout() {
-    window.RainRouteAuth.logout();
+    window.SaveToServeAuth.logout();
     this.showToast('Logged out successfully.', 'info');
     this.navigateTo('home');
   }
@@ -170,39 +163,36 @@ class RainRouteAppController {
   }
 
   refreshCountdowns() {
-    // Trigger render if on views with countdowns
-    if (this.currentRoute === 'donor-portal') window.RainRouteDonor?.render();
-    if (this.currentRoute === 'ngo-portal') window.RainRouteNGO?.render();
-    if (this.currentRoute === 'weather-rescue') window.RainRouteWeather?.renderWeatherDashboard();
+    if (this.currentRoute === 'donor-portal') window.SaveToServeDonor?.render();
+    if (this.currentRoute === 'ngo-portal') window.SaveToServeNGO?.render();
+    if (this.currentRoute === 'weather-rescue') window.SaveToServeWeather?.renderWeatherDashboard();
   }
 
   renderHomeStats() {
-    const impact = window.RainRouteDB.calculateImpact();
+    const impact = window.SaveToServeDB.calculateImpact();
     const pRescued = document.getElementById('homePortionsRescued');
     const wPrevented = document.getElementById('homeWastePrevented');
     const bReached = document.getElementById('homeBeneficiaries');
-    const wRescued = document.getElementById('homeWeatherRescued');
 
     if (pRescued) pRescued.innerText = impact.totalPortionsRescued;
-    if (wPrevented) wPrevented.innerText = impact.totalWastePreventedKg;
+    if (wPrevented) wPrevented.innerText = `${impact.totalWastePreventedKg} kg`;
     if (bReached) bReached.innerText = impact.estimatedBeneficiaries;
-    if (wRescued) wRescued.innerText = impact.weatherDisruptedRescued;
   }
 
   renderPublicBrowseFood() {
     const container = document.getElementById('browse-food-view');
     if (!container) return;
 
-    const donations = window.RainRouteDB.getDonations().filter(d => d.status === 'available');
+    const donations = window.SaveToServeDB.getDonations().filter(d => d.status === 'available');
 
     container.innerHTML = `
       <div class="container py-4">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
           <div>
-            <h2 class="mb-1" style="color:var(--deep-purple);">🍲 Available Surplus Food Live Listings</h2>
+            <h2 class="mb-1 fw-bold" style="color:var(--deep-purple);">🍲 Available Surplus Food Live Listings</h2>
             <p class="text-muted mb-0">Verified surplus cooked meals and produce awaiting rescue before safe deadlines.</p>
           </div>
-          <button class="btn btn-purple" onclick="window.RainRouteApp.navigateTo('donor-portal')">
+          <button class="btn btn-purple" onclick="window.SaveToServeApp.navigateTo('donor-portal')">
             <i class="bi bi-plus-circle"></i> Donor? List Surplus Food
           </button>
         </div>
@@ -210,8 +200,8 @@ class RainRouteAppController {
         ${donations.length === 0 ? `
           <div class="custom-card text-center py-5">
             <i class="bi bi-inbox fs-1 text-muted mb-2 d-block"></i>
-            <h5>All Surplus Food Currently Rescued!</h5>
-            <p class="text-muted">There are no unreserved surplus food donations right now.</p>
+            <h5 class="fw-bold">All Surplus Food Currently Rescued!</h5>
+            <p class="text-muted small">There are no unreserved surplus food donations right now.</p>
           </div>
         ` : `
           <div class="row g-4">
@@ -224,7 +214,7 @@ class RainRouteAppController {
                       <span class="badge ${d.foodType === 'veg' ? 'bg-success' : 'bg-danger'} text-uppercase">${d.foodType}</span>
                     </div>
                     <div class="donation-card-badge-urgency">
-                      ${window.RainRouteDonor ? window.RainRouteDonor.getUrgencyBadge(d.safeUntil) : ''}
+                      ${window.SaveToServeDonor ? window.SaveToServeDonor.getUrgencyBadge(d.safeUntil) : ''}
                     </div>
                   </div>
                   <div class="donation-card-body">
@@ -242,7 +232,7 @@ class RainRouteAppController {
                     </div>
                     <p class="small text-muted mb-3"><i class="bi bi-info-circle"></i> ${d.storageInfo}</p>
                     <div class="mt-auto pt-2 border-top">
-                      <button class="btn btn-green w-100" onclick="window.RainRouteApp.quickClaimRedirect('${d.id}')">
+                      <button class="btn btn-green w-100" onclick="window.SaveToServeApp.quickClaimRedirect('${d.id}')">
                         <i class="bi bi-hand-thumbs-up"></i> Claim as NGO Shelter
                       </button>
                     </div>
@@ -257,15 +247,14 @@ class RainRouteAppController {
   }
 
   quickClaimRedirect(donationId) {
-    const user = window.RainRouteAuth.getCurrentUser();
+    const user = window.SaveToServeAuth.getCurrentUser();
     if (!user || user.role !== 'ngo') {
-      this.showToast('Please log in as an NGO to claim this surplus donation.', 'info');
-      // Auto switch demo
-      window.RainRouteAuth.loginAsDemo('ngo');
+      this.showToast('Switching to NGO Shelter account to claim this surplus donation.', 'info');
+      window.SaveToServeAuth.loginAsDemo('ngo');
     }
     this.navigateTo('ngo-portal');
     setTimeout(() => {
-      window.RainRouteNGO?.claimDonation(donationId);
+      window.SaveToServeNGO?.claimDonation(donationId);
     }, 200);
   }
 
@@ -280,45 +269,44 @@ class RainRouteAppController {
             <div class="col-lg-5 col-md-8">
               <div class="custom-card shadow-lg p-4">
                 <div class="text-center mb-4">
-                  <img src="assets/logo.png" alt="RainRoute" style="width:58px;height:58px;margin:0 auto 10px;border-radius:14px;">
-                  <h4 class="fw-bold mb-1" style="color:var(--deep-purple);">Sign In to RainRoute</h4>
+                  <img src="assets/logo.png" alt="Save to Serve" style="width:58px;height:58px;margin:0 auto 10px;border-radius:14px;">
+                  <h4 class="fw-bold mb-1" style="color:var(--deep-purple);">Sign In to Save to Serve</h4>
                   <p class="text-muted small">Choose your role or enter demo credentials below</p>
                 </div>
 
-                <!-- 1-Click Demo Login Bar for Judges -->
                 <div class="p-3 rounded mb-4" style="background:var(--pastel-lavender); border: 1.5px solid var(--light-purple);">
                   <div class="d-flex justify-content-between align-items-center mb-2">
                     <span class="small fw-bold text-dark"><i class="bi bi-stars text-primary"></i> 1-Click Demo Logins for Judges:</span>
-                    <span class="badge bg-white text-dark border">No Password Needed</span>
+                    <span class="badge bg-white text-dark border">Instant Access</span>
                   </div>
                   <div class="row g-2">
                     <div class="col-6">
-                      <button class="btn btn-sm btn-soft-purple w-100" onclick="window.RainRouteApp.quickLogin('donor')">
-                        <i class="bi bi-shop"></i> Donor Chef
+                      <button class="btn btn-sm btn-soft-purple w-100" onclick="window.SaveToServeApp.quickLogin('donor')">
+                        <i class="bi bi-shop"></i> Donor Kitchen
                       </button>
                     </div>
                     <div class="col-6">
-                      <button class="btn btn-sm btn-soft-green w-100" onclick="window.RainRouteApp.quickLogin('ngo')">
+                      <button class="btn btn-sm btn-soft-green w-100" onclick="window.SaveToServeApp.quickLogin('ngo')">
                         <i class="bi bi-building"></i> NGO Shelter
                       </button>
                     </div>
                     <div class="col-6">
-                      <button class="btn btn-sm btn-outline-primary w-100" onclick="window.RainRouteApp.quickLogin('volunteer')">
+                      <button class="btn btn-sm btn-outline-primary w-100" onclick="window.SaveToServeApp.quickLogin('volunteer')">
                         <i class="bi bi-bicycle"></i> Volunteer
                       </button>
                     </div>
                     <div class="col-6">
-                      <button class="btn btn-sm btn-outline-dark w-100" onclick="window.RainRouteApp.quickLogin('admin')">
+                      <button class="btn btn-sm btn-outline-dark w-100" onclick="window.SaveToServeApp.quickLogin('admin')">
                         <i class="bi bi-shield-lock"></i> Super Admin
                       </button>
                     </div>
                   </div>
                 </div>
 
-                <form onsubmit="window.RainRouteApp.handleLoginForm(event)">
+                <form onsubmit="window.SaveToServeApp.handleLoginForm(event)">
                   <div class="mb-3">
                     <label class="form-label-custom">Email Address</label>
-                    <input type="email" id="loginEmail" class="form-control form-control-custom w-100" value="donor@rainroute.org" required>
+                    <input type="email" id="loginEmail" class="form-control form-control-custom w-100" value="donor@savetoserve.org" required>
                   </div>
                   <div class="mb-3">
                     <label class="form-label-custom">Password</label>
@@ -338,14 +326,13 @@ class RainRouteAppController {
         </div>
       `;
     } else {
-      // Registration View with Simulated OTP
       container.innerHTML = `
         <div class="container py-5">
           <div class="row justify-content-center">
             <div class="col-lg-6 col-md-9">
               <div class="custom-card shadow-lg p-4">
                 <div class="text-center mb-3">
-                  <h4 class="fw-bold mb-1" style="color:var(--deep-purple);">Create RainRoute Account</h4>
+                  <h4 class="fw-bold mb-1" style="color:var(--deep-purple);">Create Save to Serve Account</h4>
                   <p class="text-muted small">Join the food rescue network in your neighborhood</p>
                 </div>
 
@@ -353,7 +340,7 @@ class RainRouteAppController {
                   <i class="bi bi-info-circle-fill me-1"></i> <strong>SIMULATED OTP DEMO:</strong> Mobile verification code is simulated for fast demonstration without paid SMS gateways.
                 </div>
 
-                <form id="registerForm" onsubmit="window.RainRouteApp.handleRegisterForm(event)">
+                <form id="registerForm" onsubmit="window.SaveToServeApp.handleRegisterForm(event)">
                   <div class="row g-2 mb-3">
                     <div class="col-md-6">
                       <label class="form-label-custom">Full Name / Contact Person *</label>
@@ -362,7 +349,7 @@ class RainRouteAppController {
                     <div class="col-md-6">
                       <label class="form-label-custom">Role Type *</label>
                       <select id="regRole" class="form-select form-select-custom w-100" required>
-                        <option value="donor">Food Donor (Restaurant / Hotel / Hostels)</option>
+                        <option value="donor">Food Donor (Restaurant / Banquet / Kitchen)</option>
                         <option value="ngo">NGO / Shelter / Community Kitchen</option>
                         <option value="volunteer">Volunteer Rescue Courier</option>
                       </select>
@@ -400,7 +387,6 @@ class RainRouteAppController {
                   </button>
                 </form>
 
-                <!-- OTP Verification Box (Initially hidden) -->
                 <div id="otpVerifyBox" class="d-none mt-3 p-3 rounded" style="background:var(--pastel-lavender); border:1.5px dashed var(--primary-purple);">
                   <div class="d-flex justify-content-between align-items-center mb-2">
                     <h6 class="fw-bold mb-0 text-dark">Enter 6-Digit OTP</h6>
@@ -409,10 +395,10 @@ class RainRouteAppController {
                   <p class="small text-muted mb-2">A simulated code was generated. Enter it below to confirm your phone number.</p>
                   <div class="input-group mb-2">
                     <input type="text" id="enteredOtpCode" class="form-control form-control-custom font-monospace text-center fs-5" placeholder="• • • • • •" maxlength="6">
-                    <button class="btn btn-green" onclick="window.RainRouteApp.handleVerifyOtp()">Verify & Complete</button>
+                    <button class="btn btn-green" onclick="window.SaveToServeApp.handleVerifyOtp()">Verify & Complete</button>
                   </div>
                   <div class="text-end">
-                    <button class="btn btn-link btn-sm text-primary p-0" onclick="window.RainRouteApp.handleResendOtp()">Resend Simulated OTP</button>
+                    <button class="btn btn-link btn-sm text-primary p-0" onclick="window.SaveToServeApp.handleResendOtp()">Resend Simulated OTP</button>
                   </div>
                 </div>
 
@@ -428,7 +414,7 @@ class RainRouteAppController {
   }
 
   quickLogin(role) {
-    const res = window.RainRouteAuth.loginAsDemo(role);
+    const res = window.SaveToServeAuth.loginAsDemo(role);
     if (res.success) {
       this.showToast(`Logged in as ${res.user.name} (${role.toUpperCase()})`, 'success');
       this.navigateTo(`${role}-portal`);
@@ -442,7 +428,7 @@ class RainRouteAppController {
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
 
-    const res = window.RainRouteAuth.login(email, password);
+    const res = window.SaveToServeAuth.login(email, password);
     if (res.success) {
       this.showToast(`Welcome back, ${res.user.name}!`, 'success');
       this.navigateTo(`${res.user.role}-portal`);
@@ -461,7 +447,7 @@ class RainRouteAppController {
     const address = document.getElementById('regAddress').value.trim();
     const password = document.getElementById('regPassword').value;
 
-    const res = window.RainRouteAuth.register({
+    const res = window.SaveToServeAuth.register({
       name,
       role,
       orgName: orgName || name,
@@ -473,7 +459,7 @@ class RainRouteAppController {
 
     if (res.success) {
       document.getElementById('otpVerifyBox').classList.remove('d-none');
-      document.getElementById('enteredOtpCode').value = res.otp; // Prefill for judge convenience
+      document.getElementById('enteredOtpCode').value = res.otp;
       this.showToast(res.message, 'info', 6000);
     } else {
       this.showToast(res.message, 'danger');
@@ -482,7 +468,7 @@ class RainRouteAppController {
 
   handleVerifyOtp() {
     const otp = document.getElementById('enteredOtpCode').value.trim();
-    const res = window.RainRouteAuth.verifyOtp(otp);
+    const res = window.SaveToServeAuth.verifyOtp(otp);
     if (res.success) {
       this.showToast(res.message, 'success');
       if (res.user) {
@@ -497,7 +483,7 @@ class RainRouteAppController {
 
   handleResendOtp() {
     const phone = document.getElementById('regPhone')?.value || '+91 98765 00000';
-    const res = window.RainRouteAuth.sendOtp(phone);
+    const res = window.SaveToServeAuth.sendOtp(phone);
     if (res.success) {
       document.getElementById('enteredOtpCode').value = res.otp;
       this.showToast(`Resent simulated OTP: ${res.otp}`, 'info');
@@ -506,19 +492,18 @@ class RainRouteAppController {
 
   promptResetDemoData() {
     if (confirm('Are you sure you want to reset all data back to the clean demonstration seed?')) {
-      window.RainRouteDB.resetDemoData();
-      this.showToast('Demo state reset successfully!', 'success');
+      window.SaveToServeDB.resetDemoData();
+      this.showToast('Demo database reset successfully!', 'success');
       this.handleRouting();
     }
   }
 
-  // --- Step-by-Step Hackathon Judge Demo Walkthrough Guide ---
   showDemoWalkthroughModal() {
     const modalTitle = document.getElementById('globalModalTitle');
     const modalBody = document.getElementById('globalModalBody');
     if (!modalTitle || !modalBody) return;
 
-    modalTitle.innerHTML = `<i class="bi bi-play-circle-fill text-success me-2"></i> RainRoute Live Judge Demo Guide`;
+    modalTitle.innerHTML = `<i class="bi bi-play-circle-fill text-success me-2"></i> Save to Serve Live Judge Demo Guide`;
     modalBody.innerHTML = `
       <div>
         <p class="text-muted small mb-3">
@@ -530,8 +515,8 @@ class RainRouteAppController {
           <div class="flex-grow-1">
             <h6 class="fw-bold mb-1" style="color:var(--deep-purple);">Step 1: Donor Lists Surplus Food</h6>
             <p class="small text-muted mb-2">Log in as Chef Rajesh (Donor) and post 50 portions of Veg Biryani with a 3.5-hour safe deadline.</p>
-            <button class="btn btn-sm btn-purple" onclick="window.RainRouteApp.runDemoStep(1)">
-              Run Step 1 (Switch to Donor & Open Post Form)
+            <button class="btn btn-sm btn-purple" onclick="window.SaveToServeApp.runDemoStep(1)">
+              Run Step 1 (Switch to Donor & Post Surplus)
             </button>
           </div>
         </div>
@@ -539,9 +524,9 @@ class RainRouteAppController {
         <div class="demo-stepper-box">
           <div class="stepper-num">2</div>
           <div class="flex-grow-1">
-            <h6 class="fw-bold mb-1" style="color:var(--deep-purple);">Step 2: Trigger Heavy Rain Scenario</h6>
-            <p class="small text-muted mb-2">Simulate monsoon rainfall (45 mm/hr) and observe the explainable 68/100 risk score and alternative rescue plan.</p>
-            <button class="btn btn-sm btn-soft-purple" onclick="window.RainRouteApp.runDemoStep(2)">
+            <h6 class="fw-bold mb-1" style="color:var(--deep-purple);">Step 2: Trigger Weather Rescue Scenario</h6>
+            <p class="small text-muted mb-2">Simulate heavy monsoon downpour (45 mm/hr) and observe the explainable 68/100 risk score and alternative rescue plan.</p>
+            <button class="btn btn-sm btn-soft-purple" onclick="window.SaveToServeApp.runDemoStep(2)">
               Run Step 2 (Open Weather Rescue & Apply Heavy Rain)
             </button>
           </div>
@@ -552,7 +537,7 @@ class RainRouteAppController {
           <div class="flex-grow-1">
             <h6 class="fw-bold mb-1" style="color:var(--deep-purple);">Step 3: NGO Claims Surplus Food</h6>
             <p class="small text-muted mb-2">Log in as Asha Food Shelter (NGO), view available listings, and claim the surplus donation.</p>
-            <button class="btn btn-sm btn-green" onclick="window.RainRouteApp.runDemoStep(3)">
+            <button class="btn btn-sm btn-green" onclick="window.SaveToServeApp.runDemoStep(3)">
               Run Step 3 (Switch to NGO & Browse Food)
             </button>
           </div>
@@ -563,7 +548,7 @@ class RainRouteAppController {
           <div class="flex-grow-1">
             <h6 class="fw-bold mb-1" style="color:var(--deep-purple);">Step 4: Volunteer Pickup & Code Verification</h6>
             <p class="small text-muted mb-2">Log in as Karan Verma (Volunteer), verify pickup using the donor's code, and start transit.</p>
-            <button class="btn btn-sm btn-outline-primary" onclick="window.RainRouteApp.runDemoStep(4)">
+            <button class="btn btn-sm btn-outline-primary" onclick="window.SaveToServeApp.runDemoStep(4)">
               Run Step 4 (Switch to Volunteer Portal)
             </button>
           </div>
@@ -574,7 +559,7 @@ class RainRouteAppController {
           <div class="flex-grow-1">
             <h6 class="fw-bold mb-1" style="color:var(--deep-purple);">Step 5: NGO Confirms Receipt & Distribution</h6>
             <p class="small text-muted mb-2">NGO staff confirms safe delivery and records beneficiaries reached.</p>
-            <button class="btn btn-sm btn-soft-green" onclick="window.RainRouteApp.runDemoStep(5)">
+            <button class="btn btn-sm btn-soft-green" onclick="window.SaveToServeApp.runDemoStep(5)">
               Run Step 5 (NGO Confirm Distribution)
             </button>
           </div>
@@ -585,7 +570,7 @@ class RainRouteAppController {
           <div class="flex-grow-1">
             <h6 class="fw-bold mb-1" style="color:var(--deep-purple);">Step 6: Real-Time Impact Dashboard Updates</h6>
             <p class="small text-muted mb-2">Inspect dynamically updated rescued meals, waste prevented in kg, and CO2 avoided.</p>
-            <button class="btn btn-sm btn-purple" onclick="window.RainRouteApp.runDemoStep(6)">
+            <button class="btn btn-sm btn-purple" onclick="window.SaveToServeApp.runDemoStep(6)">
               Run Step 6 (Open Impact Dashboard)
             </button>
           </div>
@@ -594,10 +579,10 @@ class RainRouteAppController {
         <div class="demo-stepper-box">
           <div class="stepper-num">7</div>
           <div class="flex-grow-1">
-            <h6 class="fw-bold mb-1" style="color:var(--deep-purple);">Step 7: Admin Console Audit Logs</h6>
-            <p class="small text-muted mb-2">Review end-to-end blockchain-style activity logs and KYC approvals.</p>
-            <button class="btn btn-sm btn-outline-dark" onclick="window.RainRouteApp.runDemoStep(7)">
-              Run Step 7 (Open Admin Console)
+            <h6 class="fw-bold mb-1" style="color:var(--deep-purple);">Step 7: Admin Verification & Audit Logs</h6>
+            <p class="small text-muted mb-2">Review Donor & Volunteer Verification queues, approve licenses, and inspect audit logs.</p>
+            <button class="btn btn-sm btn-outline-dark" onclick="window.SaveToServeApp.runDemoStep(7)">
+              Run Step 7 (Open Admin Verification Console)
             </button>
           </div>
         </div>
@@ -612,7 +597,6 @@ class RainRouteAppController {
   }
 
   runDemoStep(stepNum) {
-    // Dismiss modal
     const modalEl = document.getElementById('globalModal');
     if (modalEl && typeof bootstrap !== 'undefined') {
       const bsModal = bootstrap.Modal.getInstance(modalEl);
@@ -623,14 +607,14 @@ class RainRouteAppController {
       case 1:
         this.quickLogin('donor');
         setTimeout(() => {
-          window.RainRouteDonor?.switchTab('post-donation');
-          this.showToast('Step 1 Active: Donor portal opened. Complete post surplus form.', 'info');
+          window.SaveToServeDonor?.switchTab('post-donation');
+          this.showToast('Step 1 Active: Donor kitchen portal opened. Complete post surplus form.', 'info');
         }, 300);
         break;
       case 2:
         this.navigateTo('weather-rescue');
         setTimeout(() => {
-          window.RainRouteWeather?.setScenario('heavy_rain');
+          window.SaveToServeWeather?.setScenario('heavy_rain');
           this.showToast('Step 2 Active: Heavy Rain scenario applied! Observe risk score & alternative plan.', 'warning');
         }, 300);
         break;
@@ -645,7 +629,7 @@ class RainRouteAppController {
       case 5:
         this.quickLogin('ngo');
         setTimeout(() => {
-          window.RainRouteNGO?.switchTab('my-claims');
+          window.SaveToServeNGO?.switchTab('my-claims');
           this.showToast('Step 5 Active: NGO My Claims opened. Confirm receipt & distribution.', 'success');
         }, 300);
         break;
@@ -655,10 +639,11 @@ class RainRouteAppController {
         break;
       case 7:
         this.quickLogin('admin');
-        this.showToast('Step 7 Active: Super Admin Operations Console with audit trail.', 'info');
+        this.showToast('Step 7 Active: Super Admin Operations & User Verification Console.', 'info');
         break;
     }
   }
 }
 
-window.RainRouteApp = new RainRouteAppController();
+window.SaveToServeApp = new SaveToServeAppController();
+window.RainRouteApp = window.SaveToServeApp;

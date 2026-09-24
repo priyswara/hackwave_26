@@ -1,6 +1,7 @@
 /**
- * RainRoute - Impact Dashboard & Environmental Analytics
+ * Save to Serve - Impact Dashboard & Environmental Analytics
  * Real-time calculation from actual completed transactions, Chart.js visualizations
+ * Tagline: Save Food. Serve People. Reduce Waste.
  */
 
 class ImpactDashboardManager {
@@ -10,8 +11,8 @@ class ImpactDashboardManager {
   }
 
   initEventListeners() {
-    window.addEventListener('rainroute:statechange', () => {
-      if (window.RainRouteApp?.currentRoute === 'impact-dashboard') {
+    window.addEventListener('savetoserve:statechange', () => {
+      if (window.SaveToServeApp?.currentRoute === 'impact-dashboard') {
         this.render();
       }
     });
@@ -21,15 +22,15 @@ class ImpactDashboardManager {
     const container = document.getElementById('impact-dashboard-view');
     if (!container) return;
 
-    const impact = window.RainRouteDB.calculateImpact();
-    const logs = window.RainRouteDB.getActivityLogs().slice(0, 8);
+    const impact = window.SaveToServeDB.calculateImpact();
+    const logs = window.SaveToServeDB.getActivityLogs().slice(0, 8);
 
     container.innerHTML = `
       <div class="container py-4">
         <!-- Header -->
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
           <div>
-            <h2 class="mb-1" style="color:var(--deep-purple);">🌱 Food Rescue Impact Dashboard</h2>
+            <h2 class="mb-1 fw-bold" style="color:var(--deep-purple);">🌱 Food Rescue Impact Dashboard</h2>
             <p class="text-muted mb-0">Dynamic metrics computed directly from completed surplus food rescue missions.</p>
           </div>
           <div class="d-flex align-items-center gap-2">
@@ -41,7 +42,7 @@ class ImpactDashboardManager {
 
         <!-- Metric Grid -->
         <div class="row g-3 mb-4">
-          <div class="col-lg-3 col-md-6">
+          <div class="col-lg-3 col-md-6 col-6">
             <div class="stat-card stat-green">
               <div class="stat-icon icon-green"><i class="bi bi-egg-fried"></i></div>
               <div>
@@ -50,7 +51,7 @@ class ImpactDashboardManager {
               </div>
             </div>
           </div>
-          <div class="col-lg-3 col-md-6">
+          <div class="col-lg-3 col-md-6 col-6">
             <div class="stat-card">
               <div class="stat-icon icon-purple"><i class="bi bi-trash-fill text-secondary"></i></div>
               <div>
@@ -59,7 +60,7 @@ class ImpactDashboardManager {
               </div>
             </div>
           </div>
-          <div class="col-lg-3 col-md-6">
+          <div class="col-lg-3 col-md-6 col-6">
             <div class="stat-card">
               <div class="stat-icon icon-blue"><i class="bi bi-people-fill"></i></div>
               <div>
@@ -68,7 +69,7 @@ class ImpactDashboardManager {
               </div>
             </div>
           </div>
-          <div class="col-lg-3 col-md-6">
+          <div class="col-lg-3 col-md-6 col-6">
             <div class="stat-card stat-green">
               <div class="stat-icon icon-amber"><i class="bi bi-cloud-rain-heavy text-primary"></i></div>
               <div>
@@ -173,11 +174,9 @@ class ImpactDashboardManager {
   initCharts(impact) {
     if (typeof Chart === 'undefined') return;
 
-    // Destroy prior instances
     if (this.charts.velocity) this.charts.velocity.destroy();
     if (this.charts.channels) this.charts.channels.destroy();
 
-    // Chart 1: Velocity
     const ctx1 = document.getElementById('rescueVelocityChart');
     if (ctx1) {
       this.charts.velocity = new Chart(ctx1, {
@@ -208,7 +207,6 @@ class ImpactDashboardManager {
       });
     }
 
-    // Chart 2: Channels
     const ctx2 = document.getElementById('dispatchChannelsChart');
     if (ctx2) {
       this.charts.channels = new Chart(ctx2, {
@@ -234,4 +232,5 @@ class ImpactDashboardManager {
   }
 }
 
-window.RainRouteImpact = new ImpactDashboardManager();
+window.SaveToServeImpact = new ImpactDashboardManager();
+window.RainRouteImpact = window.SaveToServeImpact;

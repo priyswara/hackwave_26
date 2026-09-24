@@ -1,6 +1,7 @@
 /**
- * RainRoute - Authentication & Role Permission Manager
+ * Save to Serve - Authentication & Role Permission Manager
  * Supports Email/Password, Simulated OTP Demo, Session Persistence & Role Guards
+ * Tagline: Save Food. Serve People. Reduce Waste.
  */
 
 class AuthManager {
@@ -9,22 +10,20 @@ class AuthManager {
     this.otpState = {
       phone: null,
       generatedOtp: null,
-      expiryTimer: null,
-      resendTimer: null,
+      expiresAt: null,
       pendingUser: null
     };
   }
 
   loadSession() {
     try {
-      const stored = sessionStorage.getItem('rainroute_active_user');
+      const stored = sessionStorage.getItem('savetoserve_active_user') || sessionStorage.getItem('rainroute_active_user');
       if (stored) {
         return JSON.parse(stored);
       }
     } catch (e) {
       console.warn('Could not load session user', e);
     }
-    // Default guest
     return null;
   }
 
@@ -32,17 +31,24 @@ class AuthManager {
     this.currentUser = user;
     try {
       if (user) {
-        sessionStorage.setItem('rainroute_active_user', JSON.stringify(user));
+        sessionStorage.setItem('savetoserve_active_user', JSON.stringify(user));
       } else {
+        sessionStorage.removeItem('savetoserve_active_user');
         sessionStorage.removeItem('rainroute_active_user');
       }
     } catch (e) {
       console.error('Failed to save session', e);
     }
-    window.dispatchEvent(new CustomEvent('rainroute:authchange', { detail: { user } }));
+    window.dispatchEvent(new CustomEvent('savetoserve:authchange', { detail: { user } }));
   }
 
   getCurrentUser() {
+    if (!this.currentUser) return null;
+    // Always refresh user object from latest store to catch KYC status changes dynamically
+    const freshUser = window.SaveToServeDB.getUserById(this.currentUser.id);
+    if (freshUser) {
+      this.currentUser = freshUser;
+    }
     return this.currentUser;
   }
 
@@ -51,11 +57,12 @@ class AuthManager {
   }
 
   hasRole(role) {
-    return this.currentUser && this.currentUser.role === role;
+    const user = this.getCurrentUser();
+    return user && user.role === role;
   }
 
   login(email, password) {
-    const user = window.RainRouteDB.getUserByEmail(email);
+    const user = window.SaveToServeDB.getUserByEmail(email);
     if (!user) {
       return { success: false, message: 'No account found with this email address.' };
     }
@@ -64,16 +71,16 @@ class AuthManager {
     }
 
     this.saveSession(user);
-    window.RainRouteDB.logActivity(user.name, `Logged into ${user.role.toUpperCase()} portal`, user.id, 'Login');
+    window.SaveToServeDB.logActivity(user.name, `Logged into ${user.role.toUpperCase()} portal`, user.id, 'Login');
     return { success: true, user };
   }
 
   loginAsDemo(role) {
     const demoUsers = {
-      donor: 'donor@rainroute.org',
-      ngo: 'ngo@rainroute.org',
-      volunteer: 'volunteer@rainroute.org',
-      admin: 'admin@rainroute.org'
+      donor: 'donor@savetoserve.org',
+      ngo: 'ngo@savetoserve.org',
+      volunteer: 'volunteer@savetoserve.org',
+      admin: 'admin@savetoserve.org'
     };
     const email = demoUsers[role];
     if (email) {
@@ -84,7 +91,7 @@ class AuthManager {
 
   logout() {
     if (this.currentUser) {
-      window.RainRouteDB.logActivity(this.currentUser.name, `Logged out of ${this.currentUser.role.toUpperCase()} portal`, this.currentUser.id, 'Logout');
+      window.SaveToServeDB.logActivity(this.currentUser.name, `Logged out of ${this.currentUser.role.toUpperCase()} portal`, this.currentUser.id, 'Logout');
     }
     this.saveSession(null);
     return true;
@@ -92,17 +99,15 @@ class AuthManager {
 
   // --- Simulated OTP Flow ---
   sendOtp(phone, pendingUser = null) {
-    // Generate 6-digit mock OTP
     const mockOtp = Math.floor(100000 + Math.random() * 900000).toString();
     this.otpState = {
       phone,
       generatedOtp: mockOtp,
-      expiresAt: Date.now() + 120000, // 2 minutes
+      expiresAt: Date.now() + 120000,
       pendingUser
     };
 
-    // Auto-display simulated OTP notification/toast for judge ease
-    window.RainRouteApp?.showToast(
+    window.SaveToServeApp?.showToast(
       `SIMULATED OTP DEMO: Your code is [ ${mockOtp} ] (Valid for 2 min). No real SMS is sent.`,
       'info',
       8000
@@ -126,16 +131,14 @@ class AuthManager {
       return { success: false, message: 'Incorrect OTP code entered. Please check simulated OTP.' };
     }
 
-    // If verification was for registration
     if (this.otpState.pendingUser) {
-      const newUser = window.RainRouteDB.addUser(this.otpState.pendingUser);
+      const newUser = window.SaveToServeDB.addUser(this.otpState.pendingUser);
       this.saveSession(newUser);
       this.otpState = {};
       return { success: true, user: newUser, message: 'Account registered and phone verified successfully!' };
     }
 
-    // If verification was for login
-    const user = window.RainRouteDB.getUsers().find(u => u.phone === this.otpState.phone);
+    const user = window.SaveToServeDB.getUsers().find(u => u.phone === this.otpState.phone);
     if (user) {
       this.saveSession(user);
       this.otpState = {};
@@ -146,7 +149,7 @@ class AuthManager {
   }
 
   register(userData) {
-    const existing = window.RainRouteDB.getUserByEmail(userData.email);
+    const existing = window.SaveToServeDB.getUserByEmail(userData.email);
     if (existing) {
       return { success: false, message: 'An account with this email already exists.' };
     }
@@ -154,4 +157,5 @@ class AuthManager {
   }
 }
 
-window.RainRouteAuth = new AuthManager();
+window.SaveToServeAuth = new AuthManager();
+window.RainRouteAuth = window.SaveToServeAuth;
