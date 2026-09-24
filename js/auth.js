@@ -1,18 +1,12 @@
 /**
- * Save to Serve - Authentication & Role Permission Manager
- * Supports Email/Password, Simulated OTP Demo, Session Persistence & Role Guards
+ * Save to Serve - Authentication & Session Management
+ * Role-Based Login, Direct User Registration, Session Persistence & Route Guards
  * Tagline: Save Food. Serve People. Reduce Waste.
  */
 
 class AuthManager {
   constructor() {
     this.currentUser = this.loadSession();
-    this.otpState = {
-      phone: null,
-      generatedOtp: null,
-      expiresAt: null,
-      pendingUser: null
-    };
   }
 
   loadSession() {
@@ -44,7 +38,6 @@ class AuthManager {
 
   getCurrentUser() {
     if (!this.currentUser) return null;
-    // Always refresh user object from latest store to catch KYC status changes dynamically
     const freshUser = window.SaveToServeDB.getUserById(this.currentUser.id);
     if (freshUser) {
       this.currentUser = freshUser;
@@ -53,7 +46,7 @@ class AuthManager {
   }
 
   isLoggedIn() {
-    return this.currentUser !== null;
+    return this.getCurrentUser() !== null;
   }
 
   hasRole(role) {
@@ -61,13 +54,27 @@ class AuthManager {
     return user && user.role === role;
   }
 
-  login(email, password) {
-    const user = window.SaveToServeDB.getUserByEmail(email);
-    if (!user) {
-      return { success: false, message: 'No account found with this email address.' };
+  login(email, password, requiredRole = null) {
+    if (!email || !password) {
+      return { success: false, message: 'Please enter both your email address and password.' };
     }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const user = window.SaveToServeDB.getUserByEmail(cleanEmail);
+
+    if (!user) {
+      return { success: false, message: `No account found with "${cleanEmail}". Please check your email or register below.` };
+    }
+
     if (user.password !== password && password !== 'password123') {
-      return { success: false, message: 'Invalid password. (Demo password is password123)' };
+      return { success: false, message: 'Incorrect password. Please try again or use the demo credentials.' };
+    }
+
+    if (requiredRole && user.role !== requiredRole) {
+      return { 
+        success: false, 
+        message: `This account is registered as a ${user.role.toUpperCase()}. Please use the ${user.role.toUpperCase()} Portal to log in.` 
+      };
     }
 
     this.saveSession(user);
@@ -75,18 +82,32 @@ class AuthManager {
     return { success: true, user };
   }
 
-  loginAsDemo(role) {
-    const demoUsers = {
-      donor: 'donor@savetoserve.org',
-      ngo: 'ngo@savetoserve.org',
-      volunteer: 'volunteer@savetoserve.org',
-      admin: 'admin@savetoserve.org'
-    };
-    const email = demoUsers[role];
-    if (email) {
-      return this.login(email, 'password123');
+  register(userData) {
+    if (!userData.email || !userData.name || !userData.password) {
+      return { success: false, message: 'Please fill in all required registration fields.' };
     }
-    return { success: false, message: 'Invalid demo role requested' };
+
+    const cleanEmail = userData.email.trim().toLowerCase();
+    const existing = window.SaveToServeDB.getUserByEmail(cleanEmail);
+
+    if (existing) {
+      return { success: false, message: `An account with "${cleanEmail}" is already registered. Please sign in instead.` };
+    }
+
+    const newUser = window.SaveToServeDB.addUser({
+      name: userData.name.trim(),
+      role: userData.role || 'donor',
+      orgName: userData.orgName ? userData.orgName.trim() : userData.name.trim(),
+      email: cleanEmail,
+      phone: userData.phone ? userData.phone.trim() : '+91 98765 00000',
+      address: userData.address ? userData.address.trim() : 'Bengaluru',
+      password: userData.password,
+      vehicleType: userData.vehicleType || '',
+      kycStatus: 'pending'
+    });
+
+    this.saveSession(newUser);
+    return { success: true, user: newUser, message: 'Account registered successfully!' };
   }
 
   logout() {
@@ -95,65 +116,6 @@ class AuthManager {
     }
     this.saveSession(null);
     return true;
-  }
-
-  // --- Simulated OTP Flow ---
-  sendOtp(phone, pendingUser = null) {
-    const mockOtp = Math.floor(100000 + Math.random() * 900000).toString();
-    this.otpState = {
-      phone,
-      generatedOtp: mockOtp,
-      expiresAt: Date.now() + 120000,
-      pendingUser
-    };
-
-    window.SaveToServeApp?.showToast(
-      `SIMULATED OTP DEMO: Your code is [ ${mockOtp} ] (Valid for 2 min). No real SMS is sent.`,
-      'info',
-      8000
-    );
-
-    return {
-      success: true,
-      otp: mockOtp,
-      message: `SIMULATED OTP generated: ${mockOtp}. (No real SMS is sent).`
-    };
-  }
-
-  verifyOtp(enteredOtp) {
-    if (!this.otpState.generatedOtp) {
-      return { success: false, message: 'Please request an OTP first.' };
-    }
-    if (Date.now() > this.otpState.expiresAt) {
-      return { success: false, message: 'OTP has expired. Please click Resend OTP.' };
-    }
-    if (enteredOtp.trim() !== this.otpState.generatedOtp) {
-      return { success: false, message: 'Incorrect OTP code entered. Please check simulated OTP.' };
-    }
-
-    if (this.otpState.pendingUser) {
-      const newUser = window.SaveToServeDB.addUser(this.otpState.pendingUser);
-      this.saveSession(newUser);
-      this.otpState = {};
-      return { success: true, user: newUser, message: 'Account registered and phone verified successfully!' };
-    }
-
-    const user = window.SaveToServeDB.getUsers().find(u => u.phone === this.otpState.phone);
-    if (user) {
-      this.saveSession(user);
-      this.otpState = {};
-      return { success: true, user, message: 'Phone verified and logged in successfully!' };
-    }
-
-    return { success: true, message: 'Phone verification confirmed!' };
-  }
-
-  register(userData) {
-    const existing = window.SaveToServeDB.getUserByEmail(userData.email);
-    if (existing) {
-      return { success: false, message: 'An account with this email already exists.' };
-    }
-    return this.sendOtp(userData.phone, userData);
   }
 }
 

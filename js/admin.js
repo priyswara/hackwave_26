@@ -1,12 +1,15 @@
 /**
  * Save to Serve - Admin Operations & User Verification Command Console
- * Full Verification Dashboard for Donors & Volunteers with Filter, Reasoned Rejection & Reconsideration
+ * Sections: Donor Verification, NGO Verification, Volunteer Verification, Manage Donations, Manage Users, Weather Rescue, Impact Dashboard, Reports & Audit Logs
+ * Tagline: Save Food. Serve People. Reduce Waste.
  */
 
 class AdminPortalManager {
   constructor() {
     this.donorFilter = 'all'; // 'all' | 'pending' | 'approved' | 'rejected'
+    this.ngoFilter = 'all';
     this.volFilter = 'all';
+    this.userFilter = 'all';
     this.initEventListeners();
   }
 
@@ -28,9 +31,9 @@ class AdminPortalManager {
         <div class="container py-5 text-center">
           <div class="alert alert-danger d-inline-block px-4 py-3 shadow-sm">
             <i class="bi bi-shield-x fs-2 d-block mb-2 text-danger"></i>
-            <h5 class="fw-bold">Admin Command Access Restricted</h5>
-            <p class="mb-3 text-muted">This verification command console requires administrative credentials.</p>
-            <button class="btn btn-purple" onclick="window.SaveToServeApp.navigateTo('login')">Admin Login</button>
+            <h5 class="fw-bold">Super Admin Access Restricted</h5>
+            <p class="mb-3 text-muted">This management console requires authorized administrative credentials.</p>
+            <button class="btn btn-olive" onclick="window.SaveToServeApp.openPortalAuth('admin')">Super Admin Sign In</button>
           </div>
         </div>`;
       return;
@@ -38,9 +41,13 @@ class AdminPortalManager {
 
     const users = window.SaveToServeDB.getUsers();
     const donors = users.filter(u => u.role === 'donor');
+    const ngos = users.filter(u => u.role === 'ngo');
     const volunteers = users.filter(u => u.role === 'volunteer');
+    
     const pendingDonors = donors.filter(u => u.kycStatus === 'pending');
+    const pendingNgos = ngos.filter(u => u.kycStatus === 'pending');
     const pendingVols = volunteers.filter(u => u.kycStatus === 'pending');
+    
     const donations = window.SaveToServeDB.getDonations();
     const hubs = window.SaveToServeDB.getHoldingHubs();
     const logs = window.SaveToServeDB.getActivityLogs();
@@ -50,20 +57,23 @@ class AdminPortalManager {
         <!-- Admin Header -->
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-3 border-bottom">
           <div class="d-flex align-items-center gap-3">
-            <div class="stat-icon icon-amber" style="width:54px;height:54px;border-radius:14px;">
+            <div class="stat-icon" style="width:54px;height:54px;border-radius:14px;background-color:var(--light-olive);color:var(--dark-olive);">
               <i class="bi bi-shield-lock-fill fs-2"></i>
             </div>
             <div>
               <div class="d-flex align-items-center gap-2">
-                <h3 class="mb-0 fw-bold" style="color:var(--deep-purple);">Admin Verification Command</h3>
+                <h3 class="mb-0 fw-bold" style="color:var(--dark-olive);">Super Admin Command Center</h3>
                 <span class="badge badge-admin">Master Admin</span>
               </div>
-              <p class="text-muted small mb-0">Manage and verify registered Donors & Volunteers with full audit tracking</p>
+              <p class="text-muted small mb-0">Review verification queues, moderate donations, and monitor rescue operations</p>
             </div>
           </div>
           <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary btn-sm" onclick="window.SaveToServeApp.navigateTo('home')">
+              <i class="bi bi-house"></i> Home
+            </button>
             <button class="btn btn-outline-danger btn-sm" onclick="window.SaveToServeApp.promptResetDemoData()">
-              <i class="bi bi-arrow-counterclockwise"></i> Reset Demo Database
+              <i class="bi bi-arrow-counterclockwise"></i> Reset Database
             </button>
           </div>
         </div>
@@ -72,16 +82,25 @@ class AdminPortalManager {
         <div class="row g-3 mb-4">
           <div class="col-lg-3 col-6">
             <div class="stat-card">
-              <div class="stat-icon icon-purple"><i class="bi bi-shop"></i></div>
+              <div class="stat-icon"><i class="bi bi-shop"></i></div>
               <div>
                 <div class="stat-value">${donors.length}</div>
-                <div class="stat-label">Total Donors (${pendingDonors.length} Pending)</div>
+                <div class="stat-label">Donors (${pendingDonors.length} Pending)</div>
               </div>
             </div>
           </div>
           <div class="col-lg-3 col-6">
-            <div class="stat-card stat-green">
-              <div class="stat-icon icon-green"><i class="bi bi-bicycle"></i></div>
+            <div class="stat-card">
+              <div class="stat-icon"><i class="bi bi-building"></i></div>
+              <div>
+                <div class="stat-value">${ngos.length}</div>
+                <div class="stat-label">NGOs (${pendingNgos.length} Pending)</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-3 col-6">
+            <div class="stat-card">
+              <div class="stat-icon"><i class="bi bi-bicycle"></i></div>
               <div>
                 <div class="stat-value">${volunteers.length}</div>
                 <div class="stat-label">Volunteers (${pendingVols.length} Pending)</div>
@@ -90,46 +109,46 @@ class AdminPortalManager {
           </div>
           <div class="col-lg-3 col-6">
             <div class="stat-card">
-              <div class="stat-icon icon-blue"><i class="bi bi-box2-heart"></i></div>
+              <div class="stat-icon"><i class="bi bi-box2-heart"></i></div>
               <div>
                 <div class="stat-value">${donations.length}</div>
                 <div class="stat-label">Surplus Listings</div>
               </div>
             </div>
           </div>
-          <div class="col-lg-3 col-6">
-            <div class="stat-card">
-              <div class="stat-icon icon-amber"><i class="bi bi-snow"></i></div>
-              <div>
-                <div class="stat-value">${hubs.length}</div>
-                <div class="stat-label">Safe Holding Hubs</div>
-              </div>
-            </div>
-          </div>
         </div>
 
-        <!-- Dedicated Verification Subnav -->
-        <div class="portal-subnav">
+        <!-- Dedicated Subnav with all 8 sections -->
+        <div class="portal-subnav mb-4" style="overflow-x: auto; white-space: nowrap; display: flex; gap: 8px;">
           <button class="subnav-btn ${activeTab === 'donor-verification' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('donor-verification')">
-            <i class="bi bi-shop-window"></i> Donor Verification (${pendingDonors.length > 0 ? `<span class="badge bg-warning text-dark">${pendingDonors.length}</span>` : donors.length})
+            <i class="bi bi-shop"></i> Donor Verification ${pendingDonors.length > 0 ? `<span class="badge bg-warning text-dark">${pendingDonors.length}</span>` : ''}
+          </button>
+          <button class="subnav-btn ${activeTab === 'ngo-verification' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('ngo-verification')">
+            <i class="bi bi-building"></i> NGO Verification ${pendingNgos.length > 0 ? `<span class="badge bg-warning text-dark">${pendingNgos.length}</span>` : ''}
           </button>
           <button class="subnav-btn ${activeTab === 'volunteer-verification' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('volunteer-verification')">
-            <i class="bi bi-person-check"></i> Volunteer Verification (${pendingVols.length > 0 ? `<span class="badge bg-warning text-dark">${pendingVols.length}</span>` : volunteers.length})
+            <i class="bi bi-bicycle"></i> Volunteer Verification ${pendingVols.length > 0 ? `<span class="badge bg-warning text-dark">${pendingVols.length}</span>` : ''}
           </button>
           <button class="subnav-btn ${activeTab === 'manage-donations' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('manage-donations')">
-            <i class="bi bi-grid-3x3-gap"></i> Moderate Listings (${donations.length})
+            <i class="bi bi-grid-3x3-gap"></i> Manage Donations (${donations.length})
           </button>
-          <button class="subnav-btn ${activeTab === 'holding-hubs' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('holding-hubs')">
-            <i class="bi bi-snow2"></i> Holding Hubs (${hubs.length})
+          <button class="subnav-btn ${activeTab === 'manage-users' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('manage-users')">
+            <i class="bi bi-people"></i> Manage Users (${users.length})
+          </button>
+          <button class="subnav-btn ${activeTab === 'weather-rescue' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('weather-rescue')">
+            <i class="bi bi-cloud-rain-heavy"></i> Weather Rescue
+          </button>
+          <button class="subnav-btn ${activeTab === 'impact-dashboard' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('impact-dashboard')">
+            <i class="bi bi-graph-up-arrow"></i> Impact Dashboard
           </button>
           <button class="subnav-btn ${activeTab === 'audit-logs' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('audit-logs')">
-            <i class="bi bi-journal-text"></i> Audit Logs (${logs.length})
+            <i class="bi bi-journal-text"></i> Reports & Audit Logs (${logs.length})
           </button>
         </div>
 
         <!-- Tab Body -->
         <div id="admin-tab-content">
-          ${this.renderTabContent(activeTab, donors, volunteers, donations, hubs, logs)}
+          ${this.renderTabContent(activeTab, donors, ngos, volunteers, users, donations, hubs, logs)}
         </div>
       </div>
     `;
@@ -139,7 +158,7 @@ class AdminPortalManager {
     this.render(tabName);
   }
 
-  renderTabContent(tabName, donors, volunteers, donations, hubs, logs) {
+  renderTabContent(tabName, donors, ngos, volunteers, users, donations, hubs, logs) {
     // 1. DONOR VERIFICATION SECTION
     if (tabName === 'donor-verification') {
       const filteredDonors = donors.filter(d => {
@@ -151,10 +170,9 @@ class AdminPortalManager {
         <div class="custom-card">
           <div class="custom-card-header">
             <div>
-              <h5 class="card-title-custom"><i class="bi bi-shop text-primary"></i> Donor Kitchen & Food Safety Verification</h5>
-              <div class="text-muted small">Verify restaurant food safety licenses (FSSAI) to authorize surplus food listing rights</div>
+              <h5 class="card-title-custom"><i class="bi bi-shop text-success"></i> Donor Verification</h5>
+              <div class="text-muted small">Verify restaurant & commercial kitchen food safety credentials (FSSAI)</div>
             </div>
-            <!-- Status Filter -->
             <div class="d-flex align-items-center gap-2">
               <span class="small text-muted fw-bold">Filter:</span>
               <select class="form-select form-select-sm form-select-custom" style="width: auto;" onchange="window.SaveToServeAdmin.setDonorFilter(this.value)">
@@ -166,18 +184,13 @@ class AdminPortalManager {
             </div>
           </div>
 
-          <div class="alert alert-secondary py-2 small mb-3">
-            <i class="bi bi-shield-check text-success me-1"></i> <strong>SIMULATED DEMO VERIFICATION:</strong> Approving or rejecting a donor immediately grants or restricts their surplus donation publishing rights.
-          </div>
-
           <div class="table-responsive-custom">
             <table class="table-custom">
               <thead>
                 <tr>
                   <th>Donor Organization</th>
                   <th>Contact Details</th>
-                  <th>Submitted Document (Demo)</th>
-                  <th>Registered</th>
+                  <th>Document Type</th>
                   <th>Status</th>
                   <th>Verification Actions</th>
                 </tr>
@@ -188,7 +201,7 @@ class AdminPortalManager {
                   return `
                     <tr>
                       <td>
-                        <strong style="color:var(--deep-purple);">${u.orgName || u.name}</strong>
+                        <strong style="color:var(--dark-olive);">${u.orgName || u.name}</strong>
                         <div class="small text-muted"><i class="bi bi-person"></i> ${u.name}</div>
                       </td>
                       <td>
@@ -197,22 +210,20 @@ class AdminPortalManager {
                       </td>
                       <td>
                         <span class="badge bg-light text-dark border">
-                          <i class="bi bi-file-earmark-check text-primary"></i> ${u.verificationDetails?.docType || u.verifiedDoc || 'FSSAI License'}
+                          <i class="bi bi-file-earmark-check text-success"></i> ${u.verificationDetails?.docType || u.verifiedDoc || 'FSSAI License'}
                         </span>
-                        <div class="small text-muted font-monospace">${u.verificationDetails?.docNumber || '#KA-2026-FSSAI'}</div>
                       </td>
-                      <td class="small text-muted">${new Date(u.registeredAt).toLocaleDateString()}</td>
                       <td>
                         <span class="badge ${statusBadgeClass} text-uppercase">${u.kycStatus}</span>
-                        ${u.verificationDetails?.rejectionReason ? `<div class="small text-danger" style="font-size:0.75rem;">${u.verificationDetails.rejectionReason}</div>` : ''}
+                        ${u.verificationDetails?.rejectionReason ? `<div class="small text-danger mt-1" style="font-size:0.75rem;">${u.verificationDetails.rejectionReason}</div>` : ''}
                       </td>
                       <td>
-                        <div class="d-flex gap-1">
-                          <button class="btn btn-sm btn-outline-secondary" title="View Full Details" onclick="window.SaveToServeAdmin.viewUserDetails('${u.id}')">
+                        <div class="d-flex gap-1 flex-wrap">
+                          <button class="btn btn-sm btn-outline-secondary" title="View Details" onclick="window.SaveToServeAdmin.viewUserDetails('${u.id}')">
                             <i class="bi bi-eye"></i> Details
                           </button>
                           ${u.kycStatus !== 'approved' ? `
-                            <button class="btn btn-sm btn-green" title="Approve Verification" onclick="window.SaveToServeAdmin.approveUser('${u.id}')">
+                            <button class="btn btn-sm btn-olive" title="Approve Donor" onclick="window.SaveToServeAdmin.approveUser('${u.id}')">
                               <i class="bi bi-check2"></i> Approve
                             </button>
                           ` : ''}
@@ -221,7 +232,7 @@ class AdminPortalManager {
                               <i class="bi bi-x"></i> Reject
                             </button>
                           ` : `
-                            <button class="btn btn-sm btn-outline-warning" title="Reconsider Application" onclick="window.SaveToServeAdmin.reconsiderUser('${u.id}')">
+                            <button class="btn btn-sm btn-soft-olive" title="Reconsider Application" onclick="window.SaveToServeAdmin.reconsiderUser('${u.id}')">
                               <i class="bi bi-arrow-repeat"></i> Reconsider
                             </button>
                           `}
@@ -237,7 +248,92 @@ class AdminPortalManager {
       `;
     }
 
-    // 2. VOLUNTEER VERIFICATION SECTION
+    // 2. NGO VERIFICATION SECTION
+    if (tabName === 'ngo-verification') {
+      const filteredNgos = ngos.filter(n => {
+        if (this.ngoFilter === 'all') return true;
+        return n.kycStatus === this.ngoFilter;
+      });
+
+      return `
+        <div class="custom-card">
+          <div class="custom-card-header">
+            <div>
+              <h5 class="card-title-custom"><i class="bi bi-building text-success"></i> NGO Shelter Verification</h5>
+              <div class="text-muted small">Verify NGO trust registration, 12A/80G status, and food distribution capacity</div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="small text-muted fw-bold">Filter:</span>
+              <select class="form-select form-select-sm form-select-custom" style="width: auto;" onchange="window.SaveToServeAdmin.setNgoFilter(this.value)">
+                <option value="all" ${this.ngoFilter === 'all' ? 'selected' : ''}>All NGOs (${ngos.length})</option>
+                <option value="pending" ${this.ngoFilter === 'pending' ? 'selected' : ''}>Pending (${ngos.filter(d => d.kycStatus === 'pending').length})</option>
+                <option value="approved" ${this.ngoFilter === 'approved' ? 'selected' : ''}>Approved (${ngos.filter(d => d.kycStatus === 'approved').length})</option>
+                <option value="rejected" ${this.ngoFilter === 'rejected' ? 'selected' : ''}>Rejected (${ngos.filter(d => d.kycStatus === 'rejected').length})</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-responsive-custom">
+            <table class="table-custom">
+              <thead>
+                <tr>
+                  <th>NGO Organization</th>
+                  <th>Representative</th>
+                  <th>Contact</th>
+                  <th>Status</th>
+                  <th>Verification Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${filteredNgos.map(u => {
+                  const statusBadgeClass = u.kycStatus === 'approved' ? 'bg-success' : u.kycStatus === 'rejected' ? 'bg-danger' : 'bg-warning text-dark';
+                  return `
+                    <tr>
+                      <td>
+                        <strong style="color:var(--dark-olive);">${u.orgName || u.name}</strong>
+                        <div class="small text-muted">${u.address}</div>
+                      </td>
+                      <td>${u.name}</td>
+                      <td>
+                        <div class="small">${u.email}</div>
+                        <div class="small text-muted">${u.phone}</div>
+                      </td>
+                      <td>
+                        <span class="badge ${statusBadgeClass} text-uppercase">${u.kycStatus}</span>
+                        ${u.verificationDetails?.rejectionReason ? `<div class="small text-danger mt-1" style="font-size:0.75rem;">${u.verificationDetails.rejectionReason}</div>` : ''}
+                      </td>
+                      <td>
+                        <div class="d-flex gap-1 flex-wrap">
+                          <button class="btn btn-sm btn-outline-secondary" title="View Details" onclick="window.SaveToServeAdmin.viewUserDetails('${u.id}')">
+                            <i class="bi bi-eye"></i> Details
+                          </button>
+                          ${u.kycStatus !== 'approved' ? `
+                            <button class="btn btn-sm btn-olive" title="Approve NGO" onclick="window.SaveToServeAdmin.approveUser('${u.id}')">
+                              <i class="bi bi-check2"></i> Approve
+                            </button>
+                          ` : ''}
+                          ${u.kycStatus !== 'rejected' ? `
+                            <button class="btn btn-sm btn-outline-danger" title="Reject NGO" onclick="window.SaveToServeAdmin.promptRejectUser('${u.id}')">
+                              <i class="bi bi-x"></i> Reject
+                            </button>
+                          ` : `
+                            <button class="btn btn-sm btn-soft-olive" title="Reconsider Application" onclick="window.SaveToServeAdmin.reconsiderUser('${u.id}')">
+                              <i class="bi bi-arrow-repeat"></i> Reconsider
+                            </button>
+                          `}
+                        </div>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    // 3. VOLUNTEER VERIFICATION SECTION
     if (tabName === 'volunteer-verification') {
       const filteredVols = volunteers.filter(v => {
         if (this.volFilter === 'all') return true;
@@ -248,23 +344,18 @@ class AdminPortalManager {
         <div class="custom-card">
           <div class="custom-card-header">
             <div>
-              <h5 class="card-title-custom"><i class="bi bi-bicycle text-primary"></i> Volunteer Rescue Courier Verification</h5>
-              <div class="text-muted small">Verify identity & safe food handling clearance for couriers before assigning pickup tasks</div>
+              <h5 class="card-title-custom"><i class="bi bi-bicycle text-success"></i> Volunteer Courier Verification</h5>
+              <div class="text-muted small">Verify courier identity, transit vehicle, and background verification</div>
             </div>
-            <!-- Status Filter -->
             <div class="d-flex align-items-center gap-2">
               <span class="small text-muted fw-bold">Filter:</span>
               <select class="form-select form-select-sm form-select-custom" style="width: auto;" onchange="window.SaveToServeAdmin.setVolFilter(this.value)">
                 <option value="all" ${this.volFilter === 'all' ? 'selected' : ''}>All Volunteers (${volunteers.length})</option>
-                <option value="pending" ${this.volFilter === 'pending' ? 'selected' : ''}>Pending (${volunteers.filter(v => v.kycStatus === 'pending').length})</option>
-                <option value="approved" ${this.volFilter === 'approved' ? 'selected' : ''}>Approved (${volunteers.filter(v => v.kycStatus === 'approved').length})</option>
-                <option value="rejected" ${this.volFilter === 'rejected' ? 'selected' : ''}>Rejected (${volunteers.filter(v => v.kycStatus === 'rejected').length})</option>
+                <option value="pending" ${this.volFilter === 'pending' ? 'selected' : ''}>Pending (${volunteers.filter(d => d.kycStatus === 'pending').length})</option>
+                <option value="approved" ${this.volFilter === 'approved' ? 'selected' : ''}>Approved (${volunteers.filter(d => d.kycStatus === 'approved').length})</option>
+                <option value="rejected" ${this.volFilter === 'rejected' ? 'selected' : ''}>Rejected (${volunteers.filter(d => d.kycStatus === 'rejected').length})</option>
               </select>
             </div>
-          </div>
-
-          <div class="alert alert-secondary py-2 small mb-3">
-            <i class="bi bi-shield-check text-success me-1"></i> <strong>COURIER SAFETY PROTOCOL:</strong> Approved volunteers receive pickup task alerts and can verify donor handoffs.
           </div>
 
           <div class="table-responsive-custom">
@@ -272,9 +363,8 @@ class AdminPortalManager {
               <thead>
                 <tr>
                   <th>Volunteer Name</th>
-                  <th>Vehicle & Contact</th>
-                  <th>Safety Document (Demo)</th>
-                  <th>Registered</th>
+                  <th>Transit Vehicle</th>
+                  <th>Contact Info</th>
                   <th>Status</th>
                   <th>Verification Actions</th>
                 </tr>
@@ -285,40 +375,38 @@ class AdminPortalManager {
                   return `
                     <tr>
                       <td>
-                        <strong style="color:var(--deep-purple);">${u.name}</strong>
-                        <div class="small text-muted">${u.address || 'Bengaluru'}</div>
-                      </td>
-                      <td>
-                        <div><i class="bi bi-truck-front text-primary"></i> ${u.vehicleType || 'Two-Wheeler'}</div>
-                        <div class="small text-muted">${u.phone}</div>
+                        <strong style="color:var(--dark-olive);">${u.name}</strong>
+                        <div class="small text-muted">${u.address}</div>
                       </td>
                       <td>
                         <span class="badge bg-light text-dark border">
-                          <i class="bi bi-card-checklist text-primary"></i> ${u.verificationDetails?.docType || u.verifiedDoc || 'Safety Training Card'}
+                          <i class="bi bi-bicycle text-success"></i> ${u.vehicleType || 'Two-wheeler'}
                         </span>
-                        <div class="small text-muted font-monospace">${u.verificationDetails?.docNumber || '#VOL-ID-2026'}</div>
                       </td>
-                      <td class="small text-muted">${new Date(u.registeredAt).toLocaleDateString()}</td>
+                      <td>
+                        <div class="small">${u.email}</div>
+                        <div class="small text-muted">${u.phone}</div>
+                      </td>
                       <td>
                         <span class="badge ${statusBadgeClass} text-uppercase">${u.kycStatus}</span>
-                        ${u.verificationDetails?.rejectionReason ? `<div class="small text-danger" style="font-size:0.75rem;">${u.verificationDetails.rejectionReason}</div>` : ''}
+                        ${u.verificationDetails?.rejectionReason ? `<div class="small text-danger mt-1" style="font-size:0.75rem;">${u.verificationDetails.rejectionReason}</div>` : ''}
                       </td>
                       <td>
-                        <div class="d-flex gap-1">
-                          <button class="btn btn-sm btn-outline-secondary" title="View Full Details" onclick="window.SaveToServeAdmin.viewUserDetails('${u.id}')">
+                        <div class="d-flex gap-1 flex-wrap">
+                          <button class="btn btn-sm btn-outline-secondary" title="View Details" onclick="window.SaveToServeAdmin.viewUserDetails('${u.id}')">
                             <i class="bi bi-eye"></i> Details
                           </button>
                           ${u.kycStatus !== 'approved' ? `
-                            <button class="btn btn-sm btn-green" title="Approve Verification" onclick="window.SaveToServeAdmin.approveUser('${u.id}')">
+                            <button class="btn btn-sm btn-olive" title="Approve Volunteer" onclick="window.SaveToServeAdmin.approveUser('${u.id}')">
                               <i class="bi bi-check2"></i> Approve
                             </button>
                           ` : ''}
                           ${u.kycStatus !== 'rejected' ? `
-                            <button class="btn btn-sm btn-outline-danger" title="Reject Request" onclick="window.SaveToServeAdmin.promptRejectUser('${u.id}')">
+                            <button class="btn btn-sm btn-outline-danger" title="Reject Volunteer" onclick="window.SaveToServeAdmin.promptRejectUser('${u.id}')">
                               <i class="bi bi-x"></i> Reject
                             </button>
                           ` : `
-                            <button class="btn btn-sm btn-outline-warning" title="Reconsider Application" onclick="window.SaveToServeAdmin.reconsiderUser('${u.id}')">
+                            <button class="btn btn-sm btn-soft-olive" title="Reconsider Application" onclick="window.SaveToServeAdmin.reconsiderUser('${u.id}')">
                               <i class="bi bi-arrow-repeat"></i> Reconsider
                             </button>
                           `}
@@ -334,13 +422,13 @@ class AdminPortalManager {
       `;
     }
 
-    // 3. LISTINGS MODERATION SECTION
+    // 4. MANAGE DONATIONS SECTION
     if (tabName === 'manage-donations') {
       return `
         <div class="custom-card">
           <div class="custom-card-header">
-            <h5 class="card-title-custom"><i class="bi bi-shield-check text-primary"></i> Moderate Surplus Listings & Food Safety</h5>
-            <span class="badge bg-secondary">${donations.length} Listings</span>
+            <h5 class="card-title-custom"><i class="bi bi-shield-check text-success"></i> Manage Surplus Listings & Food Safety</h5>
+            <span class="badge bg-secondary">${donations.length} Total Listings</span>
           </div>
 
           <div class="table-responsive-custom">
@@ -348,7 +436,7 @@ class AdminPortalManager {
               <thead>
                 <tr>
                   <th>Item Details</th>
-                  <th>Donor</th>
+                  <th>Donor Organization</th>
                   <th>Portions</th>
                   <th>Safe Until</th>
                   <th>Status</th>
@@ -359,11 +447,11 @@ class AdminPortalManager {
                 ${donations.map(d => `
                   <tr>
                     <td>
-                      <strong style="color:var(--deep-purple);">${d.foodName}</strong>
-                      <div class="small text-muted">ID: ${d.id} | ${d.category}</div>
+                      <strong style="color:var(--dark-olive);">${d.foodName}</strong>
+                      <div class="small text-muted">${d.category} • ${d.foodType.toUpperCase()}</div>
                     </td>
                     <td>${d.donorOrg}</td>
-                    <td>${d.portions} meals</td>
+                    <td>${d.portions} meals (~${d.quantityKg} kg)</td>
                     <td>
                       <span class="small">${new Date(d.safeUntil).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
                     </td>
@@ -373,14 +461,14 @@ class AdminPortalManager {
                       </span>
                     </td>
                     <td>
-                      <div class="d-flex gap-1">
+                      <div class="d-flex gap-1 flex-wrap">
                         ${d.status !== 'flagged' ? `
-                          <button class="btn btn-sm btn-outline-warning" title="Flag as potentially unsafe" onclick="window.SaveToServeAdmin.flagDonation('${d.id}')">
+                          <button class="btn btn-sm btn-outline-warning" title="Flag listing" onclick="window.SaveToServeAdmin.flagDonation('${d.id}')">
                             <i class="bi bi-flag"></i> Flag
                           </button>
                         ` : ''}
                         <button class="btn btn-sm btn-outline-danger" title="Remove listing" onclick="window.SaveToServeAdmin.removeDonation('${d.id}')">
-                          <i class="bi bi-trash"></i> Remove
+                          <i class="bi bi-trash"></i> Delete
                         </button>
                       </div>
                     </td>
@@ -393,18 +481,113 @@ class AdminPortalManager {
       `;
     }
 
-    // 4. HOLDING HUBS
-    if (tabName === 'holding-hubs') {
-      return window.SaveToServeHubs ? window.SaveToServeHubs.renderHubsManagementView() : '<div class="p-4">Hubs Loaded</div>';
+    // 5. MANAGE USERS SECTION
+    if (tabName === 'manage-users') {
+      const filteredUsers = users.filter(u => {
+        if (this.userFilter === 'all') return true;
+        return u.role === this.userFilter;
+      });
+
+      return `
+        <div class="custom-card">
+          <div class="custom-card-header">
+            <div>
+              <h5 class="card-title-custom"><i class="bi bi-people text-success"></i> Registered Platform Users</h5>
+              <div class="text-muted small">Overview of all system accounts and roles</div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="small text-muted fw-bold">Role:</span>
+              <select class="form-select form-select-sm form-select-custom" style="width: auto;" onchange="window.SaveToServeAdmin.setUserFilter(this.value)">
+                <option value="all" ${this.userFilter === 'all' ? 'selected' : ''}>All Roles (${users.length})</option>
+                <option value="donor" ${this.userFilter === 'donor' ? 'selected' : ''}>Donors (${donors.length})</option>
+                <option value="ngo" ${this.userFilter === 'ngo' ? 'selected' : ''}>NGOs (${ngos.length})</option>
+                <option value="volunteer" ${this.userFilter === 'volunteer' ? 'selected' : ''}>Volunteers (${volunteers.length})</option>
+                <option value="admin" ${this.userFilter === 'admin' ? 'selected' : ''}>Admins (${users.filter(u=>u.role==='admin').length})</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-responsive-custom">
+            <table class="table-custom">
+              <thead>
+                <tr>
+                  <th>User / Organization</th>
+                  <th>Role</th>
+                  <th>Email & Phone</th>
+                  <th>Verification Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${filteredUsers.map(u => `
+                  <tr>
+                    <td>
+                      <strong style="color:var(--dark-olive);">${u.name}</strong>
+                      ${u.orgName && u.orgName !== u.name ? `<div class="small text-muted">${u.orgName}</div>` : ''}
+                    </td>
+                    <td>
+                      <span class="badge badge-${u.role}">${u.role.toUpperCase()}</span>
+                    </td>
+                    <td>
+                      <div class="small">${u.email}</div>
+                      <div class="small text-muted">${u.phone}</div>
+                    </td>
+                    <td>
+                      <span class="badge ${u.kycStatus === 'approved' ? 'bg-success' : u.kycStatus === 'rejected' ? 'bg-danger' : 'bg-warning text-dark'} text-uppercase">
+                        ${u.kycStatus}
+                      </span>
+                    </td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-secondary" onclick="window.SaveToServeAdmin.viewUserDetails('${u.id}')">
+                        <i class="bi bi-eye"></i> View
+                      </button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
     }
 
-    // 5. AUDIT LOGS
+    // 6. WEATHER RESCUE EMBED
+    if (tabName === 'weather-rescue') {
+      return `
+        <div class="custom-card">
+          <div class="custom-card-header">
+            <h5 class="card-title-custom"><i class="bi bi-cloud-rain-heavy text-success"></i> Weather Rescue Operations</h5>
+            <button class="btn btn-sm btn-olive" onclick="window.SaveToServeApp.navigateTo('weather-rescue')">
+              <i class="bi bi-box-arrow-up-right"></i> Open Weather Rescue View
+            </button>
+          </div>
+          <p class="text-muted small">Monitor real-time weather risk calculations, alternative dispatch corridors, and route safe holding hubs.</p>
+        </div>
+      `;
+    }
+
+    // 7. IMPACT DASHBOARD EMBED
+    if (tabName === 'impact-dashboard') {
+      return `
+        <div class="custom-card">
+          <div class="custom-card-header">
+            <h5 class="card-title-custom"><i class="bi bi-graph-up-arrow text-success"></i> Food Rescue Impact Dashboard</h5>
+            <button class="btn btn-sm btn-olive" onclick="window.SaveToServeApp.navigateTo('impact-dashboard')">
+              <i class="bi bi-box-arrow-up-right"></i> Open Full Impact Dashboard
+            </button>
+          </div>
+          <p class="text-muted small">Track total meals rescued, kilograms of waste diverted, and carbon offset calculations.</p>
+        </div>
+      `;
+    }
+
+    // 8. AUDIT LOGS & REPORTS SECTION
     if (tabName === 'audit-logs') {
       return `
         <div class="custom-card">
           <div class="custom-card-header">
-            <h5 class="card-title-custom"><i class="bi bi-journal-text text-primary"></i> Platform Activity & Verification Audit Trail</h5>
-            <button class="btn btn-outline-primary btn-sm" onclick="window.SaveToServeAdmin.exportAuditLogs()">
+            <h5 class="card-title-custom"><i class="bi bi-journal-text text-success"></i> Platform Activity & Verification Audit Trail</h5>
+            <button class="btn btn-outline-secondary btn-sm" onclick="window.SaveToServeAdmin.exportAuditLogs()">
               <i class="bi bi-download"></i> Export Logs (JSON)
             </button>
           </div>
@@ -427,7 +610,7 @@ class AdminPortalManager {
                     <td><strong>${log.actor}</strong></td>
                     <td class="small">${log.action}</td>
                     <td><span class="badge bg-light text-dark border font-monospace">${log.targetId || '-'}</span></td>
-                    <td><span class="badge bg-soft-purple text-dark">${log.statusBadge}</span></td>
+                    <td><span class="badge bg-light text-dark border">${log.statusBadge}</span></td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -445,19 +628,28 @@ class AdminPortalManager {
     this.render('donor-verification');
   }
 
+  setNgoFilter(val) {
+    this.ngoFilter = val;
+    this.render('ngo-verification');
+  }
+
   setVolFilter(val) {
     this.volFilter = val;
     this.render('volunteer-verification');
   }
 
-  approveUser(userId) {
-    const user = window.SaveToServeDB.getUserById(userId);
-    if (!user) return;
+  setUserFilter(val) {
+    this.userFilter = val;
+    this.render('manage-users');
+  }
 
-    const res = window.SaveToServeDB.updateUserVerification(userId, 'approved');
-    if (res) {
-      window.SaveToServeApp?.showToast(`Verification APPROVED for ${user.name} (${user.role.toUpperCase()})!`, 'success');
-      this.render(user.role === 'donor' ? 'donor-verification' : 'volunteer-verification');
+  approveUser(userId) {
+    const res = window.SaveToServeDB.updateKycStatus(userId, 'approved');
+    if (res.success) {
+      window.SaveToServeApp?.showToast(`Verification Approved for ${res.user.name}!`, 'success');
+      this.render();
+    } else {
+      window.SaveToServeApp?.showToast(res.message, 'danger');
     }
   }
 
@@ -465,80 +657,31 @@ class AdminPortalManager {
     const user = window.SaveToServeDB.getUserById(userId);
     if (!user) return;
 
-    const reason = prompt(`Enter rejection reason for ${user.name}:`, 'Incomplete safety documentation or invalid license format.');
-    if (reason !== null) {
-      const res = window.SaveToServeDB.updateUserVerification(userId, 'rejected', reason.trim());
-      if (res) {
-        window.SaveToServeApp?.showToast(`Verification REJECTED for ${user.name}.`, 'warning');
-        this.render(user.role === 'donor' ? 'donor-verification' : 'volunteer-verification');
-      }
-    }
-  }
-
-  reconsiderUser(userId) {
-    const user = window.SaveToServeDB.getUserById(userId);
-    if (!user) return;
-
-    const res = window.SaveToServeDB.updateUserVerification(userId, 'pending', 'Re-evaluating submission credentials');
-    if (res) {
-      window.SaveToServeApp?.showToast(`Account for ${user.name} moved back to PENDING review.`, 'info');
-      this.render(user.role === 'donor' ? 'donor-verification' : 'volunteer-verification');
-    }
-  }
-
-  viewUserDetails(userId) {
-    const user = window.SaveToServeDB.getUserById(userId);
-    if (!user) return;
-
     const modalTitle = document.getElementById('globalModalTitle');
     const modalBody = document.getElementById('globalModalBody');
     if (!modalTitle || !modalBody) return;
 
-    modalTitle.innerHTML = `<i class="bi bi-person-badge text-primary me-2"></i> User Verification Dossier`;
+    modalTitle.innerHTML = `<i class="bi bi-x-circle text-danger me-2"></i> Reject Verification Application`;
     modalBody.innerHTML = `
       <div>
-        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-          <div>
-            <h5 class="fw-bold mb-0" style="color:var(--deep-purple);">${user.name}</h5>
-            <div class="text-muted small">${user.orgName || user.role.toUpperCase()}</div>
-          </div>
-          <span class="badge ${user.kycStatus === 'approved' ? 'bg-success' : user.kycStatus === 'rejected' ? 'bg-danger' : 'bg-warning text-dark'} fs-6 text-uppercase">
-            ${user.kycStatus}
-          </span>
+        <p class="small text-muted mb-3">
+          Provide a clear, actionable reason for rejecting the verification request for <strong>${user.name}</strong> (${user.orgName || user.role}).
+        </p>
+        <div class="mb-3">
+          <label class="form-label-custom">Rejection Reason</label>
+          <select id="rejectReasonPreset" class="form-select form-select-custom mb-2">
+            <option value="Incomplete or unclear documentation provided.">Incomplete or unclear documentation</option>
+            <option value="Food safety license expired or invalid.">Food safety license expired / invalid</option>
+            <option value="Vehicle registration details mismatch.">Vehicle registration details mismatch</option>
+            <option value="Custom">Other (Type custom reason below)</option>
+          </select>
+          <textarea id="rejectCustomReason" class="form-control form-control-custom" rows="3" placeholder="Additional details or instructions for the user..."></textarea>
         </div>
-
-        <div class="row g-3 mb-3">
-          <div class="col-md-6">
-            <div class="p-3 bg-light rounded border small">
-              <div class="text-muted fw-bold mb-1">Account & Role:</div>
-              <div><strong>Role:</strong> <span class="badge badge-${user.role}">${user.role.toUpperCase()}</span></div>
-              <div><strong>Email:</strong> ${user.email}</div>
-              <div><strong>Phone:</strong> ${user.phone}</div>
-              <div><strong>Address:</strong> ${user.address || 'Bengaluru'}</div>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="p-3 bg-light rounded border small">
-              <div class="text-muted fw-bold mb-1">Submitted Credentials (Demo):</div>
-              <div><strong>Document Type:</strong> ${user.verificationDetails?.docType || user.verifiedDoc || 'License'}</div>
-              <div><strong>Doc Number:</strong> <span class="font-monospace">${user.verificationDetails?.docNumber || 'DOC-2026'}</span></div>
-              <div><strong>Submitted:</strong> ${new Date(user.verificationDetails?.submittedAt || user.registeredAt).toLocaleString()}</div>
-              ${user.verificationDetails?.rejectionReason ? `<div class="text-danger mt-1"><strong>Rejection Note:</strong> ${user.verificationDetails.rejectionReason}</div>` : ''}
-            </div>
-          </div>
-        </div>
-
-        <div class="d-flex justify-content-end gap-2 pt-2 border-top">
-          ${user.kycStatus !== 'approved' ? `
-            <button class="btn btn-green btn-sm" onclick="window.SaveToServeAdmin.approveUser('${user.id}'); bootstrap.Modal.getInstance(document.getElementById('globalModal')).hide();">
-              <i class="bi bi-check2"></i> Approve User
-            </button>
-          ` : ''}
-          ${user.kycStatus !== 'rejected' ? `
-            <button class="btn btn-outline-danger btn-sm" onclick="bootstrap.Modal.getInstance(document.getElementById('globalModal')).hide(); window.SaveToServeAdmin.promptRejectUser('${user.id}');">
-              <i class="bi bi-x"></i> Reject User
-            </button>
-          ` : ''}
+        <div class="d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger" onclick="window.SaveToServeAdmin.confirmRejectUser('${userId}')">
+            Confirm Rejection
+          </button>
         </div>
       </div>
     `;
@@ -550,22 +693,99 @@ class AdminPortalManager {
     }
   }
 
-  flagDonation(id) {
-    if (confirm('Flag this surplus food listing as potentially unsafe for review?')) {
-      window.SaveToServeDB.updateDonation(id, { status: 'flagged' });
-      window.SaveToServeDB.logActivity('Admin Moderation Desk', `Flagged donation ${id} as unsafe`, id, 'Listing Flagged');
-      window.SaveToServeApp?.showToast('Donation flagged as unsafe and hidden from browse results.', 'warning');
-      this.render('manage-donations');
+  confirmRejectUser(userId) {
+    const preset = document.getElementById('rejectReasonPreset')?.value;
+    const custom = document.getElementById('rejectCustomReason')?.value.trim();
+    const reason = (preset === 'Custom' || !preset) ? (custom || 'Document verification could not be completed.') : (custom ? `${preset} Note: ${custom}` : preset);
+
+    const res = window.SaveToServeDB.updateKycStatus(userId, 'rejected', reason);
+    
+    const modalEl = document.getElementById('globalModal');
+    if (modalEl && typeof bootstrap !== 'undefined') {
+      const bsModal = bootstrap.Modal.getInstance(modalEl);
+      if (bsModal) bsModal.hide();
+    }
+
+    if (res.success) {
+      window.SaveToServeApp?.showToast(`Application rejected for ${res.user.name}. Reason recorded.`, 'warning');
+      this.render();
+    } else {
+      window.SaveToServeApp?.showToast(res.message, 'danger');
     }
   }
 
-  removeDonation(id) {
-    if (confirm('Permanently remove this surplus listing from the platform?')) {
-      const idx = window.SaveToServeDB.state.donations.findIndex(d => d.id === id);
+  reconsiderUser(userId) {
+    const res = window.SaveToServeDB.updateKycStatus(userId, 'pending', '');
+    if (res.success) {
+      window.SaveToServeApp?.showToast(`Application reset to Pending for reconsideration.`, 'info');
+      this.render();
+    }
+  }
+
+  viewUserDetails(userId) {
+    const user = window.SaveToServeDB.getUserById(userId);
+    if (!user) return;
+
+    const modalTitle = document.getElementById('globalModalTitle');
+    const modalBody = document.getElementById('globalModalBody');
+    if (!modalTitle || !modalBody) return;
+
+    modalTitle.innerHTML = `<i class="bi bi-person-badge text-success me-2"></i> ${user.name} — Profile & Verification`;
+    modalBody.innerHTML = `
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="small text-muted font-weight-bold">Full Name</label>
+          <div class="fw-bold text-dark">${user.name}</div>
+        </div>
+        <div class="col-md-6">
+          <label class="small text-muted font-weight-bold">Role Type</label>
+          <div><span class="badge badge-${user.role}">${user.role.toUpperCase()}</span></div>
+        </div>
+        <div class="col-md-6">
+          <label class="small text-muted font-weight-bold">Organization</label>
+          <div>${user.orgName || '-'}</div>
+        </div>
+        <div class="col-md-6">
+          <label class="small text-muted font-weight-bold">Current KYC Status</label>
+          <div><span class="badge ${user.kycStatus === 'approved' ? 'bg-success' : user.kycStatus === 'rejected' ? 'bg-danger' : 'bg-warning text-dark'} text-uppercase">${user.kycStatus}</span></div>
+        </div>
+        <div class="col-md-6">
+          <label class="small text-muted font-weight-bold">Email</label>
+          <div>${user.email}</div>
+        </div>
+        <div class="col-md-6">
+          <label class="small text-muted font-weight-bold">Phone</label>
+          <div>${user.phone}</div>
+        </div>
+        <div class="col-12">
+          <label class="small text-muted font-weight-bold">Address</label>
+          <div>${user.address}</div>
+        </div>
+      </div>
+    `;
+
+    const modalEl = document.getElementById('globalModal');
+    if (modalEl && typeof bootstrap !== 'undefined') {
+      const bsModal = new bootstrap.Modal(modalEl);
+      bsModal.show();
+    }
+  }
+
+  flagDonation(donationId) {
+    const d = window.SaveToServeDB.getDonationById(donationId);
+    if (!d) return;
+    d.status = 'flagged';
+    window.SaveToServeDB.saveState();
+    window.SaveToServeApp?.showToast(`Listing ${d.foodName} flagged for food safety review.`, 'warning');
+    this.render('manage-donations');
+  }
+
+  removeDonation(donationId) {
+    if (confirm('Are you sure you want to remove this food listing from the platform?')) {
+      const idx = window.SaveToServeDB.state.donations.findIndex(x => x.id === donationId);
       if (idx !== -1) {
         window.SaveToServeDB.state.donations.splice(idx, 1);
         window.SaveToServeDB.saveState();
-        window.SaveToServeDB.logActivity('Admin Moderation Desk', `Removed donation listing ${id}`, id, 'Listing Removed');
         window.SaveToServeApp?.showToast('Listing removed successfully.', 'info');
         this.render('manage-donations');
       }
@@ -575,12 +795,11 @@ class AdminPortalManager {
   exportAuditLogs() {
     const logs = window.SaveToServeDB.getActivityLogs();
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(logs, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `savetoserve_audit_logs_${Date.now()}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
+    const dlAnchor = document.createElement('a');
+    dlAnchor.setAttribute("href", dataStr);
+    dlAnchor.setAttribute("download", `savetoserve_audit_logs_${Date.now()}.json`);
+    dlAnchor.click();
+    dlAnchor.remove();
   }
 }
 

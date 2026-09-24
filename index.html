@@ -13,26 +13,10 @@
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-  <!-- Save to Serve Custom Design System -->
+  <!-- Save to Serve Olive Green Design System -->
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-
-  <!-- Demo Simulation Watermark Banner -->
-  <div class="demo-top-banner">
-    <div class="d-flex align-items-center gap-2">
-      <span class="badge-sim">🚀 Hackathon Demo Mode</span>
-      <span class="d-none d-sm-inline">Save to Serve — FY001 Food Rescue & Surplus Platform</span>
-    </div>
-    <div class="d-flex align-items-center gap-2">
-      <button class="demo-scenario-runner-btn" onclick="window.SaveToServeApp.showDemoWalkthroughModal()">
-        <i class="bi bi-play-circle-fill"></i> Judge 7-Step Demo Guide
-      </button>
-      <button class="btn btn-sm btn-outline-light py-0 px-2" style="font-size:0.75rem;" onclick="window.SaveToServeApp.promptResetDemoData()" title="Reset Demo Data">
-        <i class="bi bi-arrow-counterclockwise"></i> Reset Data
-      </button>
-    </div>
-  </div>
 
   <!-- App Header / Navigation Bar -->
   <header class="app-header">
@@ -41,7 +25,7 @@
         <img src="assets/logo.png" alt="Save to Serve Logo">
         <div>
           <div class="brand-title">Save to Serve</div>
-          <div class="brand-tagline">Save Food • Serve People • Reduce Waste</div>
+          <div class="brand-tagline">Save Food. Serve People. Reduce Waste.</div>
         </div>
       </a>
 
@@ -51,7 +35,7 @@
           <i class="bi bi-house"></i> Home
         </a>
         <a href="#weather-rescue" class="nav-link-custom" data-route="weather-rescue" onclick="window.SaveToServeApp.navigateTo('weather-rescue')">
-          <i class="bi bi-cloud-rain-heavy text-primary"></i> Weather Rescue
+          <i class="bi bi-cloud-rain-heavy text-success"></i> Weather Rescue
         </a>
         <a href="#browse-food" class="nav-link-custom" data-route="browse-food" onclick="window.SaveToServeApp.navigateTo('browse-food')">
           <i class="bi bi-basket2"></i> Browse Food
@@ -70,7 +54,7 @@
       <!-- User Area & Notifications -->
       <div class="d-flex align-items-center gap-2">
         <a href="#notifications" class="btn btn-sm btn-light border rounded-circle p-2 position-relative" onclick="window.SaveToServeApp.navigateTo('notifications')" title="Notifications">
-          <i class="bi bi-bell-fill text-primary"></i>
+          <i class="bi bi-bell-fill text-success"></i>
           <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
         </a>
         <div id="navbarUserArea">
@@ -83,180 +67,125 @@
   <!-- Main View Area -->
   <main class="main-wrapper">
 
-    <!-- 1. REDESIGNED HOMEPAGE — 4 PORTALS ON FIRST SCREEN -->
+    <!-- 1. HOMEPAGE — 4 PORTALS SELECTION -->
     <div id="home-view" class="app-view">
       <!-- Clean Hero Header -->
       <section class="hero-portal-header">
         <div class="container">
           <div class="hero-portal-badge">
-            <i class="bi bi-shield-check text-success"></i> Food Rescue & Surplus Donation Platform
+            <i class="bi bi-shield-check text-success"></i> Food Rescue & Surplus Platform
           </div>
           <h1 class="hero-main-title">
             Save Food. Serve People. Reduce Waste.
           </h1>
           <div class="hero-main-tagline">
-            Connect Existing Surplus Meals with Nearby Shelters & Volunteers
+            Connecting surplus meals from restaurants and kitchens with local shelters and couriers.
           </div>
           <p class="hero-main-subtitle">
-            A dedicated zero-waste platform for commercial kitchens, charities, and volunteer couriers, featuring <strong>weather-adaptive smart rerouting</strong>. Select your portal below to get started:
+            Choose your portal below to sign in or register and start rescuing food today:
           </p>
         </div>
       </section>
 
-      <!-- FOUR VISIBLE PORTALS FIRST SCREEN -->
+      <!-- FOUR VISIBLE PORTAL CARDS -->
       <section class="portal-showcase-section">
         <div class="container">
           <div class="portal-grid">
             <!-- 1. Donor Portal Card -->
             <div class="portal-card card-donor">
               <div>
-                <div class="portal-card-icon icon-purple">
+                <div class="portal-card-icon">
                   <i class="bi bi-shop"></i>
                 </div>
                 <h4 class="portal-card-title">1. Donor Portal</h4>
                 <p class="portal-card-desc">
-                  For restaurants, banquets, hostels, and caterers. List existing surplus meals, set safe-use deadlines, and track pickup verification codes.
+                  For restaurants, hotels, hostels, and caterers. List cooked surplus meals, set safe-use deadlines, and track handoff codes.
                 </p>
               </div>
               <div>
-                <button class="btn btn-purple w-100 mb-2" onclick="window.SaveToServeApp.quickLogin('donor')">
-                  <i class="bi bi-box-arrow-in-right"></i> Enter Donor Portal
+                <button class="btn btn-olive w-100 mb-2" onclick="window.SaveToServeApp.openPortalAuth('donor')">
+                  <i class="bi bi-box-arrow-in-right"></i> Donor Sign In / Register
                 </button>
-                <div class="d-flex justify-content-between small text-muted">
-                  <span>Demo: Chef Rajesh</span>
-                  <span class="badge badge-donor">Donor</span>
-                </div>
               </div>
             </div>
 
             <!-- 2. NGO Portal Card -->
             <div class="portal-card card-ngo">
               <div>
-                <div class="portal-card-icon icon-green">
+                <div class="portal-card-icon">
                   <i class="bi bi-building"></i>
                 </div>
-                <h4 class="portal-card-title">2. NGO Shelter Portal</h4>
+                <h4 class="portal-card-title">2. NGO Portal</h4>
                 <p class="portal-card-desc">
-                  For shelters, orphanages, and community kitchens. Browse available surplus nearby, claim food, issue QR vouchers, and confirm distributions.
+                  For registered shelters, orphanages, and community kitchens. Browse available food, claim donations, and confirm distributions.
                 </p>
               </div>
               <div>
-                <button class="btn btn-green w-100 mb-2" onclick="window.SaveToServeApp.quickLogin('ngo')">
-                  <i class="bi bi-box-arrow-in-right"></i> Enter NGO Portal
+                <button class="btn btn-olive w-100 mb-2" onclick="window.SaveToServeApp.openPortalAuth('ngo')">
+                  <i class="bi bi-box-arrow-in-right"></i> NGO Sign In / Register
                 </button>
-                <div class="d-flex justify-content-between small text-muted">
-                  <span>Demo: Sister Ananya</span>
-                  <span class="badge badge-ngo">NGO</span>
-                </div>
               </div>
             </div>
 
             <!-- 3. Volunteer Portal Card -->
             <div class="portal-card card-vol">
               <div>
-                <div class="portal-card-icon icon-blue">
+                <div class="portal-card-icon">
                   <i class="bi bi-bicycle"></i>
                 </div>
                 <h4 class="portal-card-title">3. Volunteer Portal</h4>
                 <p class="portal-card-desc">
-                  For certified rescue couriers. Browse open pickup tasks, accept dispatches, verify donor handoffs with secure codes, and complete deliveries.
+                  For community couriers and drivers. Browse open pickup tasks, verify donor handoffs with secure codes, and deliver meals safely.
                 </p>
               </div>
               <div>
-                <button class="btn btn-soft-purple w-100 mb-2" onclick="window.SaveToServeApp.quickLogin('volunteer')">
-                  <i class="bi bi-box-arrow-in-right"></i> Enter Volunteer Portal
+                <button class="btn btn-olive w-100 mb-2" onclick="window.SaveToServeApp.openPortalAuth('volunteer')">
+                  <i class="bi bi-box-arrow-in-right"></i> Volunteer Sign In / Register
                 </button>
-                <div class="d-flex justify-content-between small text-muted">
-                  <span>Demo: Karan Verma</span>
-                  <span class="badge badge-volunteer">Volunteer</span>
-                </div>
               </div>
             </div>
 
-            <!-- 4. Admin Portal Card -->
+            <!-- 4. Super Admin Portal Card -->
             <div class="portal-card card-admin">
               <div>
-                <div class="portal-card-icon icon-amber">
+                <div class="portal-card-icon">
                   <i class="bi bi-shield-lock"></i>
                 </div>
-                <h4 class="portal-card-title">4. Admin Portal</h4>
+                <h4 class="portal-card-title">4. Super Admin</h4>
                 <p class="portal-card-desc">
-                  For operations management. Review and verify Donor & Volunteer credentials, moderate food listings, manage Safe Holding Hubs, and audit logs.
+                  Administrative control center. Review and verify Donor, NGO, and Volunteer credentials, manage listings, and view audit logs.
                 </p>
               </div>
               <div>
-                <button class="btn btn-outline-purple w-100 mb-2" onclick="window.SaveToServeApp.quickLogin('admin')">
-                  <i class="bi bi-box-arrow-in-right"></i> Enter Admin Portal
+                <button class="btn btn-olive w-100 mb-2" onclick="window.SaveToServeApp.openPortalAuth('admin')">
+                  <i class="bi bi-shield-lock"></i> Super Admin Sign In
                 </button>
-                <div class="d-flex justify-content-between small text-muted">
-                  <span>Demo: Operations Command</span>
-                  <span class="badge badge-admin">Admin</span>
-                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Key Platform Metrics & Features Bar -->
-      <section class="py-4" style="background:linear-gradient(135deg, rgba(233,221,251,0.3) 0%, rgba(221,243,228,0.3) 100%);">
+      <!-- Key Platform Metrics Section -->
+      <section class="py-4" style="background: var(--light-olive);">
         <div class="container">
-          <div class="row g-3 text-center mb-4">
+          <div class="row g-3 text-center">
             <div class="col-md-4 col-4">
               <div class="p-3 bg-white rounded border shadow-sm h-100">
-                <div class="fs-3 fw-bold" id="homePortionsRescued" style="color:var(--deep-purple);">90</div>
-                <div class="small text-muted text-uppercase" style="font-size:0.75rem;">Meals Rescued</div>
-              </div>
-            </div>
-            <div class="col-md-4 col-4">
-              <div class="p-3 bg-white rounded border shadow-sm h-100">
-                <div class="fs-3 fw-bold" id="homeWastePrevented" style="color:var(--deep-green);">29.5 kg</div>
-                <div class="small text-muted text-uppercase" style="font-size:0.75rem;">Waste Diverted</div>
+                <div class="fs-3 fw-bold" id="homePortionsRescued" style="color:var(--dark-olive);">90</div>
+                <div class="small text-muted text-uppercase" style="font-size:0.75rem; font-weight:600;">Meals Rescued</div>
               </div>
             </div>
             <div class="col-md-4 col-4">
               <div class="p-3 bg-white rounded border shadow-sm h-100">
-                <div class="fs-3 fw-bold" id="homeBeneficiaries" style="color:#1E5180;">90</div>
-                <div class="small text-muted text-uppercase" style="font-size:0.75rem;">People Nourished</div>
+                <div class="fs-3 fw-bold" id="homeWastePrevented" style="color:var(--primary-olive);">29.5 kg</div>
+                <div class="small text-muted text-uppercase" style="font-size:0.75rem; font-weight:600;">Waste Diverted</div>
               </div>
             </div>
-          </div>
-
-          <!-- Feature Highlights -->
-          <div class="row g-4">
-            <div class="col-md-6">
-              <div class="custom-card mb-0 h-100">
-                <div class="d-flex align-items-center gap-3 mb-2">
-                  <div class="stat-icon icon-purple"><i class="bi bi-cloud-rain-heavy"></i></div>
-                  <div>
-                    <h5 class="fw-bold mb-0" style="color:var(--deep-purple);">Weather-Adaptive Food Rescue</h5>
-                    <div class="small text-muted">Smart contingency routing during monsoon rain & disruptions</div>
-                  </div>
-                </div>
-                <p class="small text-muted mb-3">
-                  Automatically calculates transparent 0-100 risk scores during downpours and reroutes surplus meals to certified community fridges or 4-wheeler direct vans.
-                </p>
-                <button class="btn btn-sm btn-soft-purple" onclick="window.SaveToServeApp.navigateTo('weather-rescue')">
-                  <i class="bi bi-speedometer2"></i> Explore Weather Engine
-                </button>
-              </div>
-            </div>
-
-            <div class="col-md-6">
-              <div class="custom-card mb-0 h-100">
-                <div class="d-flex align-items-center gap-3 mb-2">
-                  <div class="stat-icon icon-green"><i class="bi bi-shield-check"></i></div>
-                  <div>
-                    <h5 class="fw-bold mb-0" style="color:var(--deep-green);">Verified Safe Handoff Protocol</h5>
-                    <div class="small text-muted">Strict verification for donors, couriers, and shelters</div>
-                  </div>
-                </div>
-                <p class="small text-muted mb-3">
-                  Only verified kitchens can list surplus food. Couriers use one-time security codes to ensure accurate custody and real-time impact calculations.
-                </p>
-                <button class="btn btn-sm btn-soft-green" onclick="window.SaveToServeApp.navigateTo('how-it-works')">
-                  <i class="bi bi-info-circle"></i> Learn How It Works
-                </button>
+            <div class="col-md-4 col-4">
+              <div class="p-3 bg-white rounded border shadow-sm h-100">
+                <div class="fs-3 fw-bold" id="homeBeneficiaries" style="color:var(--deep-forest);">90</div>
+                <div class="small text-muted text-uppercase" style="font-size:0.75rem; font-weight:600;">People Nourished</div>
               </div>
             </div>
           </div>
@@ -293,7 +222,7 @@
       <div class="container py-4">
         <div class="text-center mb-5">
           <span class="badge badge-portal badge-donor mb-2">Step-by-Step Flow</span>
-          <h2 class="fw-bold" style="color:var(--deep-purple);">How Save to Serve Rescues Surplus Food</h2>
+          <h2 class="fw-bold" style="color:var(--dark-olive);">How Save to Serve Rescues Surplus Food</h2>
           <p class="text-muted">A complete safe chain of custody from commercial kitchen to beneficiary plate.</p>
         </div>
 
@@ -327,12 +256,6 @@
             </div>
           </div>
         </div>
-
-        <div class="text-center mt-5">
-          <button class="btn btn-purple" onclick="window.SaveToServeApp.showDemoWalkthroughModal()">
-            <i class="bi bi-play-circle-fill"></i> Launch Interactive Hackathon Demo
-          </button>
-        </div>
       </div>
     </div>
 
@@ -345,7 +268,7 @@
 
   </main>
 
-  <!-- Mobile Bottom Navigation Bar (Phones & Small Devices) -->
+  <!-- Mobile Bottom Navigation Bar -->
   <nav class="mobile-bottom-bar">
     <a href="#home" class="mobile-nav-item" data-route="home" onclick="window.SaveToServeApp.navigateTo('home')">
       <i class="bi bi-house-door"></i>
@@ -363,16 +286,12 @@
       <i class="bi bi-graph-up"></i>
       <span>Impact</span>
     </a>
-    <a href="#donor-portal" class="mobile-nav-item" data-route="donor-portal" onclick="window.SaveToServeApp.navigateTo('donor-portal')">
-      <i class="bi bi-person-circle"></i>
-      <span>Portal</span>
-    </a>
   </nav>
 
-  <!-- Global Modal for QR, Verification Details & Demo Guide -->
+  <!-- Global Modal -->
   <div class="modal fade" id="globalModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content" style="border-radius:var(--radius-lg); overflow:hidden; border:1px solid var(--light-purple);">
+      <div class="modal-content" style="border-radius:var(--radius-lg); overflow:hidden; border:1.5px solid var(--border-light);">
         <div class="custom-modal-header d-flex justify-content-between align-items-center">
           <h5 class="custom-modal-title" id="globalModalTitle">Save to Serve Dialog</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>

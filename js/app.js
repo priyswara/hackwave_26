@@ -1,12 +1,13 @@
 /**
  * Save to Serve - Master Application Controller & Router
- * Role State Coordination, Toast Engine & Guided Hackathon Demo Runner
  * Tagline: Save Food. Serve People. Reduce Waste.
+ * Complete Portal Routing, Dedicated Auth Flow, and Toast Notifications
  */
 
 class SaveToServeAppController {
   constructor() {
     this.currentRoute = 'home';
+    this.activeAuthRole = 'donor'; // default portal context: 'donor' | 'ngo' | 'volunteer' | 'admin'
     this.init();
   }
 
@@ -33,7 +34,53 @@ class SaveToServeAppController {
     this.navigateTo(hash, false);
   }
 
+  openPortalAuth(role) {
+    this.activeAuthRole = role || 'donor';
+    const user = window.SaveToServeAuth.getCurrentUser();
+    if (user && user.role === this.activeAuthRole) {
+      this.navigateTo(`${this.activeAuthRole}-portal`);
+    } else {
+      this.navigateTo('login');
+    }
+  }
+
+  openPortalRegister(role) {
+    this.activeAuthRole = role || 'donor';
+    this.navigateTo('register');
+  }
+
   navigateTo(route, updateHash = true) {
+    // Route guard checks for private portal dashboards
+    const user = window.SaveToServeAuth.getCurrentUser();
+    
+    if (route === 'donor-portal' && (!user || user.role !== 'donor')) {
+      this.activeAuthRole = 'donor';
+      if (updateHash) window.location.hash = 'login';
+      this.renderAuthView('login', 'donor', 'Please sign in to access the Donor Portal.');
+      return;
+    }
+
+    if (route === 'ngo-portal' && (!user || user.role !== 'ngo')) {
+      this.activeAuthRole = 'ngo';
+      if (updateHash) window.location.hash = 'login';
+      this.renderAuthView('login', 'ngo', 'Please sign in to access the NGO Portal.');
+      return;
+    }
+
+    if (route === 'volunteer-portal' && (!user || user.role !== 'volunteer')) {
+      this.activeAuthRole = 'volunteer';
+      if (updateHash) window.location.hash = 'login';
+      this.renderAuthView('login', 'volunteer', 'Please sign in to access the Volunteer Portal.');
+      return;
+    }
+
+    if (route === 'admin-portal' && (!user || user.role !== 'admin')) {
+      this.activeAuthRole = 'admin';
+      if (updateHash) window.location.hash = 'login';
+      this.renderAuthView('login', 'admin', 'Super Admin authentication required.');
+      return;
+    }
+
     this.currentRoute = route;
     if (updateHash) {
       window.location.hash = route;
@@ -85,10 +132,10 @@ class SaveToServeAppController {
           if (notifEl) notifEl.innerHTML = window.SaveToServeNotifications.renderView();
           break;
         case 'login':
-          this.renderAuthView('login');
+          this.renderAuthView('login', this.activeAuthRole);
           break;
         case 'register':
-          this.renderAuthView('register');
+          this.renderAuthView('register', this.activeAuthRole);
           break;
         case 'home':
         default:
@@ -107,7 +154,7 @@ class SaveToServeAppController {
       navUserContainer.innerHTML = `
         <div class="d-flex align-items-center gap-2">
           <div class="text-end d-none d-md-block" style="line-height:1.2;">
-            <div class="fw-bold small" style="color:var(--deep-purple);">${user.name}</div>
+            <div class="fw-bold small" style="color:var(--dark-olive);">${user.name}</div>
             <span class="badge badge-${user.role}" style="font-size:0.68rem;">${user.role.toUpperCase()}</span>
           </div>
           <button class="btn btn-sm btn-outline-secondary" onclick="window.SaveToServeApp.logout()">
@@ -118,10 +165,10 @@ class SaveToServeAppController {
     } else {
       navUserContainer.innerHTML = `
         <div class="d-flex align-items-center gap-2">
-          <button class="btn btn-sm btn-soft-purple" onclick="window.SaveToServeApp.navigateTo('login')">
-            <i class="bi bi-person"></i> Log In
+          <button class="btn btn-sm btn-soft-olive" onclick="window.SaveToServeApp.navigateTo('login')">
+            <i class="bi bi-person"></i> Sign In
           </button>
-          <button class="btn btn-sm btn-purple" onclick="window.SaveToServeApp.navigateTo('register')">
+          <button class="btn btn-sm btn-olive" onclick="window.SaveToServeApp.navigateTo('register')">
             Register
           </button>
         </div>
@@ -135,14 +182,14 @@ class SaveToServeAppController {
     this.navigateTo('home');
   }
 
-  showToast(message, type = 'purple', durationMs = 4000) {
+  showToast(message, type = 'olive', durationMs = 4000) {
     const container = document.getElementById('toastContainer');
     if (!container) return;
 
     const toast = document.createElement('div');
     toast.className = `custom-toast toast-${type}`;
     
-    let icon = 'bi-info-circle-fill text-primary';
+    let icon = 'bi-info-circle-fill text-success';
     if (type === 'success') icon = 'bi-check-circle-fill text-success';
     if (type === 'warning') icon = 'bi-exclamation-triangle-fill text-warning';
     if (type === 'danger') icon = 'bi-x-octagon-fill text-danger';
@@ -189,10 +236,10 @@ class SaveToServeAppController {
       <div class="container py-4">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
           <div>
-            <h2 class="mb-1 fw-bold" style="color:var(--deep-purple);">🍲 Available Surplus Food Live Listings</h2>
+            <h2 class="mb-1 fw-bold" style="color:var(--dark-olive);">🍲 Available Surplus Food Listings</h2>
             <p class="text-muted mb-0">Verified surplus cooked meals and produce awaiting rescue before safe deadlines.</p>
           </div>
-          <button class="btn btn-purple" onclick="window.SaveToServeApp.navigateTo('donor-portal')">
+          <button class="btn btn-olive" onclick="window.SaveToServeApp.openPortalAuth('donor')">
             <i class="bi bi-plus-circle"></i> Donor? List Surplus Food
           </button>
         </div>
@@ -232,7 +279,7 @@ class SaveToServeAppController {
                     </div>
                     <p class="small text-muted mb-3"><i class="bi bi-info-circle"></i> ${d.storageInfo}</p>
                     <div class="mt-auto pt-2 border-top">
-                      <button class="btn btn-green w-100" onclick="window.SaveToServeApp.quickClaimRedirect('${d.id}')">
+                      <button class="btn btn-olive w-100" onclick="window.SaveToServeApp.openPortalAuth('ngo')">
                         <i class="bi bi-hand-thumbs-up"></i> Claim as NGO Shelter
                       </button>
                     </div>
@@ -246,180 +293,188 @@ class SaveToServeAppController {
     `;
   }
 
-  quickClaimRedirect(donationId) {
-    const user = window.SaveToServeAuth.getCurrentUser();
-    if (!user || user.role !== 'ngo') {
-      this.showToast('Switching to NGO Shelter account to claim this surplus donation.', 'info');
-      window.SaveToServeAuth.loginAsDemo('ngo');
-    }
-    this.navigateTo('ngo-portal');
-    setTimeout(() => {
-      window.SaveToServeNGO?.claimDonation(donationId);
-    }, 200);
-  }
+  renderAuthView(type = 'login', role = null, noticeMessage = null) {
+    if (role) this.activeAuthRole = role;
+    const currentRole = this.activeAuthRole || 'donor';
 
-  renderAuthView(type = 'login') {
+    const roleMeta = {
+      donor: { title: 'Donor Portal', subtitle: 'For Restaurants, Banquets, Hostels & Caterers', icon: 'bi-shop', badge: 'Donor' },
+      ngo: { title: 'NGO Shelter Portal', subtitle: 'For Registered Shelters, Orphanages & Food Banks', icon: 'bi-building', badge: 'NGO' },
+      volunteer: { title: 'Volunteer Portal', subtitle: 'For Food Rescue Couriers & Delivery Drivers', icon: 'bi-bicycle', badge: 'Volunteer' },
+      admin: { title: 'Super Admin Portal', subtitle: 'Authorized System Administrators Only', icon: 'bi-shield-lock', badge: 'Admin' }
+    };
+
+    const activeMeta = roleMeta[currentRole] || roleMeta.donor;
     const container = document.getElementById(`${type}-view`);
     if (!container) return;
 
+    // Show container
+    const views = document.querySelectorAll('.app-view');
+    views.forEach(v => v.classList.add('d-none'));
+    container.classList.remove('d-none');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
     if (type === 'login') {
       container.innerHTML = `
-        <div class="container py-5">
+        <div class="container py-4">
+          <!-- Back to Home & Portal Switcher -->
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 max-w-600 mx-auto" style="max-width: 540px;">
+            <button class="btn btn-sm btn-soft-olive" onclick="window.SaveToServeApp.navigateTo('home')">
+              <i class="bi bi-arrow-left"></i> Back to Home
+            </button>
+            <div class="d-flex align-items-center gap-1">
+              <span class="small text-muted me-1">Switch:</span>
+              <button class="btn btn-sm ${currentRole === 'donor' ? 'btn-olive' : 'btn-outline-secondary'}" onclick="window.SaveToServeApp.openPortalAuth('donor')">Donor</button>
+              <button class="btn btn-sm ${currentRole === 'ngo' ? 'btn-olive' : 'btn-outline-secondary'}" onclick="window.SaveToServeApp.openPortalAuth('ngo')">NGO</button>
+              <button class="btn btn-sm ${currentRole === 'volunteer' ? 'btn-olive' : 'btn-outline-secondary'}" onclick="window.SaveToServeApp.openPortalAuth('volunteer')">Volunteer</button>
+              <button class="btn btn-sm ${currentRole === 'admin' ? 'btn-olive' : 'btn-outline-secondary'}" onclick="window.SaveToServeApp.openPortalAuth('admin')">Admin</button>
+            </div>
+          </div>
+
           <div class="row justify-content-center">
-            <div class="col-lg-5 col-md-8">
-              <div class="custom-card shadow-lg p-4">
+            <div class="col-lg-5 col-md-7 col-sm-10">
+              <div class="custom-card shadow-md p-4">
                 <div class="text-center mb-4">
-                  <img src="assets/logo.png" alt="Save to Serve" style="width:58px;height:58px;margin:0 auto 10px;border-radius:14px;">
-                  <h4 class="fw-bold mb-1" style="color:var(--deep-purple);">Sign In to Save to Serve</h4>
-                  <p class="text-muted small">Choose your role or enter demo credentials below</p>
+                  <div class="portal-card-icon mx-auto mb-2" style="width:50px;height:50px;font-size:1.5rem;">
+                    <i class="bi ${activeMeta.icon}"></i>
+                  </div>
+                  <h4 class="fw-bold mb-1" style="color:var(--dark-olive);">${activeMeta.title} Login</h4>
+                  <p class="text-muted small">${activeMeta.subtitle}</p>
                 </div>
 
-                <div class="p-3 rounded mb-4" style="background:var(--pastel-lavender); border: 1.5px solid var(--light-purple);">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="small fw-bold text-dark"><i class="bi bi-stars text-primary"></i> 1-Click Demo Logins for Judges:</span>
-                    <span class="badge bg-white text-dark border">Instant Access</span>
+                ${noticeMessage ? `
+                  <div class="alert alert-info py-2 small mb-3">
+                    <i class="bi bi-info-circle-fill me-1"></i> ${noticeMessage}
                   </div>
-                  <div class="row g-2">
-                    <div class="col-6">
-                      <button class="btn btn-sm btn-soft-purple w-100" onclick="window.SaveToServeApp.quickLogin('donor')">
-                        <i class="bi bi-shop"></i> Donor Kitchen
-                      </button>
-                    </div>
-                    <div class="col-6">
-                      <button class="btn btn-sm btn-soft-green w-100" onclick="window.SaveToServeApp.quickLogin('ngo')">
-                        <i class="bi bi-building"></i> NGO Shelter
-                      </button>
-                    </div>
-                    <div class="col-6">
-                      <button class="btn btn-sm btn-outline-primary w-100" onclick="window.SaveToServeApp.quickLogin('volunteer')">
-                        <i class="bi bi-bicycle"></i> Volunteer
-                      </button>
-                    </div>
-                    <div class="col-6">
-                      <button class="btn btn-sm btn-outline-dark w-100" onclick="window.SaveToServeApp.quickLogin('admin')">
-                        <i class="bi bi-shield-lock"></i> Super Admin
-                      </button>
-                    </div>
-                  </div>
+                ` : ''}
+
+                <div id="loginErrorAlert" class="alert alert-danger py-2 small mb-3 d-none">
+                  <i class="bi bi-exclamation-triangle-fill me-1"></i> <span id="loginErrorText"></span>
                 </div>
 
                 <form onsubmit="window.SaveToServeApp.handleLoginForm(event)">
+                  <input type="hidden" id="loginExpectedRole" value="${currentRole}">
+                  
                   <div class="mb-3">
                     <label class="form-label-custom">Email Address</label>
-                    <input type="email" id="loginEmail" class="form-control form-control-custom w-100" value="donor@savetoserve.org" required>
+                    <input type="email" id="loginEmail" class="form-control form-control-custom w-100" placeholder="e.g. name@savetoserve.org" required autocomplete="email">
                   </div>
+
                   <div class="mb-3">
                     <label class="form-label-custom">Password</label>
-                    <input type="password" id="loginPassword" class="form-control form-control-custom w-100" value="password123" required>
+                    <input type="password" id="loginPassword" class="form-control form-control-custom w-100" placeholder="Enter password" required autocomplete="current-password">
                   </div>
-                  <button type="submit" class="btn btn-purple w-100 mb-3">
-                    <i class="bi bi-box-arrow-in-right"></i> Sign In
+
+                  <button type="submit" class="btn btn-olive w-100 mb-3">
+                    <i class="bi bi-box-arrow-in-right"></i> Sign In to ${activeMeta.title}
                   </button>
                 </form>
 
-                <div class="text-center small text-muted">
-                  Don't have an account? <a href="#register" class="fw-bold text-primary">Register Free</a>
+                <div class="p-2 bg-light rounded text-center small text-muted mb-3 border">
+                  <span class="fw-bold text-dark">Default Access:</span> ${currentRole}@savetoserve.org / password123
                 </div>
+
+                ${currentRole !== 'admin' ? `
+                  <div class="text-center small text-muted">
+                    Don't have an account? <a href="#register" class="fw-bold text-success" onclick="window.SaveToServeApp.openPortalRegister('${currentRole}')">Register as ${activeMeta.badge}</a>
+                  </div>
+                ` : `
+                  <div class="text-center small text-muted">
+                    <i class="bi bi-shield-lock-fill text-muted"></i> Super Admin registration is restricted.
+                  </div>
+                `}
               </div>
             </div>
           </div>
         </div>
       `;
     } else {
+      // REGISTRATION VIEW
       container.innerHTML = `
-        <div class="container py-5">
+        <div class="container py-4">
+          <!-- Back to Home & Portal Switcher -->
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 max-w-600 mx-auto" style="max-width: 600px;">
+            <button class="btn btn-sm btn-soft-olive" onclick="window.SaveToServeApp.navigateTo('home')">
+              <i class="bi bi-arrow-left"></i> Back to Home
+            </button>
+            <div class="d-flex align-items-center gap-1">
+              <span class="small text-muted me-1">Role:</span>
+              <button class="btn btn-sm ${currentRole === 'donor' ? 'btn-olive' : 'btn-outline-secondary'}" onclick="window.SaveToServeApp.openPortalRegister('donor')">Donor</button>
+              <button class="btn btn-sm ${currentRole === 'ngo' ? 'btn-olive' : 'btn-outline-secondary'}" onclick="window.SaveToServeApp.openPortalRegister('ngo')">NGO</button>
+              <button class="btn btn-sm ${currentRole === 'volunteer' ? 'btn-olive' : 'btn-outline-secondary'}" onclick="window.SaveToServeApp.openPortalRegister('volunteer')">Volunteer</button>
+            </div>
+          </div>
+
           <div class="row justify-content-center">
-            <div class="col-lg-6 col-md-9">
-              <div class="custom-card shadow-lg p-4">
+            <div class="col-lg-6 col-md-8 col-sm-11">
+              <div class="custom-card shadow-md p-4">
                 <div class="text-center mb-3">
-                  <h4 class="fw-bold mb-1" style="color:var(--deep-purple);">Create Save to Serve Account</h4>
-                  <p class="text-muted small">Join the food rescue network in your neighborhood</p>
+                  <div class="portal-card-icon mx-auto mb-2" style="width:50px;height:50px;font-size:1.5rem;">
+                    <i class="bi ${activeMeta.icon}"></i>
+                  </div>
+                  <h4 class="fw-bold mb-1" style="color:var(--dark-olive);">Create ${activeMeta.badge} Account</h4>
+                  <p class="text-muted small">Register to participate in the food rescue network</p>
                 </div>
 
-                <div class="alert alert-info py-2 small mb-3">
-                  <i class="bi bi-info-circle-fill me-1"></i> <strong>SIMULATED OTP DEMO:</strong> Mobile verification code is simulated for fast demonstration without paid SMS gateways.
+                <div id="regErrorAlert" class="alert alert-danger py-2 small mb-3 d-none">
+                  <i class="bi bi-exclamation-triangle-fill me-1"></i> <span id="regErrorText"></span>
                 </div>
 
                 <form id="registerForm" onsubmit="window.SaveToServeApp.handleRegisterForm(event)">
+                  <input type="hidden" id="regRole" value="${currentRole}">
+
                   <div class="row g-2 mb-3">
                     <div class="col-md-6">
-                      <label class="form-label-custom">Full Name / Contact Person *</label>
+                      <label class="form-label-custom">Contact Person / Full Name *</label>
                       <input type="text" id="regName" class="form-control form-control-custom w-100" placeholder="e.g. Ramesh Kumar" required>
                     </div>
                     <div class="col-md-6">
-                      <label class="form-label-custom">Role Type *</label>
-                      <select id="regRole" class="form-select form-select-custom w-100" required>
-                        <option value="donor">Food Donor (Restaurant / Banquet / Kitchen)</option>
-                        <option value="ngo">NGO / Shelter / Community Kitchen</option>
-                        <option value="volunteer">Volunteer Rescue Courier</option>
-                      </select>
+                      <label class="form-label-custom">Role Selected</label>
+                      <input type="text" class="form-control form-control-custom w-100" value="${activeMeta.badge}" disabled style="background:#f0f2eb; font-weight:600;">
                     </div>
                   </div>
 
                   <div class="mb-3">
-                    <label class="form-label-custom">Organization Name (Optional for individual volunteers)</label>
-                    <input type="text" id="regOrgName" class="form-control form-control-custom w-100" placeholder="e.g. Grand Spice Restaurant">
+                    <label class="form-label-custom">
+                      ${currentRole === 'volunteer' ? 'Vehicle Type / Mode (e.g. Two-wheeler / Car / On Foot)' : 'Organization / Restaurant / Shelter Name *'}
+                    </label>
+                    <input type="text" id="regOrgName" class="form-control form-control-custom w-100" placeholder="${currentRole === 'volunteer' ? 'e.g. Motorcycle / Scooter' : 'e.g. Annapurna Kitchen'}" ${currentRole !== 'volunteer' ? 'required' : ''}>
                   </div>
 
                   <div class="row g-2 mb-3">
                     <div class="col-md-6">
                       <label class="form-label-custom">Email Address *</label>
-                      <input type="email" id="regEmail" class="form-control form-control-custom w-100" placeholder="ramesh@example.com" required>
+                      <input type="email" id="regEmail" class="form-control form-control-custom w-100" placeholder="e.g. user@example.com" required autocomplete="email">
                     </div>
                     <div class="col-md-6">
-                      <label class="form-label-custom">Mobile Number *</label>
-                      <input type="tel" id="regPhone" class="form-control form-control-custom w-100" placeholder="+91 98765 43210" required>
+                      <label class="form-label-custom">Phone Number *</label>
+                      <input type="tel" id="regPhone" class="form-control form-control-custom w-100" placeholder="+91 98765 43210" required autocomplete="tel">
                     </div>
                   </div>
 
                   <div class="mb-3">
-                    <label class="form-label-custom">Physical Address / Neighborhood *</label>
-                    <input type="text" id="regAddress" class="form-control form-control-custom w-100" placeholder="e.g. Indiranagar 100ft Road, Bengaluru" required>
+                    <label class="form-label-custom">Neighborhood / City Address *</label>
+                    <input type="text" id="regAddress" class="form-control form-control-custom w-100" placeholder="e.g. Koramangala 4th Block, Bengaluru" required>
                   </div>
 
                   <div class="mb-3">
                     <label class="form-label-custom">Create Password *</label>
-                    <input type="password" id="regPassword" class="form-control form-control-custom w-100" value="password123" required>
+                    <input type="password" id="regPassword" class="form-control form-control-custom w-100" placeholder="Minimum 6 characters" required autocomplete="new-password">
                   </div>
 
-                  <button type="submit" class="btn btn-purple w-100 mb-2">
-                    <i class="bi bi-shield-check"></i> Send Simulated Verification OTP
+                  <button type="submit" class="btn btn-olive w-100 mb-3">
+                    <i class="bi bi-check-circle"></i> Complete ${activeMeta.badge} Registration
                   </button>
                 </form>
 
-                <div id="otpVerifyBox" class="d-none mt-3 p-3 rounded" style="background:var(--pastel-lavender); border:1.5px dashed var(--primary-purple);">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h6 class="fw-bold mb-0 text-dark">Enter 6-Digit OTP</h6>
-                    <span class="badge bg-warning text-dark">SIMULATED OTP DEMO</span>
-                  </div>
-                  <p class="small text-muted mb-2">A simulated code was generated. Enter it below to confirm your phone number.</p>
-                  <div class="input-group mb-2">
-                    <input type="text" id="enteredOtpCode" class="form-control form-control-custom font-monospace text-center fs-5" placeholder="• • • • • •" maxlength="6">
-                    <button class="btn btn-green" onclick="window.SaveToServeApp.handleVerifyOtp()">Verify & Complete</button>
-                  </div>
-                  <div class="text-end">
-                    <button class="btn btn-link btn-sm text-primary p-0" onclick="window.SaveToServeApp.handleResendOtp()">Resend Simulated OTP</button>
-                  </div>
-                </div>
-
-                <div class="text-center small text-muted mt-3">
-                  Already registered? <a href="#login" class="fw-bold text-primary">Sign In</a>
+                <div class="text-center small text-muted">
+                  Already registered? <a href="#login" class="fw-bold text-success" onclick="window.SaveToServeApp.openPortalAuth('${currentRole}')">Sign In</a>
                 </div>
               </div>
             </div>
           </div>
         </div>
       `;
-    }
-  }
-
-  quickLogin(role) {
-    const res = window.SaveToServeAuth.loginAsDemo(role);
-    if (res.success) {
-      this.showToast(`Logged in as ${res.user.name} (${role.toUpperCase()})`, 'success');
-      this.navigateTo(`${role}-portal`);
-    } else {
-      this.showToast(res.message, 'danger');
     }
   }
 
@@ -427,12 +482,21 @@ class SaveToServeAppController {
     event.preventDefault();
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
+    const expectedRole = document.getElementById('loginExpectedRole')?.value || null;
 
-    const res = window.SaveToServeAuth.login(email, password);
+    const errorAlert = document.getElementById('loginErrorAlert');
+    const errorText = document.getElementById('loginErrorText');
+
+    const res = window.SaveToServeAuth.login(email, password, expectedRole);
     if (res.success) {
+      if (errorAlert) errorAlert.classList.add('d-none');
       this.showToast(`Welcome back, ${res.user.name}!`, 'success');
       this.navigateTo(`${res.user.role}-portal`);
     } else {
+      if (errorAlert && errorText) {
+        errorText.innerText = res.message;
+        errorAlert.classList.remove('d-none');
+      }
       this.showToast(res.message, 'danger');
     }
   }
@@ -440,12 +504,15 @@ class SaveToServeAppController {
   handleRegisterForm(event) {
     event.preventDefault();
     const name = document.getElementById('regName').value.trim();
-    const role = document.getElementById('regRole').value;
-    const orgName = document.getElementById('regOrgName').value.trim();
+    const role = document.getElementById('regRole').value || 'donor';
+    const orgName = document.getElementById('regOrgName')?.value.trim() || '';
     const email = document.getElementById('regEmail').value.trim();
     const phone = document.getElementById('regPhone').value.trim();
     const address = document.getElementById('regAddress').value.trim();
     const password = document.getElementById('regPassword').value;
+
+    const errorAlert = document.getElementById('regErrorAlert');
+    const errorText = document.getElementById('regErrorText');
 
     const res = window.SaveToServeAuth.register({
       name,
@@ -454,193 +521,20 @@ class SaveToServeAppController {
       email,
       phone,
       address,
-      password
+      password,
+      vehicleType: role === 'volunteer' ? (orgName || 'Two-wheeler') : ''
     });
 
     if (res.success) {
-      document.getElementById('otpVerifyBox').classList.remove('d-none');
-      document.getElementById('enteredOtpCode').value = res.otp;
-      this.showToast(res.message, 'info', 6000);
+      if (errorAlert) errorAlert.classList.add('d-none');
+      this.showToast(`Registration complete! Welcome to Save to Serve, ${res.user.name}.`, 'success');
+      this.navigateTo(`${res.user.role}-portal`);
     } else {
-      this.showToast(res.message, 'danger');
-    }
-  }
-
-  handleVerifyOtp() {
-    const otp = document.getElementById('enteredOtpCode').value.trim();
-    const res = window.SaveToServeAuth.verifyOtp(otp);
-    if (res.success) {
-      this.showToast(res.message, 'success');
-      if (res.user) {
-        this.navigateTo(`${res.user.role}-portal`);
-      } else {
-        this.navigateTo('home');
+      if (errorAlert && errorText) {
+        errorText.innerText = res.message;
+        errorAlert.classList.remove('d-none');
       }
-    } else {
       this.showToast(res.message, 'danger');
-    }
-  }
-
-  handleResendOtp() {
-    const phone = document.getElementById('regPhone')?.value || '+91 98765 00000';
-    const res = window.SaveToServeAuth.sendOtp(phone);
-    if (res.success) {
-      document.getElementById('enteredOtpCode').value = res.otp;
-      this.showToast(`Resent simulated OTP: ${res.otp}`, 'info');
-    }
-  }
-
-  promptResetDemoData() {
-    if (confirm('Are you sure you want to reset all data back to the clean demonstration seed?')) {
-      window.SaveToServeDB.resetDemoData();
-      this.showToast('Demo database reset successfully!', 'success');
-      this.handleRouting();
-    }
-  }
-
-  showDemoWalkthroughModal() {
-    const modalTitle = document.getElementById('globalModalTitle');
-    const modalBody = document.getElementById('globalModalBody');
-    if (!modalTitle || !modalBody) return;
-
-    modalTitle.innerHTML = `<i class="bi bi-play-circle-fill text-success me-2"></i> Save to Serve Live Judge Demo Guide`;
-    modalBody.innerHTML = `
-      <div>
-        <p class="text-muted small mb-3">
-          Follow these 7 interactive steps to witness the entire end-to-end surplus food rescue workflow with weather-adaptive intelligence.
-        </p>
-
-        <div class="demo-stepper-box">
-          <div class="stepper-num">1</div>
-          <div class="flex-grow-1">
-            <h6 class="fw-bold mb-1" style="color:var(--deep-purple);">Step 1: Donor Lists Surplus Food</h6>
-            <p class="small text-muted mb-2">Log in as Chef Rajesh (Donor) and post 50 portions of Veg Biryani with a 3.5-hour safe deadline.</p>
-            <button class="btn btn-sm btn-purple" onclick="window.SaveToServeApp.runDemoStep(1)">
-              Run Step 1 (Switch to Donor & Post Surplus)
-            </button>
-          </div>
-        </div>
-
-        <div class="demo-stepper-box">
-          <div class="stepper-num">2</div>
-          <div class="flex-grow-1">
-            <h6 class="fw-bold mb-1" style="color:var(--deep-purple);">Step 2: Trigger Weather Rescue Scenario</h6>
-            <p class="small text-muted mb-2">Simulate heavy monsoon downpour (45 mm/hr) and observe the explainable 68/100 risk score and alternative rescue plan.</p>
-            <button class="btn btn-sm btn-soft-purple" onclick="window.SaveToServeApp.runDemoStep(2)">
-              Run Step 2 (Open Weather Rescue & Apply Heavy Rain)
-            </button>
-          </div>
-        </div>
-
-        <div class="demo-stepper-box">
-          <div class="stepper-num">3</div>
-          <div class="flex-grow-1">
-            <h6 class="fw-bold mb-1" style="color:var(--deep-purple);">Step 3: NGO Claims Surplus Food</h6>
-            <p class="small text-muted mb-2">Log in as Asha Food Shelter (NGO), view available listings, and claim the surplus donation.</p>
-            <button class="btn btn-sm btn-green" onclick="window.SaveToServeApp.runDemoStep(3)">
-              Run Step 3 (Switch to NGO & Browse Food)
-            </button>
-          </div>
-        </div>
-
-        <div class="demo-stepper-box">
-          <div class="stepper-num">4</div>
-          <div class="flex-grow-1">
-            <h6 class="fw-bold mb-1" style="color:var(--deep-purple);">Step 4: Volunteer Pickup & Code Verification</h6>
-            <p class="small text-muted mb-2">Log in as Karan Verma (Volunteer), verify pickup using the donor's code, and start transit.</p>
-            <button class="btn btn-sm btn-outline-primary" onclick="window.SaveToServeApp.runDemoStep(4)">
-              Run Step 4 (Switch to Volunteer Portal)
-            </button>
-          </div>
-        </div>
-
-        <div class="demo-stepper-box">
-          <div class="stepper-num">5</div>
-          <div class="flex-grow-1">
-            <h6 class="fw-bold mb-1" style="color:var(--deep-purple);">Step 5: NGO Confirms Receipt & Distribution</h6>
-            <p class="small text-muted mb-2">NGO staff confirms safe delivery and records beneficiaries reached.</p>
-            <button class="btn btn-sm btn-soft-green" onclick="window.SaveToServeApp.runDemoStep(5)">
-              Run Step 5 (NGO Confirm Distribution)
-            </button>
-          </div>
-        </div>
-
-        <div class="demo-stepper-box">
-          <div class="stepper-num">6</div>
-          <div class="flex-grow-1">
-            <h6 class="fw-bold mb-1" style="color:var(--deep-purple);">Step 6: Real-Time Impact Dashboard Updates</h6>
-            <p class="small text-muted mb-2">Inspect dynamically updated rescued meals, waste prevented in kg, and CO2 avoided.</p>
-            <button class="btn btn-sm btn-purple" onclick="window.SaveToServeApp.runDemoStep(6)">
-              Run Step 6 (Open Impact Dashboard)
-            </button>
-          </div>
-        </div>
-
-        <div class="demo-stepper-box">
-          <div class="stepper-num">7</div>
-          <div class="flex-grow-1">
-            <h6 class="fw-bold mb-1" style="color:var(--deep-purple);">Step 7: Admin Verification & Audit Logs</h6>
-            <p class="small text-muted mb-2">Review Donor & Volunteer Verification queues, approve licenses, and inspect audit logs.</p>
-            <button class="btn btn-sm btn-outline-dark" onclick="window.SaveToServeApp.runDemoStep(7)">
-              Run Step 7 (Open Admin Verification Console)
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
-
-    const modalEl = document.getElementById('globalModal');
-    if (modalEl && typeof bootstrap !== 'undefined') {
-      const bsModal = new bootstrap.Modal(modalEl);
-      bsModal.show();
-    }
-  }
-
-  runDemoStep(stepNum) {
-    const modalEl = document.getElementById('globalModal');
-    if (modalEl && typeof bootstrap !== 'undefined') {
-      const bsModal = bootstrap.Modal.getInstance(modalEl);
-      if (bsModal) bsModal.hide();
-    }
-
-    switch (stepNum) {
-      case 1:
-        this.quickLogin('donor');
-        setTimeout(() => {
-          window.SaveToServeDonor?.switchTab('post-donation');
-          this.showToast('Step 1 Active: Donor kitchen portal opened. Complete post surplus form.', 'info');
-        }, 300);
-        break;
-      case 2:
-        this.navigateTo('weather-rescue');
-        setTimeout(() => {
-          window.SaveToServeWeather?.setScenario('heavy_rain');
-          this.showToast('Step 2 Active: Heavy Rain scenario applied! Observe risk score & alternative plan.', 'warning');
-        }, 300);
-        break;
-      case 3:
-        this.quickLogin('ngo');
-        this.showToast('Step 3 Active: NGO logged in. Claim available surplus food.', 'info');
-        break;
-      case 4:
-        this.quickLogin('volunteer');
-        this.showToast('Step 4 Active: Volunteer logged in. Complete pickup verification code.', 'info');
-        break;
-      case 5:
-        this.quickLogin('ngo');
-        setTimeout(() => {
-          window.SaveToServeNGO?.switchTab('my-claims');
-          this.showToast('Step 5 Active: NGO My Claims opened. Confirm receipt & distribution.', 'success');
-        }, 300);
-        break;
-      case 6:
-        this.navigateTo('impact-dashboard');
-        this.showToast('Step 6 Active: Impact metrics dynamically calculated from live transactions.', 'success');
-        break;
-      case 7:
-        this.quickLogin('admin');
-        this.showToast('Step 7 Active: Super Admin Operations & User Verification Console.', 'info');
-        break;
     }
   }
 }

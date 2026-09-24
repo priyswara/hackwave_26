@@ -6,7 +6,7 @@
 
 const STORAGE_KEY = 'savetoserve_state_v1';
 
-// Seed initial data
+// Initial clean seed data
 const INITIAL_STATE = {
   users: [
     {
@@ -19,7 +19,7 @@ const INITIAL_STATE = {
       password: 'password123',
       kycStatus: 'approved',
       verificationDetails: {
-        docType: 'FSSAI License / Food Safety Registration',
+        docType: 'FSSAI Food Safety License',
         docNumber: 'FSSAI-KA-10020043000123',
         submittedAt: '2026-09-01T10:00:00Z',
         reviewedAt: '2026-09-02T11:00:00Z',
@@ -62,7 +62,7 @@ const INITIAL_STATE = {
       password: 'password123',
       kycStatus: 'approved',
       verificationDetails: {
-        docType: 'Volunteer Identity & Safety Card',
+        docType: 'Volunteer Photo ID & Safety Card',
         docNumber: 'VOL-SEC-2026-8819',
         submittedAt: '2026-09-10T14:15:00Z',
         reviewedAt: '2026-09-11T10:00:00Z',
@@ -76,7 +76,7 @@ const INITIAL_STATE = {
     },
     {
       id: 'usr-admin-1',
-      name: 'Operations Admin Officer',
+      name: 'Operations Administrator',
       orgName: 'Save to Serve Central Command',
       email: 'admin@savetoserve.org',
       phone: '+91 98765 00000',
@@ -105,7 +105,7 @@ const INITIAL_STATE = {
       password: 'password123',
       kycStatus: 'pending',
       verificationDetails: {
-        docType: 'FSSAI License / Food Safety Registration',
+        docType: 'FSSAI Food Safety License',
         docNumber: 'FSSAI-KA-2026-99014',
         submittedAt: '2026-09-24T08:00:00Z',
         reviewedAt: null,
@@ -126,7 +126,7 @@ const INITIAL_STATE = {
       password: 'password123',
       kycStatus: 'pending',
       verificationDetails: {
-        docType: 'Volunteer Identity & Safety Card',
+        docType: 'Volunteer Photo ID & Safety Card',
         docNumber: 'VOL-SAFETY-BLR-4412',
         submittedAt: '2026-09-24T09:30:00Z',
         reviewedAt: null,
@@ -158,7 +158,7 @@ const INITIAL_STATE = {
       donorCoords: [12.9784, 77.6408],
       storageInfo: 'Packed hot in food-grade thermal containers. Ready for immediate pickup.',
       imageUrl: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=500&auto=format&fit=crop&q=60',
-      status: 'available', // 'available' | 'claimed' | 'in-transit' | 'holding-hub' | 'completed' | 'expired' | 'flagged' | 'cancelled'
+      status: 'available',
       claimedByNgoId: null,
       claimedByNgoName: null,
       claimTimestamp: null,
@@ -173,7 +173,6 @@ const INITIAL_STATE = {
       qrVoucherRedeemed: false,
       holdingHubId: null,
       weatherRescuePlan: null,
-      urgentRequirementMatchId: null,
       createdAt: new Date(Date.now() - 1 * 3600000).toISOString()
     },
     {
@@ -249,20 +248,20 @@ const INITIAL_STATE = {
   holdingHubs: [
     {
       id: 'HUB-01',
-      name: 'Indiranagar Community Safe Fridge & Holding Hub',
+      name: 'Indiranagar Community Safe Fridge Hub',
       location: '12th Main Road, HAL 2nd Stage, Indiranagar, Bengaluru',
       coords: [12.9698, 77.6432],
       status: 'approved',
       capacityTotalPortions: 150,
       currentOccupancy: 20,
-      temperatureZone: 'Chilled (2°C - 4°C) + Insulated Hot Bay',
+      temperatureZone: 'Chilled (2°C - 4°C)',
       contactPhone: '+91 98450 12345',
       manager: 'Volunteer Coordinator Deepak',
-      activeUntil: '24/7 Monitored Safe Storage'
+      activeUntil: '24/7 Monitored Storage'
     },
     {
       id: 'HUB-02',
-      name: 'Koramangala Partner Cold Storage & Distribution Hub',
+      name: 'Koramangala Cold Storage & Distribution Hub',
       location: '80 Feet Rd, 6th Block Koramangala, Bengaluru',
       coords: [12.9341, 77.6209],
       status: 'approved',
@@ -271,7 +270,7 @@ const INITIAL_STATE = {
       temperatureZone: 'Cold Storage (1°C - 5°C)',
       contactPhone: '+91 98450 67890',
       manager: 'Asha Foundation Logistics Desk',
-      activeUntil: '24/7 Monitored Safe Storage'
+      activeUntil: '24/7 Monitored Storage'
     },
     {
       id: 'HUB-03',
@@ -298,7 +297,7 @@ const INITIAL_STATE = {
       urgency: 'high',
       targetLocation: 'Austin Town Shelter Wing B',
       neededBefore: new Date(Date.now() + 4 * 3600000).toISOString(),
-      note: 'Evening community dinner distribution for elderly & children.',
+      note: 'Evening dinner distribution for elderly & children.',
       status: 'open',
       createdAt: new Date(Date.now() - 1 * 3600000).toISOString()
     }
@@ -313,8 +312,7 @@ const INITIAL_STATE = {
       message: 'Monsoon showers anticipated. Save to Serve Weather-Adaptive Engine is dynamically rerouting rescue tasks.',
       type: 'weather',
       timestamp: new Date(Date.now() - 15 * 60000).toISOString(),
-      read: false,
-      smsPreview: 'SIMULATED SMS: Save to Serve Weather Alert - Heavy showers predicted in East Zone. Check alternative rescue plans in dashboard.'
+      read: false
     },
     {
       id: 'NOTIF-02',
@@ -324,8 +322,7 @@ const INITIAL_STATE = {
       message: 'Spice Symphony listed 50 portions of Veg Biryani safe for the next 3.5 hours.',
       type: 'donation',
       timestamp: new Date(Date.now() - 30 * 60000).toISOString(),
-      read: true,
-      smsPreview: 'SIMULATED SMS: 50 portions Veg Biryani available from Spice Symphony. Claim now before safe deadline.'
+      read: true
     }
   ],
 
@@ -380,7 +377,7 @@ const INITIAL_STATE = {
         icon: 'bi-cloud-rain-heavy',
         riskScore: 68,
         factors: { rainfall: '45 mm/hr', floodRisk: 'Moderate Waterlogging', volunteerAvailability: '45%' },
-        advisory: 'Two-wheeler delays likely. Recommend direct 4-wheeler NGO pickup or transfer to Indiranagar Community Safe Fridge.'
+        advisory: 'Two-wheeler delays likely. Recommend direct 4-wheeler NGO pickup or transfer to Indiranagar Safe Fridge Hub.'
       },
       flood_warning: {
         name: 'Flood Warning',
@@ -413,10 +410,17 @@ class SaveToServeStore {
 
   loadState() {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('rainroute_state_v1');
+      const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed.users && parsed.donations && parsed.holdingHubs) {
+          // Ensure all default seed users exist
+          INITIAL_STATE.users.forEach(seedUser => {
+            const exists = parsed.users.find(u => u.email.toLowerCase() === seedUser.email.toLowerCase());
+            if (!exists) {
+              parsed.users.push(seedUser);
+            }
+          });
           return parsed;
         }
       }
@@ -454,18 +458,32 @@ class SaveToServeStore {
     window.dispatchEvent(event);
   }
 
-  // --- User / Auth helpers ---
   getUsers() { return this.state.users; }
   getUserById(id) { return this.state.users.find(u => u.id === id); }
-  getUserByEmail(email) { return this.state.users.find(u => u.email.toLowerCase() === email.toLowerCase()); }
   
+  getUserByEmail(email) {
+    if (!email) return null;
+    const clean = email.trim().toLowerCase();
+    
+    // Direct match
+    let found = this.state.users.find(u => u.email.toLowerCase() === clean);
+    if (found) return found;
+
+    // Legacy email alias support (e.g. donor@rainroute.org -> donor@savetoserve.org)
+    if (clean.endsWith('@rainroute.org')) {
+      const alias = clean.replace('@rainroute.org', '@savetoserve.org');
+      found = this.state.users.find(u => u.email.toLowerCase() === alias);
+    }
+    return found || null;
+  }
+
   addUser(userData) {
     const newUser = {
       id: 'usr-' + Date.now().toString(36),
       registeredAt: new Date().toISOString(),
       kycStatus: 'pending',
       verificationDetails: {
-        docType: userData.docType || (userData.role === 'donor' ? 'FSSAI License / Food Safety Registration' : 'Volunteer Photo ID & Safety Card'),
+        docType: userData.docType || (userData.role === 'donor' ? 'FSSAI Food Safety License' : 'Volunteer Photo ID & Safety Card'),
         docNumber: userData.docNumber || 'DOC-PENDING-' + Math.floor(1000 + Math.random()*9000),
         submittedAt: new Date().toISOString(),
         reviewedAt: null,
@@ -475,7 +493,7 @@ class SaveToServeStore {
     };
     this.state.users.push(newUser);
     this.saveState();
-    this.logActivity(newUser.name, `Registered new ${newUser.role.toUpperCase()} account (Verification Pending)`, newUser.id, 'New User');
+    this.logActivity(newUser.name, `Registered new ${newUser.role.toUpperCase()} account`, newUser.id, 'New User');
     this.notifySubscribers('USER_ADDED', newUser);
     return newUser;
   }
@@ -503,14 +521,17 @@ class SaveToServeStore {
         message: status === 'approved' 
           ? `Your ${user.role.toUpperCase()} account has been verified. Full rescue and donation permissions granted.`
           : `Your verification request was reviewed. Reason: ${rejectionReason || 'Please resubmit valid credentials.'}`,
-        type: 'verification',
-        smsPreview: `SIMULATED SMS: Save to Serve Verification - Your ${user.role} account status is now ${status.toUpperCase()}.`
+        type: 'verification'
       });
 
       this.notifySubscribers('USER_UPDATED', user);
-      return true;
+      return { success: true, user };
     }
-    return false;
+    return { success: false, message: 'User not found.' };
+  }
+
+  updateKycStatus(userId, status, rejectionReason = '') {
+    return this.updateUserVerification(userId, status, rejectionReason);
   }
 
   // --- Donation Operations ---
@@ -551,8 +572,7 @@ class SaveToServeStore {
       recipientRole: 'ngo',
       title: '🍲 New Surplus Food Available',
       message: `${newDonation.donorOrg} listed ${newDonation.portions} portions of ${newDonation.foodName}.`,
-      type: 'donation',
-      smsPreview: `SIMULATED SMS: Save to Serve Alert - ${newDonation.portions} portions of ${newDonation.foodName} available near ${newDonation.donorAddress}.`
+      type: 'donation'
     });
 
     this.notifySubscribers('DONATION_ADDED', newDonation);
@@ -600,7 +620,6 @@ class SaveToServeStore {
     donation.claimedByNgoName = ngoUser.orgName || ngoUser.name;
     donation.claimTimestamp = new Date().toISOString();
 
-    // Auto-assign available verified volunteer if present
     const availableVol = this.state.users.find(u => u.role === 'volunteer' && u.kycStatus === 'approved');
     if (availableVol) {
       donation.assignedVolunteerId = availableVol.id;
@@ -616,8 +635,7 @@ class SaveToServeStore {
       recipientId: donation.donorId,
       title: '✅ Surplus Food Claimed',
       message: `${donation.claimedByNgoName} has claimed ${donation.foodName}. Pickup verification code: ${donation.pickupCode}`,
-      type: 'claim',
-      smsPreview: `SIMULATED SMS: ${donation.claimedByNgoName} claimed your ${donation.portions} portions. Pickup code is ${donation.pickupCode}.`
+      type: 'claim'
     });
 
     if (donation.assignedVolunteerId) {
@@ -626,8 +644,7 @@ class SaveToServeStore {
         recipientId: donation.assignedVolunteerId,
         title: '🚴 New Pickup Task Assigned',
         message: `Pickup ${donation.portions} portions from ${donation.donorOrg} -> Deliver to ${donation.claimedByNgoName}.`,
-        type: 'task',
-        smsPreview: `SIMULATED SMS: New task: Collect from ${donation.donorOrg}, code: ${donation.pickupCode}. Safe until ${new Date(donation.safeUntil).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}.`
+        type: 'task'
       });
     }
 
@@ -668,8 +685,7 @@ class SaveToServeStore {
       recipientId: donation.claimedByNgoId,
       title: '🚚 Food In Transit',
       message: `${donation.assignedVolunteerName || 'Volunteer'} picked up ${donation.foodName} and is en route to your facility.`,
-      type: 'transit',
-      smsPreview: `SIMULATED SMS: Food in transit. Safe delivery expected shortly.`
+      type: 'transit'
     });
 
     this.notifySubscribers('PICKUP_CONFIRMED', donation);
@@ -693,8 +709,7 @@ class SaveToServeStore {
       recipientRole: 'all',
       title: '🎉 Successful Rescue & Distribution',
       message: `${donation.beneficiariesReached} people nourished with ${donation.foodName} rescued from ${donation.donorOrg}!`,
-      type: 'impact',
-      smsPreview: `SIMULATED SMS: Mission Success! ${donation.foodName} safely distributed to ${donation.beneficiariesReached} people in need.`
+      type: 'impact'
     });
 
     this.notifySubscribers('DISTRIBUTION_CONFIRMED', donation);
@@ -718,7 +733,6 @@ class SaveToServeStore {
     return { success: true, donation };
   }
 
-  // --- Weather & Smart Routing ---
   setWeatherScenario(scenarioKey) {
     if (!this.state.weatherState.scenarios[scenarioKey]) return false;
     this.state.weatherState.activeScenario = scenarioKey;
@@ -732,8 +746,7 @@ class SaveToServeStore {
       recipientRole: 'all',
       title: `⛈️ Weather Shift: ${scenario.name}`,
       message: `Risk level ${scenario.riskScore}/100. ${scenario.advisory}`,
-      type: 'weather',
-      smsPreview: `SIMULATED SMS: Weather update - ${scenario.name} active. Save to Serve adaptive routing updated.`
+      type: 'weather'
     });
 
     this.notifySubscribers('WEATHER_CHANGED', { scenarioKey, scenario });
@@ -772,7 +785,6 @@ class SaveToServeStore {
     return { success: true, donation };
   }
 
-  // --- Safe Holding Hubs Operations ---
   getHoldingHubs() { return this.state.holdingHubs; }
   
   addHoldingHub(hubData) {
@@ -801,7 +813,6 @@ class SaveToServeStore {
     return null;
   }
 
-  // --- Urgent Requirements ---
   getUrgentRequirements() { return this.state.urgentRequirements; }
   
   addUrgentRequirement(reqData) {
@@ -819,7 +830,6 @@ class SaveToServeStore {
     return newReq;
   }
 
-  // --- Notifications & Activity Logs ---
   addNotification(notifData) {
     const newNotif = {
       id: 'NOTIF-' + Date.now().toString(36),
@@ -868,7 +878,6 @@ class SaveToServeStore {
 
   getActivityLogs() { return this.state.activityLogs; }
 
-  // --- Calculated Impact Metrics ---
   calculateImpact() {
     const completed = this.state.donations.filter(d => d.status === 'completed');
     const inProgress = this.state.donations.filter(d => ['claimed', 'in-transit', 'holding-hub'].includes(d.status));
@@ -898,7 +907,5 @@ class SaveToServeStore {
   }
 }
 
-// Global singleton instance
 window.SaveToServeDB = new SaveToServeStore();
-// Legacy alias for backwards compatibility
 window.RainRouteDB = window.SaveToServeDB;
