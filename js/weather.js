@@ -279,7 +279,7 @@ class WeatherAdaptiveRescueEngine {
         <!-- Header -->
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
           <div>
-            <h2 class="mb-1 fw-bold" style="color:var(--deep-purple);">🌧️ Weather-Adaptive Food Rescue</h2>
+            <h2 class="mb-1 fw-bold" style="color:var(--dark-olive);">🌧️ Weather-Adaptive Food Rescue</h2>
             <p class="text-muted mb-0">Dynamic multi-path rerouting to prevent surplus food spoilage during extreme climate events.</p>
           </div>
           <span class="badge bg-light text-muted border px-3 py-2">
@@ -289,7 +289,7 @@ class WeatherAdaptiveRescueEngine {
 
         <!-- Scenario Switcher -->
         <div class="weather-control-box">
-          <h5 class="fw-bold mb-3" style="color:var(--deep-purple);">Select Climate Simulation Scenario:</h5>
+          <h5 class="fw-bold mb-3" style="color:var(--dark-olive);">Select Climate Simulation Scenario:</h5>
           <div class="scenario-btn-group mb-3">
             <button class="scenario-btn ${currentScenario.key === 'normal' ? 'active' : ''}" onclick="window.SaveToServeWeather.setScenario('normal')">
               <i class="bi bi-sun"></i> Normal Weather
@@ -388,7 +388,7 @@ class WeatherAdaptiveRescueEngine {
                         <span class="badge ${item.isUrgent ? 'badge-expiry-urgent' : 'badge-expiry-warning'} mb-1">
                           ⏰ Safe for ${item.hoursRemaining}h remaining
                         </span>
-                        <h6 class="fw-bold mb-0" style="color:var(--deep-purple);">${item.donation.foodName}</h6>
+                        <h6 class="fw-bold mb-0" style="color:var(--dark-olive);">${item.donation.foodName}</h6>
                       </div>
                       <span class="badge bg-light text-dark border">${item.donation.portions} portions</span>
                     </div>

@@ -37,11 +37,11 @@ class HoldingHubsManager {
         <!-- Header -->
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
           <div>
-            <h2 class="mb-1 fw-bold" style="color:var(--deep-purple);">❄️ Safe Temporary Holding Hubs</h2>
+            <h2 class="mb-1 fw-bold" style="color:var(--dark-olive);">❄️ Safe Temporary Holding Hubs</h2>
             <p class="text-muted mb-0">Certified cold chain micro-facilities for weather-contingency storage.</p>
           </div>
           ${isAdmin ? `
-            <button class="btn btn-purple" onclick="window.SaveToServeHubs.showAddHubModal()">
+            <button class="btn btn-olive" onclick="window.SaveToServeHubs.showAddHubModal()">
               <i class="bi bi-plus-circle"></i> Add New Holding Hub
             </button>
           ` : ''}
@@ -59,7 +59,7 @@ class HoldingHubsManager {
                 <div class="custom-card h-100 d-flex flex-column justify-content-between">
                   <div>
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                      <h5 class="fw-bold mb-1" style="color:var(--deep-purple);">${hub.name}</h5>
+                      <h5 class="fw-bold mb-1" style="color:var(--dark-olive);">${hub.name}</h5>
                       <span class="badge ${hub.status === 'approved' ? 'badge-ngo' : 'badge-admin'} text-uppercase">
                         ${hub.status}
                       </span>
@@ -99,7 +99,7 @@ class HoldingHubsManager {
                         ${hub.status === 'approved' ? 'Deactivate' : 'Approve'}
                       </button>
                     ` : `
-                      <button class="btn btn-sm btn-soft-purple w-100" onclick="window.SaveToServeHubs.viewHubDetails('${hub.id}')">
+                      <button class="btn btn-sm btn-soft-olive w-100" onclick="window.SaveToServeHubs.viewHubDetails('${hub.id}')">
                         <i class="bi bi-info-circle"></i> View Hub Info
                       </button>
                     `}
@@ -119,7 +119,7 @@ class HoldingHubsManager {
       <div class="custom-card">
         <div class="custom-card-header">
           <h5 class="card-title-custom"><i class="bi bi-snow text-primary"></i> Safe Holding Hubs Registry</h5>
-          <button class="btn btn-purple btn-sm" onclick="window.SaveToServeHubs.showAddHubModal()">
+          <button class="btn btn-olive btn-sm" onclick="window.SaveToServeHubs.showAddHubModal()">
             <i class="bi bi-plus-circle"></i> Add Hub
           </button>
         </div>

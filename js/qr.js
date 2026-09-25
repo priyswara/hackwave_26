@@ -55,7 +55,7 @@ class QrVoucherManager {
           ${this.generateSvgQr(donation.qrVoucherCode)}
         </div>
         <div class="voucher-code-badge">${donation.qrVoucherCode}</div>
-        <h5 class="fw-bold mb-1" style="color:var(--deep-purple);">${donation.foodName}</h5>
+        <h5 class="fw-bold mb-1" style="color:var(--dark-olive);">${donation.foodName}</h5>
         <p class="small text-muted mb-2">Issued to: <strong>${donation.claimedByNgoName || 'Authorized NGO'}</strong></p>
 
         <div class="p-2 bg-light rounded text-start small mb-3 border">
@@ -88,11 +88,11 @@ class QrVoucherManager {
 
         <div class="row g-4 align-items-center">
           <div class="col-lg-6">
-            <div class="p-4 rounded text-center" style="background:var(--pastel-lavender); border: 2px dashed var(--primary-purple);">
+            <div class="p-4 rounded text-center" style="background:var(--light-olive); border: 2px dashed var(--primary-olive);">
               <i class="bi bi-camera fs-1 text-primary mb-2 d-block"></i>
               <h6 class="fw-bold mb-2">Simulated Live QR Scanner</h6>
               <p class="small text-muted mb-3">Camera access is simulated for testing. Enter the voucher code manually or click one of the active vouchers below.</p>
-              <button class="btn btn-purple btn-sm" onclick="window.SaveToServeQR.simulateCameraScan()">
+              <button class="btn btn-olive btn-sm" onclick="window.SaveToServeQR.simulateCameraScan()">
                 <i class="bi bi-upc-scan"></i> Simulate Scan (Auto-Redeem Active Voucher)
               </button>
             </div>

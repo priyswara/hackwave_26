@@ -20,7 +20,7 @@ class NotificationManager {
 
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
           <div>
-            <h2 class="mb-1 fw-bold" style="color:var(--deep-purple);">🔔 Notifications & Communication Logs</h2>
+            <h2 class="mb-1 fw-bold" style="color:var(--dark-olive);">🔔 Notifications & Communication Logs</h2>
             <p class="text-muted mb-0">Live feed of weather alerts, surplus handoff verifications & pickup tasks.</p>
           </div>
           <button class="btn btn-outline-secondary btn-sm" onclick="window.SaveToServeNotifications.markAllRead()">
@@ -44,9 +44,9 @@ class NotificationManager {
               ` : `
                 <div class="d-flex flex-column gap-3">
                   ${notifications.map(n => `
-                    <div class="p-3 rounded border ${n.read ? 'bg-light' : 'bg-white'}" style="border-left: 4px solid ${n.type === 'weather' ? '#D97706' : n.type === 'claim' ? '#356B4A' : '#7653A6'}!important;">
+                    <div class="p-3 rounded border ${n.read ? 'bg-light' : 'bg-white'}" style="border-left: 4px solid ${n.type === 'weather' ? '#D97706' : n.type === 'claim' ? '#356B4A' : '#667238'}!important;">
                       <div class="d-flex justify-content-between align-items-start mb-1">
-                        <h6 class="fw-bold mb-0" style="color:var(--deep-purple);">${n.title}</h6>
+                        <h6 class="fw-bold mb-0" style="color:var(--dark-olive);">${n.title}</h6>
                         <span class="small text-muted">${new Date(n.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
                       </div>
                       <p class="small text-dark mb-2">${n.message}</p>
@@ -84,7 +84,7 @@ class NotificationManager {
                 </div>
               </div>
 
-              <button class="btn btn-soft-purple btn-sm w-100" onclick="window.SaveToServeNotifications.sendTestSms()">
+              <button class="btn btn-soft-olive btn-sm w-100" onclick="window.SaveToServeNotifications.sendTestSms()">
                 <i class="bi bi-send"></i> Send Test Simulated SMS
               </button>
             </div>

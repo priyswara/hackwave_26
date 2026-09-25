@@ -72,7 +72,7 @@ class VolunteerPortalManager {
             </div>
             <div>
               <div class="d-flex align-items-center gap-2 flex-wrap">
-                <h3 class="mb-0 fw-bold" style="color:var(--deep-purple);">${user.name}</h3>
+                <h3 class="mb-0 fw-bold" style="color:var(--dark-olive);">${user.name}</h3>
                 <span class="badge ${isApproved ? 'badge-volunteer' : user.kycStatus === 'rejected' ? 'bg-danger text-white' : 'badge-admin'}">
                   ${isApproved ? '✓ Certified Food Courier' : user.kycStatus === 'rejected' ? '✕ Verification Rejected' : '⏳ Verification Pending'}
                 </span>
@@ -94,7 +94,7 @@ class VolunteerPortalManager {
         <div class="row g-3 mb-4">
           <div class="col-md-4 col-6">
             <div class="stat-card">
-              <div class="stat-icon icon-purple"><i class="bi bi-bell-fill"></i></div>
+              <div class="stat-icon icon-blue"><i class="bi bi-bell-fill"></i></div>
               <div>
                 <div class="stat-value">${availableTasks.length}</div>
                 <div class="stat-label">Open Pickup Requests</div>
@@ -169,7 +169,7 @@ class VolunteerPortalManager {
                 <div class="col-lg-6">
                   <div class="p-3 border rounded h-100" style="background:#FAF9FC;">
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                      <h6 class="fw-bold mb-0" style="color:var(--deep-purple);">${d.foodName}</h6>
+                      <h6 class="fw-bold mb-0" style="color:var(--dark-olive);">${d.foodName}</h6>
                       <span class="badge badge-expiry-warning">⏰ Safe until ${new Date(d.safeUntil).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
                     </div>
 
@@ -179,7 +179,7 @@ class VolunteerPortalManager {
                       <div class="text-muted"><i class="bi bi-box"></i> Quantity: <strong>${d.portions} meals (~${d.quantityKg} kg)</strong></div>
                     </div>
 
-                    <button class="btn btn-purple btn-sm w-100" onclick="window.SaveToServeVolunteer.acceptTask('${d.id}')" ${!isApproved ? 'disabled title="Volunteer verification required"' : ''}>
+                    <button class="btn btn-olive btn-sm w-100" onclick="window.SaveToServeVolunteer.acceptTask('${d.id}')" ${!isApproved ? 'disabled title="Volunteer verification required"' : ''}>
                       <i class="bi bi-check2"></i> Accept Pickup Task
                     </button>
                   </div>
@@ -254,7 +254,7 @@ class VolunteerPortalManager {
             <i class="bi bi-bicycle fs-1 mb-2 d-block text-secondary"></i>
             <h5 class="fw-bold">No Active Pickups In Progress</h5>
             <p class="small">You currently have no active deliveries. Browse available tasks to start a rescue mission!</p>
-            <button class="btn btn-purple btn-sm" onclick="window.SaveToServeVolunteer.switchTab('available-tasks')">
+            <button class="btn btn-olive btn-sm" onclick="window.SaveToServeVolunteer.switchTab('available-tasks')">
               Browse Open Tasks
             </button>
           </div>
@@ -262,9 +262,9 @@ class VolunteerPortalManager {
           <div class="row g-3">
             ${myAssignedTasks.map(d => `
               <div class="col-lg-6">
-                <div class="p-3 border rounded h-100" style="background:#FAF9FC; border-color:var(--light-purple)!important;">
+                <div class="p-3 border rounded h-100" style="background:#FAF9FC; border-color:var(--light-olive)!important;">
                   <div class="d-flex justify-content-between align-items-start mb-2">
-                    <h6 class="fw-bold mb-0" style="color:var(--deep-purple);">${d.foodName}</h6>
+                    <h6 class="fw-bold mb-0" style="color:var(--dark-olive);">${d.foodName}</h6>
                     <span class="badge ${d.status === 'in-transit' ? 'bg-primary' : 'bg-warning text-dark'} text-uppercase">
                       ${d.status === 'in-transit' ? '🚚 In Transit' : '⏳ Awaiting Pickup'}
                     </span>
@@ -280,11 +280,11 @@ class VolunteerPortalManager {
                   </div>
 
                   ${d.status === 'claimed' ? `
-                    <div class="p-2 rounded mb-2" style="background:var(--pastel-lavender);">
-                      <div class="small fw-bold mb-1" style="color:var(--deep-purple);">Step 1: Confirm Pickup with Donor Code</div>
+                    <div class="p-2 rounded mb-2" style="background:var(--light-olive);">
+                      <div class="small fw-bold mb-1" style="color:var(--dark-olive);">Step 1: Confirm Pickup with Donor Code</div>
                       <div class="input-group">
                         <input type="text" id="pickupCodeInput-${d.id}" class="form-control form-control-sm font-monospace" placeholder="Enter Donor's Code (e.g. ${d.pickupCode})">
-                        <button class="btn btn-sm btn-purple" onclick="window.SaveToServeVolunteer.confirmPickupCode('${d.id}')">
+                        <button class="btn btn-sm btn-olive" onclick="window.SaveToServeVolunteer.confirmPickupCode('${d.id}')">
                           Verify & Start Transit
                         </button>
                       </div>

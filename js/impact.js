@@ -30,7 +30,7 @@ class ImpactDashboardManager {
         <!-- Header -->
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
           <div>
-            <h2 class="mb-1 fw-bold" style="color:var(--deep-purple);">🌱 Food Rescue Impact Dashboard</h2>
+            <h2 class="mb-1 fw-bold" style="color:var(--dark-olive);">🌱 Food Rescue Impact Dashboard</h2>
             <p class="text-muted mb-0">Dynamic metrics computed directly from completed surplus food rescue missions.</p>
           </div>
           <div class="d-flex align-items-center gap-2">
@@ -53,7 +53,7 @@ class ImpactDashboardManager {
           </div>
           <div class="col-lg-3 col-md-6 col-6">
             <div class="stat-card">
-              <div class="stat-icon icon-purple"><i class="bi bi-trash-fill text-secondary"></i></div>
+              <div class="stat-icon icon-green"><i class="bi bi-trash-fill text-secondary"></i></div>
               <div>
                 <div class="stat-value">${impact.totalWastePreventedKg} <span class="fs-6">kg</span></div>
                 <div class="stat-label">Waste Prevented</div>

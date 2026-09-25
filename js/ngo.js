@@ -62,7 +62,7 @@ class NgoPortalManager {
             </div>
             <div>
               <div class="d-flex align-items-center gap-2 flex-wrap">
-                <h3 class="mb-0 fw-bold" style="color:var(--deep-purple);">${user.orgName || user.name}</h3>
+                <h3 class="mb-0 fw-bold" style="color:var(--dark-olive);">${user.orgName || user.name}</h3>
                 <span class="badge badge-ngo">
                   ✓ Registered Shelter
                 </span>
@@ -71,7 +71,7 @@ class NgoPortalManager {
             </div>
           </div>
           <div class="d-flex gap-2">
-            <button class="btn btn-green" onclick="window.SaveToServeNGO.switchTab('post-req')">
+            <button class="btn btn-olive" onclick="window.SaveToServeNGO.switchTab('post-req')">
               <i class="bi bi-megaphone"></i> Post Urgent Requirement
             </button>
             <button class="btn btn-outline-danger" onclick="window.SaveToServeApp.logout()" title="Logout from NGO Portal">
@@ -84,7 +84,7 @@ class NgoPortalManager {
         <div class="row g-3 mb-4">
           <div class="col-md-4 col-6">
             <div class="stat-card">
-              <div class="stat-icon icon-purple"><i class="bi bi-search"></i></div>
+              <div class="stat-icon icon-blue"><i class="bi bi-search"></i></div>
               <div>
                 <div class="stat-value">${availableDonations.length}</div>
                 <div class="stat-label">Available Surplus Nearby</div>
@@ -257,7 +257,7 @@ class NgoPortalManager {
                   <div class="p-3 border rounded h-100 d-flex flex-column justify-content-between" style="background:#FAF9FC;">
                     <div>
                       <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h6 class="fw-bold mb-0" style="color:var(--deep-purple);">${d.foodName}</h6>
+                        <h6 class="fw-bold mb-0" style="color:var(--dark-olive);">${d.foodName}</h6>
                         <span class="badge ${d.status === 'completed' ? 'bg-success' : d.status === 'in-transit' ? 'bg-primary' : 'bg-warning text-dark'} text-uppercase">
                           ${d.status}
                         </span>
@@ -286,7 +286,7 @@ class NgoPortalManager {
                     <div class="mt-2 pt-2 border-top">
                       ${d.status === 'claimed' ? `
                         <div class="d-flex gap-2">
-                          <button class="btn btn-sm btn-soft-purple w-100" onclick="window.SaveToServeQR.showVoucherModal('${d.id}')">
+                          <button class="btn btn-sm btn-soft-olive w-100" onclick="window.SaveToServeQR.showVoucherModal('${d.id}')">
                             <i class="bi bi-qr-code"></i> View QR Voucher
                           </button>
                         </div>
@@ -377,7 +377,7 @@ class NgoPortalManager {
                       <div class="d-flex justify-content-between align-items-start">
                         <div>
                           <span class="badge bg-danger mb-1">Urgent ${r.neededPortions} Portions</span>
-                          <h6 class="fw-bold mb-1" style="color:var(--deep-purple);">${r.ngoName}</h6>
+                          <h6 class="fw-bold mb-1" style="color:var(--dark-olive);">${r.ngoName}</h6>
                           <p class="small text-muted mb-1"><i class="bi bi-geo-alt"></i> ${r.targetLocation}</p>
                           <p class="small mb-0 text-dark">${r.note || 'Community shelter distribution.'}</p>
                         </div>

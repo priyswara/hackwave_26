@@ -1,12 +1,13 @@
 /**
  * Save to Serve - Admin Operations & User Verification Command Console
- * Sections: Donor Verification, NGO Verification, Volunteer Verification, Manage Donations, Manage Users, Weather Rescue, Impact Dashboard, Reports & Audit Logs
+ * Sections: Donor Verification, NGO Verification, Volunteer Verification, Reconsiderations Queue,
+ * Manage Donations, Manage Users, Weather Rescue, Safe Hubs, Impact Dashboard, Reports & Audit Logs
  * Tagline: Save Food. Serve People. Reduce Waste.
  */
 
 class AdminPortalManager {
   constructor() {
-    this.donorFilter = 'all'; // 'all' | 'pending' | 'approved' | 'rejected'
+    this.donorFilter = 'all'; // 'all' | 'pending' | 'approved' | 'rejected' | 'reconsideration_requested'
     this.ngoFilter = 'all';
     this.volFilter = 'all';
     this.userFilter = 'all';
@@ -25,26 +26,21 @@ class AdminPortalManager {
     const container = document.getElementById('admin-portal-view');
     if (!container) return;
 
-    const user = window.SaveToServeAuth.getCurrentUser();
+    const user = window.SaveToServeAuth?.getCurrentUser();
     if (!user || user.role !== 'admin') {
       container.innerHTML = `
         <div class="container py-5 text-center">
           <div class="alert alert-danger d-inline-block px-4 py-3 shadow-sm" style="max-width:500px;">
             <i class="bi bi-shield-x fs-2 d-block mb-2 text-danger"></i>
             <h5 class="fw-bold">Super Admin Access Restricted</h5>
-            <p class="mb-3 text-muted">${user ? `You are currently logged in to the ${user.role.toUpperCase()} portal. Super Admin portal requires authorized administrative credentials.` : 'This management console requires authorized administrative credentials.'}</p>
-            ${user ? `
-              <button class="btn btn-outline-danger me-2" onclick="window.SaveToServeApp.logout()"><i class="bi bi-box-arrow-right"></i> Logout</button>
-              <button class="btn btn-olive" onclick="window.SaveToServeApp.navigateTo('${user.role}-portal')">Go to My Dashboard</button>
-            ` : `
-              <button class="btn btn-olive" onclick="window.SaveToServeApp.openPortalAuth('admin')">Super Admin Sign In</button>
-            `}
+            <p class="mb-3 text-muted">This management console requires authorized administrative credentials.</p>
+            <button class="btn btn-olive" onclick="window.SaveToServeApp.openPortalAuth('admin')">Super Admin Sign In</button>
           </div>
         </div>`;
       return;
     }
 
-    const users = window.SaveToServeDB.getUsers();
+    const users = window.SaveToServeDB?.getUsers() || [];
     const donors = users.filter(u => u.role === 'donor');
     const ngos = users.filter(u => u.role === 'ngo');
     const volunteers = users.filter(u => u.role === 'volunteer');
@@ -52,10 +48,11 @@ class AdminPortalManager {
     const pendingDonors = donors.filter(u => u.kycStatus === 'pending');
     const pendingNgos = ngos.filter(u => u.kycStatus === 'pending');
     const pendingVols = volunteers.filter(u => u.kycStatus === 'pending');
+    const reconsiderationUsers = users.filter(u => u.kycStatus === 'reconsideration_requested' || u.kycStatus === 'under_reconsideration');
     
-    const donations = window.SaveToServeDB.getDonations();
-    const hubs = window.SaveToServeDB.getHoldingHubs();
-    const logs = window.SaveToServeDB.getActivityLogs();
+    const donations = window.SaveToServeDB?.getDonations() || [];
+    const hubs = window.SaveToServeDB?.getHoldingHubs() || [];
+    const logs = window.SaveToServeDB?.getActivityLogs() || [];
 
     container.innerHTML = `
       <div class="container py-4">
@@ -70,16 +67,10 @@ class AdminPortalManager {
                 <h3 class="mb-0 fw-bold" style="color:var(--dark-olive);">Super Admin Command Center</h3>
                 <span class="badge badge-admin">Master Admin</span>
               </div>
-              <p class="text-muted small mb-0">Review verification queues, moderate donations, and monitor rescue operations</p>
+              <p class="text-muted small mb-0">Review verification queues, handle reconsideration appeals, moderate donations, and monitor rescue operations</p>
             </div>
           </div>
           <div class="d-flex gap-2">
-            <button class="btn btn-outline-secondary btn-sm" onclick="window.SaveToServeApp.navigateTo('home')">
-              <i class="bi bi-house"></i> Home
-            </button>
-            <button class="btn btn-outline-danger btn-sm" onclick="window.SaveToServeApp.promptResetDemoData()">
-              <i class="bi bi-arrow-counterclockwise"></i> Reset Database
-            </button>
             <button class="btn btn-outline-danger btn-sm" onclick="window.SaveToServeApp.logout()" title="Logout from Admin Console">
               <i class="bi bi-box-arrow-right"></i> Logout
             </button>
@@ -117,16 +108,16 @@ class AdminPortalManager {
           </div>
           <div class="col-lg-3 col-6">
             <div class="stat-card">
-              <div class="stat-icon"><i class="bi bi-box2-heart"></i></div>
+              <div class="stat-icon"><i class="bi bi-arrow-repeat text-warning"></i></div>
               <div>
-                <div class="stat-value">${donations.length}</div>
-                <div class="stat-label">Surplus Listings</div>
+                <div class="stat-value">${reconsiderationUsers.length}</div>
+                <div class="stat-label">Reconsideration Appeals</div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Dedicated Subnav with all 8 sections -->
+        <!-- Subnav with all management sections -->
         <div class="portal-subnav mb-4" style="overflow-x: auto; white-space: nowrap; display: flex; gap: 8px;">
           <button class="subnav-btn ${activeTab === 'donor-verification' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('donor-verification')">
             <i class="bi bi-shop"></i> Donor Verification ${pendingDonors.length > 0 ? `<span class="badge bg-warning text-dark">${pendingDonors.length}</span>` : ''}
@@ -137,26 +128,32 @@ class AdminPortalManager {
           <button class="subnav-btn ${activeTab === 'volunteer-verification' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('volunteer-verification')">
             <i class="bi bi-bicycle"></i> Volunteer Verification ${pendingVols.length > 0 ? `<span class="badge bg-warning text-dark">${pendingVols.length}</span>` : ''}
           </button>
+          <button class="subnav-btn ${activeTab === 'reconsideration-queue' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('reconsideration-queue')">
+            <i class="bi bi-arrow-repeat"></i> Reconsideration Queue ${reconsiderationUsers.length > 0 ? `<span class="badge bg-danger text-white">${reconsiderationUsers.length}</span>` : ''}
+          </button>
           <button class="subnav-btn ${activeTab === 'manage-donations' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('manage-donations')">
-            <i class="bi bi-grid-3x3-gap"></i> Manage Donations (${donations.length})
+            <i class="bi bi-box2-heart"></i> Manage Donations (${donations.length})
           </button>
           <button class="subnav-btn ${activeTab === 'manage-users' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('manage-users')">
             <i class="bi bi-people"></i> Manage Users (${users.length})
           </button>
-          <button class="subnav-btn ${activeTab === 'weather-rescue' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('weather-rescue')">
+          <button class="subnav-btn ${activeTab === 'weather-rescue' ? 'active' : ''}" onclick="window.SaveToServeApp.navigateTo('weather-rescue')">
             <i class="bi bi-cloud-rain-heavy"></i> Weather Rescue
           </button>
-          <button class="subnav-btn ${activeTab === 'impact-dashboard' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('impact-dashboard')">
-            <i class="bi bi-graph-up-arrow"></i> Impact Dashboard
+          <button class="subnav-btn ${activeTab === 'holding-hubs' ? 'active' : ''}" onclick="window.SaveToServeApp.navigateTo('holding-hubs')">
+            <i class="bi bi-snow"></i> Safe Hubs
+          </button>
+          <button class="subnav-btn ${activeTab === 'impact-dashboard' ? 'active' : ''}" onclick="window.SaveToServeApp.navigateTo('impact-dashboard')">
+            <i class="bi bi-graph-up-arrow"></i> Impact & Reports
           </button>
           <button class="subnav-btn ${activeTab === 'audit-logs' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('audit-logs')">
-            <i class="bi bi-journal-text"></i> Reports & Audit Logs (${logs.length})
+            <i class="bi bi-journal-text"></i> Audit Logs (${logs.length})
           </button>
         </div>
 
         <!-- Tab Body -->
         <div id="admin-tab-content">
-          ${this.renderTabContent(activeTab, donors, ngos, volunteers, users, donations, hubs, logs)}
+          ${this.renderTabContent(activeTab, donors, ngos, volunteers, reconsiderationUsers, users, donations, hubs, logs)}
         </div>
       </div>
     `;
@@ -166,7 +163,7 @@ class AdminPortalManager {
     this.render(tabName);
   }
 
-  renderTabContent(tabName, donors, ngos, volunteers, users, donations, hubs, logs) {
+  renderTabContent(tabName, donors, ngos, volunteers, reconsiderationUsers, users, donations, hubs, logs) {
     // 1. DONOR VERIFICATION SECTION
     if (tabName === 'donor-verification') {
       const filteredDonors = donors.filter(d => {
@@ -188,6 +185,7 @@ class AdminPortalManager {
                 <option value="pending" ${this.donorFilter === 'pending' ? 'selected' : ''}>Pending (${donors.filter(d => d.kycStatus === 'pending').length})</option>
                 <option value="approved" ${this.donorFilter === 'approved' ? 'selected' : ''}>Approved (${donors.filter(d => d.kycStatus === 'approved').length})</option>
                 <option value="rejected" ${this.donorFilter === 'rejected' ? 'selected' : ''}>Rejected (${donors.filter(d => d.kycStatus === 'rejected').length})</option>
+                <option value="reconsideration_requested" ${this.donorFilter === 'reconsideration_requested' ? 'selected' : ''}>Reconsideration (${donors.filter(d => d.kycStatus === 'reconsideration_requested').length})</option>
               </select>
             </div>
           </div>
@@ -205,7 +203,17 @@ class AdminPortalManager {
               </thead>
               <tbody>
                 ${filteredDonors.map(u => {
-                  const statusBadgeClass = u.kycStatus === 'approved' ? 'bg-success' : u.kycStatus === 'rejected' ? 'bg-danger' : 'bg-warning text-dark';
+                  let statusBadgeClass = 'bg-warning text-dark';
+                  let statusLabel = u.kycStatus;
+                  if (u.kycStatus === 'approved') {
+                    statusBadgeClass = 'bg-success text-white';
+                  } else if (u.kycStatus === 'rejected') {
+                    statusBadgeClass = 'bg-danger text-white';
+                  } else if (u.kycStatus === 'reconsideration_requested') {
+                    statusBadgeClass = 'bg-info text-dark';
+                    statusLabel = 'Reconsideration Requested';
+                  }
+
                   return `
                     <tr>
                       <td>
@@ -220,10 +228,12 @@ class AdminPortalManager {
                         <span class="badge bg-light text-dark border">
                           <i class="bi bi-file-earmark-check text-success"></i> ${u.verificationDetails?.docType || u.verifiedDoc || 'FSSAI License'}
                         </span>
+                        <div class="small font-monospace text-muted mt-1">${u.verificationDetails?.docNumber || ''}</div>
                       </td>
                       <td>
-                        <span class="badge ${statusBadgeClass} text-uppercase">${u.kycStatus}</span>
-                        ${u.verificationDetails?.rejectionReason ? `<div class="small text-danger mt-1" style="font-size:0.75rem;">${u.verificationDetails.rejectionReason}</div>` : ''}
+                        <span class="badge ${statusBadgeClass} text-uppercase">${statusLabel}</span>
+                        ${u.verificationDetails?.rejectionReason ? `<div class="small text-danger mt-1" style="font-size:0.75rem;"><strong>Rejection Note:</strong> ${u.verificationDetails.rejectionReason}</div>` : ''}
+                        ${u.verificationDetails?.reconsiderationReason ? `<div class="small text-primary mt-1" style="font-size:0.75rem;"><strong>Appeal:</strong> ${u.verificationDetails.reconsiderationReason}</div>` : ''}
                       </td>
                       <td>
                         <div class="d-flex gap-1 flex-wrap">
@@ -239,11 +249,7 @@ class AdminPortalManager {
                             <button class="btn btn-sm btn-outline-danger" title="Reject Request" onclick="window.SaveToServeAdmin.promptRejectUser('${u.id}')">
                               <i class="bi bi-x"></i> Reject
                             </button>
-                          ` : `
-                            <button class="btn btn-sm btn-soft-olive" title="Reconsider Application" onclick="window.SaveToServeAdmin.reconsiderUser('${u.id}')">
-                              <i class="bi bi-arrow-repeat"></i> Reconsider
-                            </button>
-                          `}
+                          ` : ''}
                         </div>
                       </td>
                     </tr>
@@ -277,6 +283,7 @@ class AdminPortalManager {
                 <option value="pending" ${this.ngoFilter === 'pending' ? 'selected' : ''}>Pending (${ngos.filter(d => d.kycStatus === 'pending').length})</option>
                 <option value="approved" ${this.ngoFilter === 'approved' ? 'selected' : ''}>Approved (${ngos.filter(d => d.kycStatus === 'approved').length})</option>
                 <option value="rejected" ${this.ngoFilter === 'rejected' ? 'selected' : ''}>Rejected (${ngos.filter(d => d.kycStatus === 'rejected').length})</option>
+                <option value="reconsideration_requested" ${this.ngoFilter === 'reconsideration_requested' ? 'selected' : ''}>Reconsideration (${ngos.filter(d => d.kycStatus === 'reconsideration_requested').length})</option>
               </select>
             </div>
           </div>
@@ -294,7 +301,15 @@ class AdminPortalManager {
               </thead>
               <tbody>
                 ${filteredNgos.map(u => {
-                  const statusBadgeClass = u.kycStatus === 'approved' ? 'bg-success' : u.kycStatus === 'rejected' ? 'bg-danger' : 'bg-warning text-dark';
+                  let statusBadgeClass = 'bg-warning text-dark';
+                  let statusLabel = u.kycStatus;
+                  if (u.kycStatus === 'approved') statusBadgeClass = 'bg-success text-white';
+                  else if (u.kycStatus === 'rejected') statusBadgeClass = 'bg-danger text-white';
+                  else if (u.kycStatus === 'reconsideration_requested') {
+                    statusBadgeClass = 'bg-info text-dark';
+                    statusLabel = 'Reconsideration Requested';
+                  }
+
                   return `
                     <tr>
                       <td>
@@ -307,8 +322,9 @@ class AdminPortalManager {
                         <div class="small text-muted">${u.phone}</div>
                       </td>
                       <td>
-                        <span class="badge ${statusBadgeClass} text-uppercase">${u.kycStatus}</span>
-                        ${u.verificationDetails?.rejectionReason ? `<div class="small text-danger mt-1" style="font-size:0.75rem;">${u.verificationDetails.rejectionReason}</div>` : ''}
+                        <span class="badge ${statusBadgeClass} text-uppercase">${statusLabel}</span>
+                        ${u.verificationDetails?.rejectionReason ? `<div class="small text-danger mt-1" style="font-size:0.75rem;"><strong>Rejection Note:</strong> ${u.verificationDetails.rejectionReason}</div>` : ''}
+                        ${u.verificationDetails?.reconsiderationReason ? `<div class="small text-primary mt-1" style="font-size:0.75rem;"><strong>Appeal:</strong> ${u.verificationDetails.reconsiderationReason}</div>` : ''}
                       </td>
                       <td>
                         <div class="d-flex gap-1 flex-wrap">
@@ -324,11 +340,7 @@ class AdminPortalManager {
                             <button class="btn btn-sm btn-outline-danger" title="Reject NGO" onclick="window.SaveToServeAdmin.promptRejectUser('${u.id}')">
                               <i class="bi bi-x"></i> Reject
                             </button>
-                          ` : `
-                            <button class="btn btn-sm btn-soft-olive" title="Reconsider Application" onclick="window.SaveToServeAdmin.reconsiderUser('${u.id}')">
-                              <i class="bi bi-arrow-repeat"></i> Reconsider
-                            </button>
-                          `}
+                          ` : ''}
                         </div>
                       </td>
                     </tr>
@@ -362,6 +374,7 @@ class AdminPortalManager {
                 <option value="pending" ${this.volFilter === 'pending' ? 'selected' : ''}>Pending (${volunteers.filter(d => d.kycStatus === 'pending').length})</option>
                 <option value="approved" ${this.volFilter === 'approved' ? 'selected' : ''}>Approved (${volunteers.filter(d => d.kycStatus === 'approved').length})</option>
                 <option value="rejected" ${this.volFilter === 'rejected' ? 'selected' : ''}>Rejected (${volunteers.filter(d => d.kycStatus === 'rejected').length})</option>
+                <option value="reconsideration_requested" ${this.volFilter === 'reconsideration_requested' ? 'selected' : ''}>Reconsideration (${volunteers.filter(d => d.kycStatus === 'reconsideration_requested').length})</option>
               </select>
             </div>
           </div>
@@ -379,7 +392,15 @@ class AdminPortalManager {
               </thead>
               <tbody>
                 ${filteredVols.map(u => {
-                  const statusBadgeClass = u.kycStatus === 'approved' ? 'bg-success' : u.kycStatus === 'rejected' ? 'bg-danger' : 'bg-warning text-dark';
+                  let statusBadgeClass = 'bg-warning text-dark';
+                  let statusLabel = u.kycStatus;
+                  if (u.kycStatus === 'approved') statusBadgeClass = 'bg-success text-white';
+                  else if (u.kycStatus === 'rejected') statusBadgeClass = 'bg-danger text-white';
+                  else if (u.kycStatus === 'reconsideration_requested') {
+                    statusBadgeClass = 'bg-info text-dark';
+                    statusLabel = 'Reconsideration Requested';
+                  }
+
                   return `
                     <tr>
                       <td>
@@ -396,8 +417,9 @@ class AdminPortalManager {
                         <div class="small text-muted">${u.phone}</div>
                       </td>
                       <td>
-                        <span class="badge ${statusBadgeClass} text-uppercase">${u.kycStatus}</span>
-                        ${u.verificationDetails?.rejectionReason ? `<div class="small text-danger mt-1" style="font-size:0.75rem;">${u.verificationDetails.rejectionReason}</div>` : ''}
+                        <span class="badge ${statusBadgeClass} text-uppercase">${statusLabel}</span>
+                        ${u.verificationDetails?.rejectionReason ? `<div class="small text-danger mt-1" style="font-size:0.75rem;"><strong>Rejection Note:</strong> ${u.verificationDetails.rejectionReason}</div>` : ''}
+                        ${u.verificationDetails?.reconsiderationReason ? `<div class="small text-primary mt-1" style="font-size:0.75rem;"><strong>Appeal:</strong> ${u.verificationDetails.reconsiderationReason}</div>` : ''}
                       </td>
                       <td>
                         <div class="d-flex gap-1 flex-wrap">
@@ -413,11 +435,7 @@ class AdminPortalManager {
                             <button class="btn btn-sm btn-outline-danger" title="Reject Volunteer" onclick="window.SaveToServeAdmin.promptRejectUser('${u.id}')">
                               <i class="bi bi-x"></i> Reject
                             </button>
-                          ` : `
-                            <button class="btn btn-sm btn-soft-olive" title="Reconsider Application" onclick="window.SaveToServeAdmin.reconsiderUser('${u.id}')">
-                              <i class="bi bi-arrow-repeat"></i> Reconsider
-                            </button>
-                          `}
+                          ` : ''}
                         </div>
                       </td>
                     </tr>
@@ -430,13 +448,89 @@ class AdminPortalManager {
       `;
     }
 
-    // 4. MANAGE DONATIONS SECTION
+    // 4. RECONSIDERATION QUEUE SECTION
+    if (tabName === 'reconsideration-queue') {
+      return `
+        <div class="custom-card">
+          <div class="custom-card-header">
+            <div>
+              <h5 class="card-title-custom"><i class="bi bi-arrow-repeat text-warning"></i> Reconsideration Appeals Queue</h5>
+              <div class="text-muted small">Review and rule on applicants appealing prior verification rejection decisions</div>
+            </div>
+            <span class="badge bg-warning text-dark">${reconsiderationUsers.length} Active Appeals</span>
+          </div>
+
+          ${reconsiderationUsers.length === 0 ? `
+            <div class="text-center py-5">
+              <i class="bi bi-check2-all fs-1 text-success mb-2 d-block"></i>
+              <h6 class="fw-bold">No Pending Reconsiderations</h6>
+              <p class="small text-muted">All rejected applicant appeals have been reviewed.</p>
+            </div>
+          ` : `
+            <div class="table-responsive-custom">
+              <table class="table-custom">
+                <thead>
+                  <tr>
+                    <th>Applicant / Role</th>
+                    <th>Previous Rejection Reason</th>
+                    <th>Applicant's Reconsideration Explanation</th>
+                    <th>Document Details</th>
+                    <th>Decision Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${reconsiderationUsers.map(u => `
+                    <tr>
+                      <td>
+                        <strong style="color:var(--dark-olive);">${u.name}</strong>
+                        <div><span class="badge badge-${u.role}">${u.role.toUpperCase()}</span></div>
+                        <div class="small text-muted">${u.orgName || u.email}</div>
+                      </td>
+                      <td>
+                        <div class="p-2 rounded bg-light border text-danger small" style="max-width:260px;">
+                          ${u.verificationDetails?.rejectionReason || 'Document verification could not be validated.'}
+                        </div>
+                      </td>
+                      <td>
+                        <div class="p-2 rounded bg-white border text-dark small" style="max-width:300px;">
+                          <strong>Appeal Note:</strong> "${u.verificationDetails?.reconsiderationReason || 'Updated documentation submitted'}"
+                          <div class="text-muted mt-1" style="font-size:0.72rem;"><i class="bi bi-clock"></i> ${u.verificationDetails?.reconsiderationSubmittedAt ? new Date(u.verificationDetails.reconsiderationSubmittedAt).toLocaleDateString() : 'Recent'}</div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="small"><strong>Type:</strong> ${u.verificationDetails?.docType || 'Official Credential'}</div>
+                        <div class="small text-muted font-monospace">${u.verificationDetails?.docNumber || ''}</div>
+                      </td>
+                      <td>
+                        <div class="d-flex flex-column gap-1">
+                          <button class="btn btn-sm btn-olive" onclick="window.SaveToServeAdmin.approveUser('${u.id}')">
+                            <i class="bi bi-check2-circle"></i> Approve Reconsideration
+                          </button>
+                          <button class="btn btn-sm btn-outline-danger" onclick="window.SaveToServeAdmin.promptRejectUser('${u.id}')">
+                            <i class="bi bi-x-circle"></i> Reject Appeal
+                          </button>
+                          <button class="btn btn-sm btn-outline-secondary" onclick="window.SaveToServeAdmin.viewUserDetails('${u.id}')">
+                            <i class="bi bi-eye"></i> Full Dossier
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    // 5. MANAGE DONATIONS SECTION
     if (tabName === 'manage-donations') {
       return `
         <div class="custom-card">
           <div class="custom-card-header">
-            <h5 class="card-title-custom"><i class="bi bi-shield-check text-success"></i> Manage Surplus Listings & Food Safety</h5>
-            <span class="badge bg-secondary">${donations.length} Total Listings</span>
+            <h5 class="card-title-custom"><i class="bi bi-box2-heart text-success"></i> Manage Surplus Food Listings</h5>
+            <span class="badge bg-secondary">${donations.length} Listings</span>
           </div>
 
           <div class="table-responsive-custom">
@@ -489,7 +583,7 @@ class AdminPortalManager {
       `;
     }
 
-    // 5. MANAGE USERS SECTION
+    // 6. MANAGE USERS SECTION
     if (tabName === 'manage-users') {
       const filteredUsers = users.filter(u => {
         if (this.userFilter === 'all') return true;
@@ -500,8 +594,8 @@ class AdminPortalManager {
         <div class="custom-card">
           <div class="custom-card-header">
             <div>
-              <h5 class="card-title-custom"><i class="bi bi-people text-success"></i> Registered Platform Users</h5>
-              <div class="text-muted small">Overview of all system accounts and roles</div>
+              <h5 class="card-title-custom"><i class="bi bi-people text-success"></i> Registered Platform Accounts</h5>
+              <div class="text-muted small">Permanent account profiles and roles</div>
             </div>
             <div class="d-flex align-items-center gap-2">
               <span class="small text-muted fw-bold">Role:</span>
@@ -520,8 +614,8 @@ class AdminPortalManager {
               <thead>
                 <tr>
                   <th>User / Organization</th>
-                  <th>Role</th>
-                  <th>Email & Phone</th>
+                  <th>Permanent Role</th>
+                  <th>Contact</th>
                   <th>Verification Status</th>
                   <th>Actions</th>
                 </tr>
@@ -547,7 +641,7 @@ class AdminPortalManager {
                     </td>
                     <td>
                       <button class="btn btn-sm btn-outline-secondary" onclick="window.SaveToServeAdmin.viewUserDetails('${u.id}')">
-                        <i class="bi bi-eye"></i> View
+                        <i class="bi bi-eye"></i> View Profile
                       </button>
                     </td>
                   </tr>
@@ -559,42 +653,12 @@ class AdminPortalManager {
       `;
     }
 
-    // 6. WEATHER RESCUE EMBED
-    if (tabName === 'weather-rescue') {
-      return `
-        <div class="custom-card">
-          <div class="custom-card-header">
-            <h5 class="card-title-custom"><i class="bi bi-cloud-rain-heavy text-success"></i> Weather Rescue Operations</h5>
-            <button class="btn btn-sm btn-olive" onclick="window.SaveToServeApp.navigateTo('weather-rescue')">
-              <i class="bi bi-box-arrow-up-right"></i> Open Weather Rescue View
-            </button>
-          </div>
-          <p class="text-muted small">Monitor real-time weather risk calculations, alternative dispatch corridors, and route safe holding hubs.</p>
-        </div>
-      `;
-    }
-
-    // 7. IMPACT DASHBOARD EMBED
-    if (tabName === 'impact-dashboard') {
-      return `
-        <div class="custom-card">
-          <div class="custom-card-header">
-            <h5 class="card-title-custom"><i class="bi bi-graph-up-arrow text-success"></i> Food Rescue Impact Dashboard</h5>
-            <button class="btn btn-sm btn-olive" onclick="window.SaveToServeApp.navigateTo('impact-dashboard')">
-              <i class="bi bi-box-arrow-up-right"></i> Open Full Impact Dashboard
-            </button>
-          </div>
-          <p class="text-muted small">Track total meals rescued, kilograms of waste diverted, and carbon offset calculations.</p>
-        </div>
-      `;
-    }
-
-    // 8. AUDIT LOGS & REPORTS SECTION
+    // 7. AUDIT LOGS SECTION
     if (tabName === 'audit-logs') {
       return `
         <div class="custom-card">
           <div class="custom-card-header">
-            <h5 class="card-title-custom"><i class="bi bi-journal-text text-success"></i> Platform Activity & Verification Audit Trail</h5>
+            <h5 class="card-title-custom"><i class="bi bi-journal-text text-success"></i> Audit Logs & Activity Trail</h5>
             <button class="btn btn-outline-secondary btn-sm" onclick="window.SaveToServeAdmin.exportAuditLogs()">
               <i class="bi bi-download"></i> Export Logs (JSON)
             </button>
@@ -652,29 +716,29 @@ class AdminPortalManager {
   }
 
   approveUser(userId) {
-    const user = window.SaveToServeAuth.getCurrentUser();
+    const user = window.SaveToServeAuth?.getCurrentUser();
     if (!user || user.role !== 'admin') {
       window.SaveToServeApp?.showToast('Super Admin privileges required.', 'danger');
       return;
     }
 
-    const res = window.SaveToServeDB.updateKycStatus(userId, 'approved');
-    if (res.success) {
+    const res = window.SaveToServeDB?.updateKycStatus(userId, 'approved');
+    if (res && res.success) {
       window.SaveToServeApp?.showToast(`Verification Approved for ${res.user.name}!`, 'success');
       this.render();
     } else {
-      window.SaveToServeApp?.showToast(res.message, 'danger');
+      window.SaveToServeApp?.showToast(res ? res.message : 'Error approving user.', 'danger');
     }
   }
 
   promptRejectUser(userId) {
-    const user = window.SaveToServeAuth.getCurrentUser();
+    const user = window.SaveToServeAuth?.getCurrentUser();
     if (!user || user.role !== 'admin') {
       window.SaveToServeApp?.showToast('Super Admin privileges required.', 'danger');
       return;
     }
 
-    const targetUser = window.SaveToServeDB.getUserById(userId);
+    const targetUser = window.SaveToServeDB?.getUserById(userId);
     if (!targetUser) return;
 
     const modalTitle = document.getElementById('globalModalTitle');
@@ -714,7 +778,7 @@ class AdminPortalManager {
   }
 
   confirmRejectUser(userId) {
-    const user = window.SaveToServeAuth.getCurrentUser();
+    const user = window.SaveToServeAuth?.getCurrentUser();
     if (!user || user.role !== 'admin') {
       window.SaveToServeApp?.showToast('Super Admin privileges required.', 'danger');
       return;
@@ -724,7 +788,7 @@ class AdminPortalManager {
     const custom = document.getElementById('rejectCustomReason')?.value.trim();
     const reason = (preset === 'Custom' || !preset) ? (custom || 'Document verification could not be completed.') : (custom ? `${preset} Note: ${custom}` : preset);
 
-    const res = window.SaveToServeDB.updateKycStatus(userId, 'rejected', reason);
+    const res = window.SaveToServeDB?.updateKycStatus(userId, 'rejected', reason);
     
     const modalEl = document.getElementById('globalModal');
     if (modalEl && typeof bootstrap !== 'undefined') {
@@ -732,67 +796,67 @@ class AdminPortalManager {
       if (bsModal) bsModal.hide();
     }
 
-    if (res.success) {
+    if (res && res.success) {
       window.SaveToServeApp?.showToast(`Application rejected for ${res.user.name}. Reason recorded.`, 'warning');
       this.render();
     } else {
-      window.SaveToServeApp?.showToast(res.message, 'danger');
-    }
-  }
-
-  reconsiderUser(userId) {
-    const user = window.SaveToServeAuth.getCurrentUser();
-    if (!user || user.role !== 'admin') {
-      window.SaveToServeApp?.showToast('Super Admin privileges required.', 'danger');
-      return;
-    }
-
-    const res = window.SaveToServeDB.updateKycStatus(userId, 'pending', '');
-    if (res.success) {
-      window.SaveToServeApp?.showToast(`Application reset to Pending for reconsideration.`, 'info');
-      this.render();
+      window.SaveToServeApp?.showToast(res ? res.message : 'Error updating user.', 'danger');
     }
   }
 
   viewUserDetails(userId) {
-    const user = window.SaveToServeDB.getUserById(userId);
+    const user = window.SaveToServeDB?.getUserById(userId);
     if (!user) return;
 
     const modalTitle = document.getElementById('globalModalTitle');
     const modalBody = document.getElementById('globalModalBody');
     if (!modalTitle || !modalBody) return;
 
-    modalTitle.innerHTML = `<i class="bi bi-person-badge text-success me-2"></i> ${user.name} — Profile & Verification`;
+    modalTitle.innerHTML = `<i class="bi bi-person-badge text-success me-2"></i> ${user.name} — Profile & Dossier`;
     modalBody.innerHTML = `
       <div class="row g-3">
         <div class="col-md-6">
-          <label class="small text-muted font-weight-bold">Full Name</label>
+          <label class="small text-muted fw-bold">Full Name</label>
           <div class="fw-bold text-dark">${user.name}</div>
         </div>
         <div class="col-md-6">
-          <label class="small text-muted font-weight-bold">Role Type</label>
+          <label class="small text-muted fw-bold">Role Type</label>
           <div><span class="badge badge-${user.role}">${user.role.toUpperCase()}</span></div>
         </div>
         <div class="col-md-6">
-          <label class="small text-muted font-weight-bold">Organization</label>
+          <label class="small text-muted fw-bold">Organization</label>
           <div>${user.orgName || '-'}</div>
         </div>
         <div class="col-md-6">
-          <label class="small text-muted font-weight-bold">Current KYC Status</label>
+          <label class="small text-muted fw-bold">Current KYC Status</label>
           <div><span class="badge ${user.kycStatus === 'approved' ? 'bg-success' : user.kycStatus === 'rejected' ? 'bg-danger' : 'bg-warning text-dark'} text-uppercase">${user.kycStatus}</span></div>
         </div>
         <div class="col-md-6">
-          <label class="small text-muted font-weight-bold">Email</label>
+          <label class="small text-muted fw-bold">Email</label>
           <div>${user.email}</div>
         </div>
         <div class="col-md-6">
-          <label class="small text-muted font-weight-bold">Phone</label>
+          <label class="small text-muted fw-bold">Phone</label>
           <div>${user.phone}</div>
         </div>
         <div class="col-12">
-          <label class="small text-muted font-weight-bold">Address</label>
+          <label class="small text-muted fw-bold">Address</label>
           <div>${user.address}</div>
         </div>
+        ${user.verificationDetails?.rejectionReason ? `
+          <div class="col-12">
+            <div class="alert alert-danger py-2 small mb-0">
+              <strong>Previous Rejection Reason:</strong> ${user.verificationDetails.rejectionReason}
+            </div>
+          </div>
+        ` : ''}
+        ${user.verificationDetails?.reconsiderationReason ? `
+          <div class="col-12">
+            <div class="alert alert-info py-2 small mb-0">
+              <strong>Applicant's Reconsideration Note:</strong> ${user.verificationDetails.reconsiderationReason}
+            </div>
+          </div>
+        ` : ''}
       </div>
     `;
 
@@ -804,32 +868,32 @@ class AdminPortalManager {
   }
 
   flagDonation(donationId) {
-    const user = window.SaveToServeAuth.getCurrentUser();
+    const user = window.SaveToServeAuth?.getCurrentUser();
     if (!user || user.role !== 'admin') {
       window.SaveToServeApp?.showToast('Super Admin privileges required.', 'danger');
       return;
     }
 
-    const d = window.SaveToServeDB.getDonationById(donationId);
+    const d = window.SaveToServeDB?.getDonationById(donationId);
     if (!d) return;
     d.status = 'flagged';
-    window.SaveToServeDB.saveState();
+    window.SaveToServeDB?.saveState();
     window.SaveToServeApp?.showToast(`Listing ${d.foodName} flagged for food safety review.`, 'warning');
     this.render('manage-donations');
   }
 
   removeDonation(donationId) {
-    const user = window.SaveToServeAuth.getCurrentUser();
+    const user = window.SaveToServeAuth?.getCurrentUser();
     if (!user || user.role !== 'admin') {
       window.SaveToServeApp?.showToast('Super Admin privileges required.', 'danger');
       return;
     }
 
     if (confirm('Are you sure you want to remove this food listing from the platform?')) {
-      const idx = window.SaveToServeDB.state.donations.findIndex(x => x.id === donationId);
-      if (idx !== -1) {
-        window.SaveToServeDB.state.donations.splice(idx, 1);
-        window.SaveToServeDB.saveState();
+      const idx = window.SaveToServeDB?.state.donations.findIndex(x => x.id === donationId);
+      if (idx !== -1 && idx !== undefined) {
+        window.SaveToServeDB?.state.donations.splice(idx, 1);
+        window.SaveToServeDB?.saveState();
         window.SaveToServeApp?.showToast('Listing removed successfully.', 'info');
         this.render('manage-donations');
       }
@@ -837,7 +901,7 @@ class AdminPortalManager {
   }
 
   exportAuditLogs() {
-    const logs = window.SaveToServeDB.getActivityLogs();
+    const logs = window.SaveToServeDB?.getActivityLogs() || [];
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(logs, null, 2));
     const dlAnchor = document.createElement('a');
     dlAnchor.setAttribute("href", dataStr);

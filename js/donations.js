@@ -85,12 +85,12 @@ class DonorPortalManager {
         <!-- Donor Profile Header -->
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-3 border-bottom">
           <div class="d-flex align-items-center gap-3">
-            <div class="stat-icon icon-purple" style="width:54px;height:54px;border-radius:14px;">
+            <div class="stat-icon icon-green" style="width:54px;height:54px;border-radius:14px;">
               <i class="bi bi-shop-window fs-2"></i>
             </div>
             <div>
               <div class="d-flex align-items-center gap-2 flex-wrap">
-                <h3 class="mb-0 fw-bold" style="color:var(--deep-purple);">${user.orgName || user.name}</h3>
+                <h3 class="mb-0 fw-bold" style="color:var(--dark-olive);">${user.orgName || user.name}</h3>
                 <span class="badge ${isApproved ? 'badge-ngo' : user.kycStatus === 'rejected' ? 'bg-danger text-white' : 'badge-admin'}">
                   ${isApproved ? '✓ Verified Kitchen' : user.kycStatus === 'rejected' ? '✕ Verification Rejected' : '⏳ Verification Pending'}
                 </span>
@@ -99,7 +99,7 @@ class DonorPortalManager {
             </div>
           </div>
           <div class="d-flex gap-2">
-            <button class="btn btn-purple" onclick="window.SaveToServeDonor.switchTab('post-donation')" ${!isApproved ? 'disabled title="Verification required to post surplus"' : ''}>
+            <button class="btn btn-olive" onclick="window.SaveToServeDonor.switchTab('post-donation')" ${!isApproved ? 'disabled title="Verification required to post surplus"' : ''}>
               <i class="bi bi-plus-circle"></i> Post Surplus Food
             </button>
             <button class="btn btn-outline-danger" onclick="window.SaveToServeApp.logout()" title="Logout from Donor Portal">
@@ -112,7 +112,7 @@ class DonorPortalManager {
         <div class="row g-3 mb-4">
           <div class="col-md-4 col-6">
             <div class="stat-card">
-              <div class="stat-icon icon-purple"><i class="bi bi-box2-heart"></i></div>
+              <div class="stat-icon icon-green"><i class="bi bi-box2-heart"></i></div>
               <div>
                 <div class="stat-value">${activeCount}</div>
                 <div class="stat-label">Active Listings</div>
@@ -264,7 +264,7 @@ class DonorPortalManager {
 
             <div class="d-flex justify-content-end gap-2">
               <button type="button" class="btn btn-outline-secondary" onclick="window.SaveToServeDonor.switchTab('my-donations')">Cancel</button>
-              <button type="submit" class="btn btn-purple">
+              <button type="submit" class="btn btn-olive">
                 <i class="bi bi-cloud-arrow-up"></i> Publish Surplus Listing
               </button>
             </div>
@@ -297,15 +297,15 @@ class DonorPortalManager {
                 <div class="col-lg-6">
                   <div class="p-3 border rounded h-100" style="background:#FAF9FC;">
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                      <h6 class="fw-bold mb-0" style="color:var(--deep-purple);">${d.foodName}</h6>
+                      <h6 class="fw-bold mb-0" style="color:var(--dark-olive);">${d.foodName}</h6>
                       <span class="badge ${d.status === 'completed' ? 'bg-success' : 'bg-warning text-dark'} text-uppercase">${d.status}</span>
                     </div>
 
                     <p class="small text-muted mb-2">Claimed by: <strong>${d.claimedByNgoName || 'Authorized NGO Partner'}</strong></p>
 
-                    <div class="p-2 rounded mb-2 text-center" style="background:var(--pastel-lavender); border: 1.5px dashed var(--primary-purple);">
+                    <div class="p-2 rounded mb-2 text-center" style="background:var(--light-olive); border: 1.5px dashed var(--primary-olive);">
                       <div class="small text-muted">Handoff Verification Code:</div>
-                      <div class="fs-4 fw-bold font-monospace" style="color:var(--deep-purple); letter-spacing: 2px;">${d.pickupCode}</div>
+                      <div class="fs-4 fw-bold font-monospace" style="color:var(--dark-olive); letter-spacing: 2px;">${d.pickupCode}</div>
                     </div>
 
                     <div class="small text-muted">
@@ -333,7 +333,7 @@ class DonorPortalManager {
             <i class="bi bi-basket2 fs-1 text-muted mb-3 d-block"></i>
             <h4>No Active Surplus Listings</h4>
             <p class="text-muted mb-4">You have not listed any surplus food yet. Help prevent food waste by posting your existing surplus.</p>
-            <button class="btn btn-purple" onclick="window.SaveToServeDonor.switchTab('post-donation')">
+            <button class="btn btn-olive" onclick="window.SaveToServeDonor.switchTab('post-donation')">
               <i class="bi bi-plus-circle"></i> Post Your First Surplus Listing
             </button>
           </div>
@@ -367,7 +367,7 @@ class DonorPortalManager {
                       </div>
                       <div>
                         <span class="meta-item-label">Status</span>
-                        <span class="meta-item-value text-uppercase" style="color:var(--primary-purple);">${d.status}</span>
+                        <span class="meta-item-value text-uppercase" style="color:var(--primary-olive);">${d.status}</span>
                       </div>
                     </div>
 
@@ -383,7 +383,7 @@ class DonorPortalManager {
                           <i class="bi bi-x-circle"></i> Cancel
                         </button>
                       ` : `
-                        <button class="btn btn-sm btn-soft-purple w-100" onclick="window.SaveToServeDonor.switchTab('track-pickups')">
+                        <button class="btn btn-sm btn-soft-olive w-100" onclick="window.SaveToServeDonor.switchTab('track-pickups')">
                           <i class="bi bi-eye"></i> View Code & Status
                         </button>
                       `}

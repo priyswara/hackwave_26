@@ -1,13 +1,12 @@
 /**
  * Save to Serve - Master Application Controller & Router
  * Tagline: Save Food. Serve People. Reduce Waste.
- * Complete Portal Routing, Dedicated Role-Based Auth Flow, Session Isolation & Toast Notifications
+ * Strict Role-Based Portal Isolation, Separate Role Navigation, Olive-Green Design
  * 
  * NOTE ON SECURITY ARCHITECTURE:
- * Client-side role checks and session validation provide immediate UI isolation
- * and guard views during client sessions. In a multi-user production deployment,
- * role authorization and session tokens must also be cryptographically signed
- * and strictly validated by the backend server on every API endpoint.
+ * Client-side role checks and session isolation enforce clean operational boundaries
+ * during user sessions. In a multi-user production deployment, all role authorization
+ * and session tokens must also be validated server-side on every backend API route.
  */
 
 const PORTAL_NAMES = {
@@ -20,7 +19,7 @@ const PORTAL_NAMES = {
 class SaveToServeAppController {
   constructor() {
     this.currentRoute = 'home';
-    this.activeAuthRole = 'donor'; // default portal context: 'donor' | 'ngo' | 'volunteer' | 'admin'
+    this.activeAuthRole = 'donor';
     this.init();
   }
 
@@ -28,7 +27,7 @@ class SaveToServeAppController {
     window.addEventListener('hashchange', () => this.handleRouting());
     
     window.addEventListener('savetoserve:authchange', () => {
-      this.updateNavbarUserBadge();
+      this.renderNavbar();
       this.handleRouting();
     });
 
@@ -37,7 +36,7 @@ class SaveToServeAppController {
     }, 30000);
 
     document.addEventListener('DOMContentLoaded', () => {
-      this.updateNavbarUserBadge();
+      this.renderNavbar();
       this.handleRouting();
     });
   }
@@ -49,15 +48,14 @@ class SaveToServeAppController {
 
   openPortalAuth(role) {
     const targetRole = role || 'donor';
-    const user = window.SaveToServeAuth.getCurrentUser();
+    const user = window.SaveToServeAuth?.getCurrentUser();
 
     if (user) {
       if (user.role === targetRole) {
         this.navigateTo(`${targetRole}-portal`);
       } else {
-        const activePortalName = PORTAL_NAMES[user.role] || user.role;
-        this.showToast(`You are currently logged in to the ${activePortalName} portal. Please log out before accessing another portal.`, 'warning');
-        this.showPortalConflictModal(targetRole, user.role);
+        this.showToast('You do not have permission to access this portal. Please log in through your registered portal.', 'danger');
+        this.showAccessDeniedModal(targetRole, user.role);
       }
     } else {
       this.activeAuthRole = targetRole;
@@ -67,16 +65,18 @@ class SaveToServeAppController {
 
   openPortalRegister(role) {
     const targetRole = role || 'donor';
-    const user = window.SaveToServeAuth.getCurrentUser();
+    if (targetRole === 'admin') {
+      this.showToast('Super Admin accounts cannot be registered publicly.', 'warning');
+      return;
+    }
 
+    const user = window.SaveToServeAuth?.getCurrentUser();
     if (user) {
       if (user.role === targetRole) {
-        this.showToast(`You are already logged into the ${PORTAL_NAMES[user.role]} portal.`, 'info');
         this.navigateTo(`${targetRole}-portal`);
       } else {
-        const activePortalName = PORTAL_NAMES[user.role] || user.role;
-        this.showToast(`You are currently logged in to the ${activePortalName} portal. Please log out before accessing another portal.`, 'warning');
-        this.showPortalConflictModal(targetRole, user.role);
+        this.showToast('You do not have permission to access this portal. Please log in through your registered portal.', 'danger');
+        this.showAccessDeniedModal(targetRole, user.role);
       }
     } else {
       this.activeAuthRole = targetRole;
@@ -84,33 +84,32 @@ class SaveToServeAppController {
     }
   }
 
-  showPortalConflictModal(attemptedRole, activeRole) {
+  showAccessDeniedModal(attemptedRole, activeRole) {
     const modalTitle = document.getElementById('globalModalTitle');
     const modalBody = document.getElementById('globalModalBody');
     if (!modalTitle || !modalBody) return;
 
     const activePortalName = PORTAL_NAMES[activeRole] || activeRole;
-    const attemptedPortalName = PORTAL_NAMES[attemptedRole] || attemptedRole;
 
-    modalTitle.innerHTML = `<i class="bi bi-shield-exclamation text-warning me-2"></i> Active Portal Session`;
+    modalTitle.innerHTML = `<i class="bi bi-shield-x text-danger me-2"></i> Access Denied`;
     modalBody.innerHTML = `
       <div class="text-center py-3">
-        <div class="stat-icon mx-auto mb-3" style="width:60px;height:60px;border-radius:50%;background-color:var(--light-olive);color:var(--dark-olive);font-size:1.75rem;">
-          <i class="bi bi-person-lock"></i>
+        <div class="stat-icon mx-auto mb-3" style="width:64px;height:64px;border-radius:50%;background-color:#FCEBE8;color:#9C3826;font-size:1.85rem;">
+          <i class="bi bi-shield-lock-fill"></i>
         </div>
-        <h5 class="fw-bold mb-2" style="color:var(--dark-olive);">One Active Portal Per User Session</h5>
-        <div class="alert alert-warning py-2 small mb-3 text-start">
-          <i class="bi bi-exclamation-triangle-fill me-1"></i> You are currently logged in to the <strong>${activePortalName}</strong> portal. Please log out before accessing another portal.
+        <h5 class="fw-bold mb-2" style="color:var(--dark-olive);">Unauthorized Portal Access</h5>
+        <div class="alert alert-danger py-2 small mb-3 text-start">
+          <i class="bi bi-exclamation-triangle-fill me-1"></i> You do not have permission to access this portal. Please log in through your registered portal.
         </div>
         <p class="text-muted small mb-4">
-          To switch to the <strong>${attemptedPortalName} Portal</strong>, please log out of your current <strong>${activePortalName}</strong> session.
+          Your account is registered exclusively as <strong>${activePortalName}</strong>. Save to Serve strictly isolates portal permissions to maintain operational safety.
         </p>
         <div class="d-flex flex-column flex-sm-row justify-content-center gap-2">
-          <button class="btn btn-outline-danger" onclick="window.SaveToServeApp.logoutAndOpenPortal('${attemptedRole}')">
-            <i class="bi bi-box-arrow-right"></i> Log Out & Switch to ${attemptedPortalName}
+          <button class="btn btn-olive" onclick="window.SaveToServeApp.closeAccessDeniedModalAndGoToDashboard()">
+            <i class="bi bi-grid-fill"></i> Return to ${activePortalName} Dashboard
           </button>
-          <button class="btn btn-olive" onclick="window.SaveToServeApp.closeConflictModalAndGoToDashboard()">
-            <i class="bi bi-arrow-return-left"></i> Return to ${activePortalName} Dashboard
+          <button class="btn btn-outline-danger" onclick="window.SaveToServeApp.logout()">
+            <i class="bi bi-box-arrow-right"></i> Logout
           </button>
         </div>
       </div>
@@ -123,28 +122,199 @@ class SaveToServeAppController {
     }
   }
 
-  logoutAndOpenPortal(targetRole) {
+  closeAccessDeniedModalAndGoToDashboard() {
     const modalEl = document.getElementById('globalModal');
     if (modalEl && typeof bootstrap !== 'undefined') {
       const bsModal = bootstrap.Modal.getInstance(modalEl);
       if (bsModal) bsModal.hide();
     }
-    window.SaveToServeAuth.logout();
-    this.showToast('Logged out successfully.', 'info');
-    this.openPortalAuth(targetRole);
-  }
-
-  closeConflictModalAndGoToDashboard() {
-    const modalEl = document.getElementById('globalModal');
-    if (modalEl && typeof bootstrap !== 'undefined') {
-      const bsModal = bootstrap.Modal.getInstance(modalEl);
-      if (bsModal) bsModal.hide();
-    }
-    const user = window.SaveToServeAuth.getCurrentUser();
+    const user = window.SaveToServeAuth?.getCurrentUser();
     if (user) {
       this.navigateTo(`${user.role}-portal`);
     } else {
       this.navigateTo('home');
+    }
+  }
+
+  renderNavbar() {
+    const user = window.SaveToServeAuth?.getCurrentUser();
+    const navContainer = document.getElementById('navbarDynamicArea');
+    const mobileBottomNav = document.getElementById('mobileBottomNav');
+    if (!navContainer) return;
+
+    if (!user || this.currentRoute === 'home') {
+      // Clean homepage: No global links, no public clutter
+      navContainer.innerHTML = '';
+      if (mobileBottomNav) {
+        mobileBottomNav.classList.add('d-none');
+        mobileBottomNav.innerHTML = '';
+      }
+      return;
+    }
+
+    const portalName = PORTAL_NAMES[user.role] || user.role.toUpperCase();
+
+    // Generate Role-Specific Navigation Links
+    let roleNavLinks = '';
+    let mobileNavLinks = '';
+
+    if (user.role === 'donor') {
+      roleNavLinks = `
+        <nav class="d-none d-lg-flex align-items-center gap-1">
+          <a href="#donor-portal" class="nav-link-custom" onclick="window.SaveToServeDonor?.switchTab('my-donations')">
+            <i class="bi bi-grid"></i> Dashboard
+          </a>
+          <a href="#donor-portal" class="nav-link-custom" onclick="window.SaveToServeDonor?.switchTab('post-donation')">
+            <i class="bi bi-plus-circle"></i> Add Food Donation
+          </a>
+          <a href="#donor-portal" class="nav-link-custom" onclick="window.SaveToServeDonor?.switchTab('my-donations')">
+            <i class="bi bi-list-ul"></i> My Donations
+          </a>
+          <a href="#donor-portal" class="nav-link-custom" onclick="window.SaveToServeDonor?.switchTab('track-pickups')">
+            <i class="bi bi-truck"></i> Track Donations
+          </a>
+          <a href="#donor-portal" class="nav-link-custom" onclick="window.SaveToServeDonor?.switchTab('kyc')">
+            <i class="bi bi-shield-check"></i> Verification
+          </a>
+        </nav>
+      `;
+      mobileNavLinks = `
+        <a href="#donor-portal" class="mobile-nav-item" onclick="window.SaveToServeDonor?.switchTab('my-donations')">
+          <i class="bi bi-grid"></i><span>Dashboard</span>
+        </a>
+        <a href="#donor-portal" class="mobile-nav-item" onclick="window.SaveToServeDonor?.switchTab('post-donation')">
+          <i class="bi bi-plus-circle"></i><span>Post Food</span>
+        </a>
+        <a href="#donor-portal" class="mobile-nav-item" onclick="window.SaveToServeDonor?.switchTab('track-pickups')">
+          <i class="bi bi-truck"></i><span>Track</span>
+        </a>
+        <a href="#donor-portal" class="mobile-nav-item" onclick="window.SaveToServeDonor?.switchTab('kyc')">
+          <i class="bi bi-shield-check"></i><span>KYC</span>
+        </a>
+      `;
+    } else if (user.role === 'ngo') {
+      roleNavLinks = `
+        <nav class="d-none d-lg-flex align-items-center gap-1">
+          <a href="#ngo-portal" class="nav-link-custom" onclick="window.SaveToServeNGO?.switchTab('browse-food')">
+            <i class="bi bi-grid"></i> Dashboard
+          </a>
+          <a href="#ngo-portal" class="nav-link-custom" onclick="window.SaveToServeNGO?.switchTab('browse-food')">
+            <i class="bi bi-basket2"></i> Browse Food
+          </a>
+          <a href="#ngo-portal" class="nav-link-custom" onclick="window.SaveToServeNGO?.switchTab('my-claims')">
+            <i class="bi bi-bag-check"></i> My Claims
+          </a>
+          <a href="#ngo-portal" class="nav-link-custom" onclick="window.SaveToServeNGO?.switchTab('my-claims')">
+            <i class="bi bi-check2-circle"></i> Confirm Receipt
+          </a>
+          <a href="#ngo-portal" class="nav-link-custom" onclick="window.SaveToServeNGO?.switchTab('post-req')">
+            <i class="bi bi-megaphone"></i> Urgent Requests
+          </a>
+        </nav>
+      `;
+      mobileNavLinks = `
+        <a href="#ngo-portal" class="mobile-nav-item" onclick="window.SaveToServeNGO?.switchTab('browse-food')">
+          <i class="bi bi-basket2"></i><span>Browse</span>
+        </a>
+        <a href="#ngo-portal" class="mobile-nav-item" onclick="window.SaveToServeNGO?.switchTab('my-claims')">
+          <i class="bi bi-bag-check"></i><span>Claims</span>
+        </a>
+        <a href="#ngo-portal" class="mobile-nav-item" onclick="window.SaveToServeNGO?.switchTab('post-req')">
+          <i class="bi bi-megaphone"></i><span>Requests</span>
+        </a>
+      `;
+    } else if (user.role === 'volunteer') {
+      roleNavLinks = `
+        <nav class="d-none d-lg-flex align-items-center gap-1">
+          <a href="#volunteer-portal" class="nav-link-custom" onclick="window.SaveToServeVolunteer?.switchTab('active-tasks')">
+            <i class="bi bi-grid"></i> Dashboard
+          </a>
+          <a href="#volunteer-portal" class="nav-link-custom" onclick="window.SaveToServeVolunteer?.switchTab('available-tasks')">
+            <i class="bi bi-bell"></i> Available Pickup Tasks
+          </a>
+          <a href="#volunteer-portal" class="nav-link-custom" onclick="window.SaveToServeVolunteer?.switchTab('active-tasks')">
+            <i class="bi bi-box-seam"></i> My Active Tasks
+          </a>
+          <a href="#volunteer-portal" class="nav-link-custom" onclick="window.SaveToServeVolunteer?.switchTab('history')">
+            <i class="bi bi-clock-history"></i> Task History
+          </a>
+          <a href="#volunteer-portal" class="nav-link-custom" onclick="window.SaveToServeVolunteer?.switchTab('kyc')">
+            <i class="bi bi-shield-check"></i> Safety Dossier
+          </a>
+        </nav>
+      `;
+      mobileNavLinks = `
+        <a href="#volunteer-portal" class="mobile-nav-item" onclick="window.SaveToServeVolunteer?.switchTab('active-tasks')">
+          <i class="bi bi-box-seam"></i><span>Active</span>
+        </a>
+        <a href="#volunteer-portal" class="mobile-nav-item" onclick="window.SaveToServeVolunteer?.switchTab('available-tasks')">
+          <i class="bi bi-bell"></i><span>Pickups</span>
+        </a>
+        <a href="#volunteer-portal" class="mobile-nav-item" onclick="window.SaveToServeVolunteer?.switchTab('history')">
+          <i class="bi bi-clock-history"></i><span>History</span>
+        </a>
+      `;
+    } else if (user.role === 'admin') {
+      roleNavLinks = `
+        <nav class="d-none d-lg-flex align-items-center gap-1">
+          <a href="#admin-portal" class="nav-link-custom" onclick="window.SaveToServeAdmin?.switchTab('donor-verification')">
+            <i class="bi bi-speedometer2"></i> Dashboard
+          </a>
+          <a href="#admin-portal" class="nav-link-custom" onclick="window.SaveToServeAdmin?.switchTab('donor-verification')">
+            <i class="bi bi-shop"></i> Donor Verification
+          </a>
+          <a href="#admin-portal" class="nav-link-custom" onclick="window.SaveToServeAdmin?.switchTab('ngo-verification')">
+            <i class="bi bi-building"></i> NGO Verification
+          </a>
+          <a href="#admin-portal" class="nav-link-custom" onclick="window.SaveToServeAdmin?.switchTab('volunteer-verification')">
+            <i class="bi bi-bicycle"></i> Volunteer Verification
+          </a>
+          <a href="#admin-portal" class="nav-link-custom" onclick="window.SaveToServeAdmin?.switchTab('reconsideration-queue')">
+            <i class="bi bi-arrow-repeat text-warning"></i> Reconsiderations
+          </a>
+          <a href="#admin-portal" class="nav-link-custom" onclick="window.SaveToServeAdmin?.switchTab('manage-donations')">
+            <i class="bi bi-box2-heart"></i> Manage Donations
+          </a>
+          <a href="#weather-rescue" class="nav-link-custom" onclick="window.SaveToServeApp.navigateTo('weather-rescue')">
+            <i class="bi bi-cloud-rain-heavy"></i> Weather Rescue
+          </a>
+          <a href="#holding-hubs" class="nav-link-custom" onclick="window.SaveToServeApp.navigateTo('holding-hubs')">
+            <i class="bi bi-snow"></i> Safe Hubs
+          </a>
+          <a href="#impact-dashboard" class="nav-link-custom" onclick="window.SaveToServeApp.navigateTo('impact-dashboard')">
+            <i class="bi bi-graph-up-arrow"></i> Impact & Reports
+          </a>
+        </nav>
+      `;
+      mobileNavLinks = `
+        <a href="#admin-portal" class="mobile-nav-item" onclick="window.SaveToServeAdmin?.switchTab('donor-verification')">
+          <i class="bi bi-shield-check"></i><span>Verifications</span>
+        </a>
+        <a href="#admin-portal" class="mobile-nav-item" onclick="window.SaveToServeAdmin?.switchTab('reconsideration-queue')">
+          <i class="bi bi-arrow-repeat"></i><span>Reconsider</span>
+        </a>
+        <a href="#weather-rescue" class="mobile-nav-item" onclick="window.SaveToServeApp.navigateTo('weather-rescue')">
+          <i class="bi bi-cloud-rain"></i><span>Weather</span>
+        </a>
+      `;
+    }
+
+    navContainer.innerHTML = `
+      ${roleNavLinks}
+      <div class="d-flex align-items-center gap-2 border-start ps-3 ms-2">
+        <div class="text-end d-none d-md-block" style="line-height:1.2;">
+          <div class="fw-bold small" style="color:var(--dark-olive);">${user.name}</div>
+          <span class="badge badge-${user.role}" style="font-size:0.68rem;">${portalName}</span>
+        </div>
+        <button class="btn btn-sm btn-outline-danger" onclick="window.SaveToServeApp.logout()" title="Logout">
+          <i class="bi bi-box-arrow-right"></i> Logout
+        </button>
+      </div>
+    `;
+
+    if (mobileBottomNav) {
+      mobileBottomNav.classList.remove('d-none');
+      mobileBottomNav.innerHTML = mobileNavLinks;
     }
   }
 
@@ -156,44 +326,41 @@ class SaveToServeAppController {
       'admin-portal': 'admin'
     };
 
-    const user = window.SaveToServeAuth.getCurrentUser();
+    const user = window.SaveToServeAuth?.getCurrentUser();
 
-    // Route guard checks for private portal dashboards
+    // Check if route is a protected portal dashboard
     if (portalRoutes[route]) {
       const expectedRole = portalRoutes[route];
-      const expectedPortalName = PORTAL_NAMES[expectedRole] || expectedRole;
 
       if (!user) {
-        // Unauthenticated access
         this.activeAuthRole = expectedRole;
         if (updateHash) window.location.hash = 'login';
-        this.renderAuthView('login', expectedRole, `Please sign in to access the ${expectedPortalName} Portal.`);
+        this.renderAuthView('login', expectedRole, `Please sign in to access the ${PORTAL_NAMES[expectedRole]} Portal.`);
+        this.renderNavbar();
         return;
       }
 
       if (user.role !== expectedRole) {
-        // Authenticated in wrong role!
-        const activePortalName = PORTAL_NAMES[user.role] || user.role;
-        this.showToast(`You are currently logged in to the ${activePortalName} portal. Please log out before accessing another portal.`, 'warning');
-        this.showPortalConflictModal(expectedRole, user.role);
+        this.showToast('You do not have permission to access this portal. Please log in through your registered portal.', 'danger');
+        this.showAccessDeniedModal(expectedRole, user.role);
         if (updateHash) window.location.hash = `${user.role}-portal`;
         this.navigateTo(`${user.role}-portal`, false);
         return;
       }
     }
 
-    // Guard for login/register while authenticated
+    // Protected feature routes
+    if (['weather-rescue', 'holding-hubs', 'impact-dashboard'].includes(route)) {
+      if (!user) {
+        this.activeAuthRole = 'donor';
+        this.navigateTo('login');
+        return;
+      }
+    }
+
+    // Check if visiting login/register while authenticated
     if (route === 'login' || route === 'register') {
       if (user) {
-        if (this.activeAuthRole && this.activeAuthRole !== user.role) {
-          const activePortalName = PORTAL_NAMES[user.role] || user.role;
-          this.showToast(`You are currently logged in to the ${activePortalName} portal. Please log out before accessing another portal.`, 'warning');
-          this.showPortalConflictModal(this.activeAuthRole, user.role);
-          if (updateHash) window.location.hash = `${user.role}-portal`;
-          this.navigateTo(`${user.role}-portal`, false);
-          return;
-        }
-        if (updateHash) window.location.hash = `${user.role}-portal`;
         this.navigateTo(`${user.role}-portal`, false);
         return;
       }
@@ -206,14 +373,6 @@ class SaveToServeAppController {
 
     const views = document.querySelectorAll('.app-view');
     views.forEach(v => v.classList.add('d-none'));
-
-    document.querySelectorAll('.nav-link-custom, .mobile-nav-item').forEach(el => {
-      if (el.getAttribute('data-route') === route) {
-        el.classList.add('active');
-      } else {
-        el.classList.remove('active');
-      }
-    });
 
     const targetEl = document.getElementById(`${route}-view`);
     if (targetEl) {
@@ -242,13 +401,6 @@ class SaveToServeAppController {
         case 'holding-hubs':
           window.SaveToServeHubs?.render();
           break;
-        case 'browse-food':
-          this.renderPublicBrowseFood();
-          break;
-        case 'notifications':
-          const notifEl = document.getElementById('notifications-view');
-          if (notifEl) notifEl.innerHTML = window.SaveToServeNotifications.renderView();
-          break;
         case 'login':
           this.renderAuthView('login', this.activeAuthRole);
           break;
@@ -257,45 +409,11 @@ class SaveToServeAppController {
           break;
         case 'home':
         default:
-          this.renderHomeStats();
           break;
       }
     }
-  }
 
-  updateNavbarUserBadge() {
-    const user = window.SaveToServeAuth.getCurrentUser();
-    const navUserContainer = document.getElementById('navbarUserArea');
-    if (!navUserContainer) return;
-
-    if (user) {
-      const portalName = PORTAL_NAMES[user.role] || user.role.toUpperCase();
-      navUserContainer.innerHTML = `
-        <div class="d-flex align-items-center gap-2">
-          <button class="btn btn-sm btn-soft-olive d-none d-sm-inline-flex align-items-center gap-1" onclick="window.SaveToServeApp.navigateTo('${user.role}-portal')">
-            <i class="bi bi-grid-fill"></i> My Dashboard
-          </button>
-          <div class="text-end d-none d-md-block" style="line-height:1.2;">
-            <div class="fw-bold small" style="color:var(--dark-olive);">${user.name}</div>
-            <span class="badge badge-${user.role}" style="font-size:0.68rem;">${portalName}</span>
-          </div>
-          <button class="btn btn-sm btn-outline-danger" onclick="window.SaveToServeApp.logout()" title="Logout from Save to Serve">
-            <i class="bi bi-box-arrow-right"></i> Logout
-          </button>
-        </div>
-      `;
-    } else {
-      navUserContainer.innerHTML = `
-        <div class="d-flex align-items-center gap-2">
-          <button class="btn btn-sm btn-soft-olive" onclick="window.SaveToServeApp.navigateTo('login')">
-            <i class="bi bi-person"></i> Sign In
-          </button>
-          <button class="btn btn-sm btn-olive" onclick="window.SaveToServeApp.navigateTo('register')">
-            Register
-          </button>
-        </div>
-      `;
-    }
+    this.renderNavbar();
   }
 
   logout() {
@@ -304,9 +422,10 @@ class SaveToServeAppController {
       const bsModal = bootstrap.Modal.getInstance(modalEl);
       if (bsModal) bsModal.hide();
     }
-    window.SaveToServeAuth.logout();
+    window.SaveToServeAuth?.logout();
     this.showToast('Logged out successfully.', 'info');
     this.navigateTo('home');
+    this.renderNavbar();
   }
 
   showToast(message, type = 'olive', durationMs = 4000) {
@@ -342,101 +461,21 @@ class SaveToServeAppController {
     if (this.currentRoute === 'weather-rescue') window.SaveToServeWeather?.renderWeatherDashboard();
   }
 
-  renderHomeStats() {
-    const impact = window.SaveToServeDB?.calculateImpact();
-    if (!impact) return;
-    const pRescued = document.getElementById('homePortionsRescued');
-    const wPrevented = document.getElementById('homeWastePrevented');
-    const bReached = document.getElementById('homeBeneficiaries');
-
-    if (pRescued) pRescued.innerText = impact.totalPortionsRescued;
-    if (wPrevented) wPrevented.innerText = `${impact.totalWastePreventedKg} kg`;
-    if (bReached) bReached.innerText = impact.estimatedBeneficiaries;
-  }
-
-  renderPublicBrowseFood() {
-    const container = document.getElementById('browse-food-view');
-    if (!container) return;
-
-    const donations = (window.SaveToServeDB?.getDonations() || []).filter(d => d.status === 'available');
-
-    container.innerHTML = `
-      <div class="container py-4">
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
-          <div>
-            <h2 class="mb-1 fw-bold" style="color:var(--dark-olive);">🍲 Available Surplus Food Listings</h2>
-            <p class="text-muted mb-0">Verified surplus cooked meals and produce awaiting rescue before safe deadlines.</p>
-          </div>
-          <button class="btn btn-olive" onclick="window.SaveToServeApp.openPortalAuth('donor')">
-            <i class="bi bi-plus-circle"></i> Donor? List Surplus Food
-          </button>
-        </div>
-
-        ${donations.length === 0 ? `
-          <div class="custom-card text-center py-5">
-            <i class="bi bi-inbox fs-1 text-muted mb-2 d-block"></i>
-            <h5 class="fw-bold">All Surplus Food Currently Rescued!</h5>
-            <p class="text-muted small">There are no unreserved surplus food donations right now.</p>
-          </div>
-        ` : `
-          <div class="row g-4">
-            ${donations.map(d => `
-              <div class="col-md-6 col-lg-4">
-                <div class="donation-card">
-                  <div class="donation-card-img-wrap">
-                    <img src="${d.imageUrl || 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=500'}" class="donation-card-img" alt="${d.foodName}">
-                    <div class="donation-card-badge-top">
-                      <span class="badge ${d.foodType === 'veg' ? 'bg-success' : 'bg-danger'} text-uppercase">${d.foodType}</span>
-                    </div>
-                    <div class="donation-card-badge-urgency">
-                      ${window.SaveToServeDonor ? window.SaveToServeDonor.getUrgencyBadge(d.safeUntil) : ''}
-                    </div>
-                  </div>
-                  <div class="donation-card-body">
-                    <h6 class="donation-title">${d.foodName}</h6>
-                    <div class="donation-donor-info"><i class="bi bi-shop"></i> ${d.donorOrg} (${d.donorAddress})</div>
-                    <div class="donation-meta-grid">
-                      <div>
-                        <span class="meta-item-label">Portions</span>
-                        <span class="meta-item-value">${d.portions} meals (~${d.quantityKg} kg)</span>
-                      </div>
-                      <div>
-                        <span class="meta-item-label">Category</span>
-                        <span class="meta-item-value">${d.category}</span>
-                      </div>
-                    </div>
-                    <p class="small text-muted mb-3"><i class="bi bi-info-circle"></i> ${d.storageInfo}</p>
-                    <div class="mt-auto pt-2 border-top">
-                      <button class="btn btn-olive w-100" onclick="window.SaveToServeApp.openPortalAuth('ngo')">
-                        <i class="bi bi-hand-thumbs-up"></i> Claim as NGO Shelter
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        `}
-      </div>
-    `;
-  }
-
   renderAuthView(type = 'login', role = null, noticeMessage = null) {
     if (role) this.activeAuthRole = role;
     const currentRole = this.activeAuthRole || 'donor';
 
     const roleMeta = {
-      donor: { title: 'Donor Portal', subtitle: 'For Restaurants, Banquets, Hostels & Caterers', icon: 'bi-shop', badge: 'Donor' },
+      donor: { title: 'Donor Portal', subtitle: 'For Restaurants, Hotels, Caterers & Food Kitchens', icon: 'bi-shop', badge: 'Donor' },
       ngo: { title: 'NGO Shelter Portal', subtitle: 'For Registered Shelters, Orphanages & Food Banks', icon: 'bi-building', badge: 'NGO' },
       volunteer: { title: 'Volunteer Portal', subtitle: 'For Food Rescue Couriers & Delivery Drivers', icon: 'bi-bicycle', badge: 'Volunteer' },
-      admin: { title: 'Super Admin Portal', subtitle: 'Authorized System Administrators Only', icon: 'bi-shield-lock', badge: 'Admin' }
+      admin: { title: 'Super Admin Portal', subtitle: 'Authorized System Administrators Only', icon: 'bi-shield-lock', badge: 'Super Admin' }
     };
 
     const activeMeta = roleMeta[currentRole] || roleMeta.donor;
     const container = document.getElementById(`${type}-view`);
     if (!container) return;
 
-    // Show container
     const views = document.querySelectorAll('.app-view');
     views.forEach(v => v.classList.add('d-none'));
     container.classList.remove('d-none');
@@ -445,25 +484,17 @@ class SaveToServeAppController {
     if (type === 'login') {
       container.innerHTML = `
         <div class="container py-4">
-          <!-- Back to Home & Portal Switcher -->
-          <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 max-w-600 mx-auto" style="max-width: 540px;">
+          <div class="mb-4 max-w-600 mx-auto" style="max-width: 500px;">
             <button class="btn btn-sm btn-soft-olive" onclick="window.SaveToServeApp.navigateTo('home')">
-              <i class="bi bi-arrow-left"></i> Back to Home
+              <i class="bi bi-arrow-left"></i> Back to Portal Selection
             </button>
-            <div class="d-flex align-items-center gap-1">
-              <span class="small text-muted me-1">Switch:</span>
-              <button class="btn btn-sm ${currentRole === 'donor' ? 'btn-olive' : 'btn-outline-secondary'}" onclick="window.SaveToServeApp.openPortalAuth('donor')">Donor</button>
-              <button class="btn btn-sm ${currentRole === 'ngo' ? 'btn-olive' : 'btn-outline-secondary'}" onclick="window.SaveToServeApp.openPortalAuth('ngo')">NGO</button>
-              <button class="btn btn-sm ${currentRole === 'volunteer' ? 'btn-olive' : 'btn-outline-secondary'}" onclick="window.SaveToServeApp.openPortalAuth('volunteer')">Volunteer</button>
-              <button class="btn btn-sm ${currentRole === 'admin' ? 'btn-olive' : 'btn-outline-secondary'}" onclick="window.SaveToServeApp.openPortalAuth('admin')">Admin</button>
-            </div>
           </div>
 
           <div class="row justify-content-center">
             <div class="col-lg-5 col-md-7 col-sm-10">
               <div class="custom-card shadow-md p-4">
                 <div class="text-center mb-4">
-                  <div class="portal-card-icon mx-auto mb-2" style="width:50px;height:50px;font-size:1.5rem;">
+                  <div class="portal-card-icon mx-auto mb-2" style="width:52px;height:52px;font-size:1.5rem;">
                     <i class="bi ${activeMeta.icon}"></i>
                   </div>
                   <h4 class="fw-bold mb-1" style="color:var(--dark-olive);">${activeMeta.title} Login</h4>
@@ -498,17 +529,13 @@ class SaveToServeAppController {
                   </button>
                 </form>
 
-                <div class="p-2 bg-light rounded text-center small text-muted mb-3 border">
-                  <span class="fw-bold text-dark">Default Access:</span> ${currentRole}@savetoserve.org / password123
-                </div>
-
                 ${currentRole !== 'admin' ? `
-                  <div class="text-center small text-muted">
+                  <div class="text-center small text-muted pt-2 border-top">
                     Don't have an account? <a href="#register" class="fw-bold text-success" onclick="window.SaveToServeApp.openPortalRegister('${currentRole}')">Register as ${activeMeta.badge}</a>
                   </div>
                 ` : `
-                  <div class="text-center small text-muted">
-                    <i class="bi bi-shield-lock-fill text-muted"></i> Super Admin registration is restricted.
+                  <div class="text-center small text-muted pt-2 border-top">
+                    <i class="bi bi-shield-lock-fill text-muted"></i> Super Admin registration is restricted to authorized operators.
                   </div>
                 `}
               </div>
@@ -520,28 +547,21 @@ class SaveToServeAppController {
       // REGISTRATION VIEW
       container.innerHTML = `
         <div class="container py-4">
-          <!-- Back to Home & Portal Switcher -->
-          <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 max-w-600 mx-auto" style="max-width: 600px;">
+          <div class="mb-4 max-w-600 mx-auto" style="max-width: 580px;">
             <button class="btn btn-sm btn-soft-olive" onclick="window.SaveToServeApp.navigateTo('home')">
-              <i class="bi bi-arrow-left"></i> Back to Home
+              <i class="bi bi-arrow-left"></i> Back to Portal Selection
             </button>
-            <div class="d-flex align-items-center gap-1">
-              <span class="small text-muted me-1">Role:</span>
-              <button class="btn btn-sm ${currentRole === 'donor' ? 'btn-olive' : 'btn-outline-secondary'}" onclick="window.SaveToServeApp.openPortalRegister('donor')">Donor</button>
-              <button class="btn btn-sm ${currentRole === 'ngo' ? 'btn-olive' : 'btn-outline-secondary'}" onclick="window.SaveToServeApp.openPortalRegister('ngo')">NGO</button>
-              <button class="btn btn-sm ${currentRole === 'volunteer' ? 'btn-olive' : 'btn-outline-secondary'}" onclick="window.SaveToServeApp.openPortalRegister('volunteer')">Volunteer</button>
-            </div>
           </div>
 
           <div class="row justify-content-center">
             <div class="col-lg-6 col-md-8 col-sm-11">
               <div class="custom-card shadow-md p-4">
                 <div class="text-center mb-3">
-                  <div class="portal-card-icon mx-auto mb-2" style="width:50px;height:50px;font-size:1.5rem;">
+                  <div class="portal-card-icon mx-auto mb-2" style="width:52px;height:52px;font-size:1.5rem;">
                     <i class="bi ${activeMeta.icon}"></i>
                   </div>
                   <h4 class="fw-bold mb-1" style="color:var(--dark-olive);">Create ${activeMeta.badge} Account</h4>
-                  <p class="text-muted small">Register to participate in the food rescue network</p>
+                  <p class="text-muted small">Permanent account registration for ${activeMeta.title}</p>
                 </div>
 
                 <div id="regErrorAlert" class="alert alert-danger py-2 small mb-3 d-none">
@@ -557,14 +577,14 @@ class SaveToServeAppController {
                       <input type="text" id="regName" class="form-control form-control-custom w-100" placeholder="e.g. Ramesh Kumar" required>
                     </div>
                     <div class="col-md-6">
-                      <label class="form-label-custom">Role Selected</label>
-                      <input type="text" class="form-control form-control-custom w-100" value="${activeMeta.badge}" disabled style="background:#f0f2eb; font-weight:600;">
+                      <label class="form-label-custom">Permanent Role</label>
+                      <input type="text" class="form-control form-control-custom w-100" value="${activeMeta.badge}" disabled style="background:#f0f2eb; font-weight:700; color:var(--dark-olive);">
                     </div>
                   </div>
 
                   <div class="mb-3">
                     <label class="form-label-custom">
-                      ${currentRole === 'volunteer' ? 'Vehicle Type / Mode (e.g. Two-wheeler / Car / On Foot)' : 'Organization / Restaurant / Shelter Name *'}
+                      ${currentRole === 'volunteer' ? 'Vehicle Type / Mode (e.g. Two-wheeler / Van / On Foot)' : 'Organization / Restaurant / Facility Name *'}
                     </label>
                     <input type="text" id="regOrgName" class="form-control form-control-custom w-100" placeholder="${currentRole === 'volunteer' ? 'e.g. Motorcycle / Scooter' : 'e.g. Annapurna Kitchen'}" ${currentRole !== 'volunteer' ? 'required' : ''}>
                   </div>
@@ -595,7 +615,7 @@ class SaveToServeAppController {
                   </button>
                 </form>
 
-                <div class="text-center small text-muted">
+                <div class="text-center small text-muted pt-2 border-top">
                   Already registered? <a href="#login" class="fw-bold text-success" onclick="window.SaveToServeApp.openPortalAuth('${currentRole}')">Sign In</a>
                 </div>
               </div>
@@ -608,41 +628,45 @@ class SaveToServeAppController {
 
   handleLoginForm(event) {
     event.preventDefault();
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value;
+    const email = document.getElementById('loginEmail')?.value.trim();
+    const password = document.getElementById('loginPassword')?.value;
     const expectedRole = document.getElementById('loginExpectedRole')?.value || this.activeAuthRole || null;
 
     const errorAlert = document.getElementById('loginErrorAlert');
     const errorText = document.getElementById('loginErrorText');
 
-    const res = window.SaveToServeAuth.login(email, password, expectedRole);
-    if (res.success) {
-      if (errorAlert) errorAlert.classList.add('d-none');
+    if (errorAlert) errorAlert.classList.add('d-none');
+
+    const res = window.SaveToServeAuth?.login(email, password, expectedRole);
+    if (res && res.success) {
       this.showToast(`Welcome back, ${res.user.name}!`, 'success');
       this.navigateTo(`${res.user.role}-portal`);
     } else {
+      const msg = res ? res.message : 'Invalid credentials. Please check your email and password.';
       if (errorAlert && errorText) {
-        errorText.innerText = res.message;
+        errorText.innerText = msg;
         errorAlert.classList.remove('d-none');
       }
-      this.showToast(res.message, 'danger');
+      this.showToast(msg, 'danger');
     }
   }
 
   handleRegisterForm(event) {
     event.preventDefault();
-    const name = document.getElementById('regName').value.trim();
-    const role = document.getElementById('regRole').value || 'donor';
+    const name = document.getElementById('regName')?.value.trim();
+    const role = document.getElementById('regRole')?.value || 'donor';
     const orgName = document.getElementById('regOrgName')?.value.trim() || '';
-    const email = document.getElementById('regEmail').value.trim();
-    const phone = document.getElementById('regPhone').value.trim();
-    const address = document.getElementById('regAddress').value.trim();
-    const password = document.getElementById('regPassword').value;
+    const email = document.getElementById('regEmail')?.value.trim();
+    const phone = document.getElementById('regPhone')?.value.trim();
+    const address = document.getElementById('regAddress')?.value.trim();
+    const password = document.getElementById('regPassword')?.value;
 
     const errorAlert = document.getElementById('regErrorAlert');
     const errorText = document.getElementById('regErrorText');
 
-    const res = window.SaveToServeAuth.register({
+    if (errorAlert) errorAlert.classList.add('d-none');
+
+    const res = window.SaveToServeAuth?.register({
       name,
       role,
       orgName: orgName || name,
@@ -653,16 +677,16 @@ class SaveToServeAppController {
       vehicleType: role === 'volunteer' ? (orgName || 'Two-wheeler') : ''
     });
 
-    if (res.success) {
-      if (errorAlert) errorAlert.classList.add('d-none');
-      this.showToast(`Registration complete! Welcome to Save to Serve, ${res.user.name}.`, 'success');
+    if (res && res.success) {
+      this.showToast(`Registration complete! Welcome, ${res.user.name}.`, 'success');
       this.navigateTo(`${res.user.role}-portal`);
     } else {
+      const msg = res ? res.message : 'Registration could not be completed.';
       if (errorAlert && errorText) {
-        errorText.innerText = res.message;
+        errorText.innerText = msg;
         errorAlert.classList.remove('d-none');
       }
-      this.showToast(res.message, 'danger');
+      this.showToast(msg, 'danger');
     }
   }
 }

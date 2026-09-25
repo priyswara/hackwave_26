@@ -504,13 +504,19 @@ class SaveToServeStore {
       user.kycStatus = status;
       if (!user.verificationDetails) user.verificationDetails = {};
       user.verificationDetails.reviewedAt = new Date().toISOString();
-      user.verificationDetails.rejectionReason = rejectionReason;
+      
+      if (status === 'approved') {
+        user.verificationDetails.rejectionReason = '';
+        user.verificationDetails.reconsiderationReason = '';
+      } else if (status === 'rejected') {
+        user.verificationDetails.rejectionReason = rejectionReason || 'Verification documentation could not be validated.';
+      }
       
       this.saveState();
 
       const actionText = status === 'approved' 
         ? `Approved verification for ${user.name} (${user.orgName || user.role})`
-        : `Rejected verification for ${user.name}: "${rejectionReason || 'Incomplete documentation'}"`;
+        : `Rejected verification for ${user.name}: "${user.verificationDetails.rejectionReason}"`;
       
       this.logActivity('Admin Operations', actionText, user.id, status === 'approved' ? 'KYC Approved' : 'KYC Rejected');
 
@@ -520,7 +526,7 @@ class SaveToServeStore {
         title: status === 'approved' ? '✅ Verification Approved!' : '⚠️ Verification Update',
         message: status === 'approved' 
           ? `Your ${user.role.toUpperCase()} account has been verified. Full rescue and donation permissions granted.`
-          : `Your verification request was reviewed. Reason: ${rejectionReason || 'Please resubmit valid credentials.'}`,
+          : `Your verification request was reviewed. Reason: ${user.verificationDetails.rejectionReason}`,
         type: 'verification'
       });
 
@@ -532,6 +538,46 @@ class SaveToServeStore {
 
   updateKycStatus(userId, status, rejectionReason = '') {
     return this.updateUserVerification(userId, status, rejectionReason);
+  }
+
+  requestReconsideration(userId, explanation, updatedDocType = '', updatedDocNumber = '') {
+    const user = this.getUserById(userId);
+    if (!user) return { success: false, message: 'User not found.' };
+    
+    if (user.kycStatus !== 'rejected') {
+      return { success: false, message: 'Reconsideration can only be requested for rejected applications.' };
+    }
+
+    if (!explanation || !explanation.trim()) {
+      return { success: false, message: 'Please provide an explanation or additional details for reconsideration.' };
+    }
+
+    user.kycStatus = 'reconsideration_requested';
+    if (!user.verificationDetails) user.verificationDetails = {};
+    
+    user.verificationDetails.reconsiderationReason = explanation.trim();
+    user.verificationDetails.reconsiderationSubmittedAt = new Date().toISOString();
+    
+    if (updatedDocType && updatedDocType.trim()) {
+      user.verificationDetails.docType = updatedDocType.trim();
+    }
+    if (updatedDocNumber && updatedDocNumber.trim()) {
+      user.verificationDetails.docNumber = updatedDocNumber.trim();
+    }
+
+    this.saveState();
+
+    this.logActivity(user.name, `Submitted verification reconsideration request`, user.id, 'KYC Reconsideration');
+
+    this.addNotification({
+      recipientRole: 'admin',
+      title: `📋 Reconsideration Request: ${user.name}`,
+      message: `${user.name} (${user.orgName || user.role}) requested verification reconsideration. Note: "${explanation.trim()}"`,
+      type: 'verification'
+    });
+
+    this.notifySubscribers('USER_UPDATED', user);
+    return { success: true, user };
   }
 
   // --- Donation Operations ---

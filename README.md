@@ -81,7 +81,7 @@ For judging and demonstration, 1-click login buttons are available on the login 
 ```
 ├── assets/                  # Hero illustrations, logos, icons
 ├── css/
-│   └── style.css            # Pastel Purple & Green Design System
+│   └── style.css            # Olive Green Design System
 ├── js/
 │   ├── data.js              # Centralized Store, State & Persistence
 │   ├── auth.js              # Auth & Simulated OTP Flow
