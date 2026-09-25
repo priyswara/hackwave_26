@@ -371,6 +371,26 @@ class SaveToServeAppController {
       window.location.hash = route;
     }
 
+    // Set dynamic portal theme attribute for Palette 2: Soft Pastel & Friendly
+    let portalTheme = 'home';
+    if (user) {
+      portalTheme = user.role;
+    } else if (route === 'login' || route === 'register') {
+      portalTheme = this.activeAuthRole || 'donor';
+    } else if (route === 'donor-portal') {
+      portalTheme = 'donor';
+    } else if (route === 'ngo-portal') {
+      portalTheme = 'ngo';
+    } else if (route === 'volunteer-portal') {
+      portalTheme = 'volunteer';
+    } else if (['admin-portal', 'weather-rescue', 'impact-dashboard', 'holding-hubs'].includes(route)) {
+      portalTheme = 'admin';
+    } else {
+      portalTheme = 'home';
+    }
+    document.body.setAttribute('data-portal', portalTheme);
+    document.documentElement.setAttribute('data-portal', portalTheme);
+
     const views = document.querySelectorAll('.app-view');
     views.forEach(v => v.classList.add('d-none'));
 
