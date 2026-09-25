@@ -25,11 +25,16 @@ class VolunteerPortalManager {
     if (!user || user.role !== 'volunteer') {
       container.innerHTML = `
         <div class="container py-5 text-center">
-          <div class="alert alert-danger d-inline-block px-4 py-3 shadow-sm">
+          <div class="alert alert-danger d-inline-block px-4 py-3 shadow-sm" style="max-width:500px;">
             <i class="bi bi-bicycle fs-2 d-block mb-2 text-danger"></i>
             <h5 class="fw-bold">Volunteer Access Required</h5>
-            <p class="mb-3 text-muted">Please log in as a registered rescue volunteer to view tasks.</p>
-            <button class="btn btn-purple" onclick="window.SaveToServeApp.navigateTo('login')">Go to Login</button>
+            <p class="mb-3 text-muted">${user ? `You are currently logged in to the ${user.role.toUpperCase()} portal. Please log out before accessing another portal.` : 'Please log in as a registered rescue volunteer to view tasks.'}</p>
+            ${user ? `
+              <button class="btn btn-outline-danger me-2" onclick="window.SaveToServeApp.logout()"><i class="bi bi-box-arrow-right"></i> Logout</button>
+              <button class="btn btn-olive" onclick="window.SaveToServeApp.navigateTo('${user.role}-portal')">Go to My Dashboard</button>
+            ` : `
+              <button class="btn btn-olive" onclick="window.SaveToServeApp.openPortalAuth('volunteer')">Go to Volunteer Login</button>
+            `}
           </div>
         </div>`;
       return;
@@ -75,10 +80,13 @@ class VolunteerPortalManager {
               <p class="text-muted small mb-0"><i class="bi bi-truck-front"></i> ${user.vehicleType || 'Two-Wheeler (Insulated Box)'} | ${user.phone}</p>
             </div>
           </div>
-          <div>
-            <span class="badge bg-light text-dark border p-2">
+          <div class="d-flex gap-2 align-items-center">
+            <span class="badge bg-light text-dark border p-2 d-none d-md-inline-block">
               <i class="bi bi-shield-check text-success"></i> Safe Food Handling Protocol
             </span>
+            <button class="btn btn-outline-danger" onclick="window.SaveToServeApp.logout()" title="Logout from Volunteer Portal">
+              <i class="bi bi-box-arrow-right"></i> Logout
+            </button>
           </div>
         </div>
 
@@ -304,7 +312,10 @@ class VolunteerPortalManager {
 
   acceptTask(donationId) {
     const user = window.SaveToServeAuth.getCurrentUser();
-    if (!user) return;
+    if (!user || user.role !== 'volunteer') {
+      window.SaveToServeApp?.showToast('Volunteer courier authentication required.', 'danger');
+      return;
+    }
 
     if (user.kycStatus !== 'approved') {
       window.SaveToServeApp?.showToast('Verification required to accept tasks.', 'warning');
@@ -321,6 +332,12 @@ class VolunteerPortalManager {
   }
 
   confirmPickupCode(donationId) {
+    const user = window.SaveToServeAuth.getCurrentUser();
+    if (!user || user.role !== 'volunteer') {
+      window.SaveToServeApp?.showToast('Volunteer courier authentication required.', 'danger');
+      return;
+    }
+
     const input = document.getElementById(`pickupCodeInput-${donationId}`);
     if (!input) return;
 
@@ -340,10 +357,16 @@ class VolunteerPortalManager {
   }
 
   markDeliveredToNGO(donationId) {
+    const user = window.SaveToServeAuth.getCurrentUser();
+    if (!user || user.role !== 'volunteer') {
+      window.SaveToServeApp?.showToast('Volunteer courier authentication required.', 'danger');
+      return;
+    }
+
     const donation = window.SaveToServeDB.getDonationById(donationId);
     if (!donation) return;
 
-    window.SaveToServeDB.logActivity(window.SaveToServeAuth.getCurrentUser().name, `Arrived at ${donation.claimedByNgoName} with ${donation.foodName}`, donation.id, 'Arrived');
+    window.SaveToServeDB.logActivity(user.name, `Arrived at ${donation.claimedByNgoName} with ${donation.foodName}`, donation.id, 'Arrived');
     window.SaveToServeApp?.showToast(`Arrived at ${donation.claimedByNgoName}. Awaiting NGO distribution confirmation!`, 'info');
     this.render('active-tasks');
   }

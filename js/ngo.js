@@ -31,11 +31,16 @@ class NgoPortalManager {
     if (!user || user.role !== 'ngo') {
       container.innerHTML = `
         <div class="container py-5 text-center">
-          <div class="alert alert-danger d-inline-block px-4 py-3 shadow-sm">
+          <div class="alert alert-danger d-inline-block px-4 py-3 shadow-sm" style="max-width:500px;">
             <i class="bi bi-shield-lock fs-2 d-block mb-2 text-danger"></i>
             <h5 class="fw-bold">NGO Staff Access Required</h5>
-            <p class="mb-3 text-muted">Please log in as an authorized NGO representative to access this portal.</p>
-            <button class="btn btn-purple" onclick="window.SaveToServeApp.navigateTo('login')">Go to Login</button>
+            <p class="mb-3 text-muted">${user ? `You are currently logged in to the ${user.role.toUpperCase()} portal. Please log out before accessing another portal.` : 'Please log in as an authorized NGO representative to access this portal.'}</p>
+            ${user ? `
+              <button class="btn btn-outline-danger me-2" onclick="window.SaveToServeApp.logout()"><i class="bi bi-box-arrow-right"></i> Logout</button>
+              <button class="btn btn-olive" onclick="window.SaveToServeApp.navigateTo('${user.role}-portal')">Go to My Dashboard</button>
+            ` : `
+              <button class="btn btn-olive" onclick="window.SaveToServeApp.openPortalAuth('ngo')">Go to NGO Login</button>
+            `}
           </div>
         </div>`;
       return;
@@ -68,6 +73,9 @@ class NgoPortalManager {
           <div class="d-flex gap-2">
             <button class="btn btn-green" onclick="window.SaveToServeNGO.switchTab('post-req')">
               <i class="bi bi-megaphone"></i> Post Urgent Requirement
+            </button>
+            <button class="btn btn-outline-danger" onclick="window.SaveToServeApp.logout()" title="Logout from NGO Portal">
+              <i class="bi bi-box-arrow-right"></i> Logout
             </button>
           </div>
         </div>
@@ -436,7 +444,10 @@ class NgoPortalManager {
 
   claimDonation(donationId) {
     const user = window.SaveToServeAuth.getCurrentUser();
-    if (!user) return;
+    if (!user || user.role !== 'ngo') {
+      window.SaveToServeApp?.showToast('NGO Shelter authentication required.', 'danger');
+      return;
+    }
 
     const res = window.SaveToServeDB.claimDonation(donationId, user);
     if (res.success) {
@@ -448,6 +459,12 @@ class NgoPortalManager {
   }
 
   promptConfirmDistribution(donationId, portions) {
+    const user = window.SaveToServeAuth.getCurrentUser();
+    if (!user || user.role !== 'ngo') {
+      window.SaveToServeApp?.showToast('NGO Shelter authentication required.', 'danger');
+      return;
+    }
+
     const count = prompt(`Confirm number of beneficiaries reached with this meal rescue:`, portions);
     if (count !== null && count.trim() !== '') {
       const res = window.SaveToServeDB.confirmDistribution(donationId, parseInt(count) || portions);
@@ -461,7 +478,10 @@ class NgoPortalManager {
   handleRequirementSubmit(event) {
     event.preventDefault();
     const user = window.SaveToServeAuth.getCurrentUser();
-    if (!user) return;
+    if (!user || user.role !== 'ngo') {
+      window.SaveToServeApp?.showToast('NGO Shelter authentication required.', 'danger');
+      return;
+    }
 
     const targetLocation = document.getElementById('reqLocation').value.trim();
     const neededPortions = parseInt(document.getElementById('reqPortions').value);

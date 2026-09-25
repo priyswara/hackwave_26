@@ -29,11 +29,16 @@ class AdminPortalManager {
     if (!user || user.role !== 'admin') {
       container.innerHTML = `
         <div class="container py-5 text-center">
-          <div class="alert alert-danger d-inline-block px-4 py-3 shadow-sm">
+          <div class="alert alert-danger d-inline-block px-4 py-3 shadow-sm" style="max-width:500px;">
             <i class="bi bi-shield-x fs-2 d-block mb-2 text-danger"></i>
             <h5 class="fw-bold">Super Admin Access Restricted</h5>
-            <p class="mb-3 text-muted">This management console requires authorized administrative credentials.</p>
-            <button class="btn btn-olive" onclick="window.SaveToServeApp.openPortalAuth('admin')">Super Admin Sign In</button>
+            <p class="mb-3 text-muted">${user ? `You are currently logged in to the ${user.role.toUpperCase()} portal. Super Admin portal requires authorized administrative credentials.` : 'This management console requires authorized administrative credentials.'}</p>
+            ${user ? `
+              <button class="btn btn-outline-danger me-2" onclick="window.SaveToServeApp.logout()"><i class="bi bi-box-arrow-right"></i> Logout</button>
+              <button class="btn btn-olive" onclick="window.SaveToServeApp.navigateTo('${user.role}-portal')">Go to My Dashboard</button>
+            ` : `
+              <button class="btn btn-olive" onclick="window.SaveToServeApp.openPortalAuth('admin')">Super Admin Sign In</button>
+            `}
           </div>
         </div>`;
       return;
@@ -74,6 +79,9 @@ class AdminPortalManager {
             </button>
             <button class="btn btn-outline-danger btn-sm" onclick="window.SaveToServeApp.promptResetDemoData()">
               <i class="bi bi-arrow-counterclockwise"></i> Reset Database
+            </button>
+            <button class="btn btn-outline-danger btn-sm" onclick="window.SaveToServeApp.logout()" title="Logout from Admin Console">
+              <i class="bi bi-box-arrow-right"></i> Logout
             </button>
           </div>
         </div>
@@ -644,6 +652,12 @@ class AdminPortalManager {
   }
 
   approveUser(userId) {
+    const user = window.SaveToServeAuth.getCurrentUser();
+    if (!user || user.role !== 'admin') {
+      window.SaveToServeApp?.showToast('Super Admin privileges required.', 'danger');
+      return;
+    }
+
     const res = window.SaveToServeDB.updateKycStatus(userId, 'approved');
     if (res.success) {
       window.SaveToServeApp?.showToast(`Verification Approved for ${res.user.name}!`, 'success');
@@ -654,8 +668,14 @@ class AdminPortalManager {
   }
 
   promptRejectUser(userId) {
-    const user = window.SaveToServeDB.getUserById(userId);
-    if (!user) return;
+    const user = window.SaveToServeAuth.getCurrentUser();
+    if (!user || user.role !== 'admin') {
+      window.SaveToServeApp?.showToast('Super Admin privileges required.', 'danger');
+      return;
+    }
+
+    const targetUser = window.SaveToServeDB.getUserById(userId);
+    if (!targetUser) return;
 
     const modalTitle = document.getElementById('globalModalTitle');
     const modalBody = document.getElementById('globalModalBody');
@@ -665,7 +685,7 @@ class AdminPortalManager {
     modalBody.innerHTML = `
       <div>
         <p class="small text-muted mb-3">
-          Provide a clear, actionable reason for rejecting the verification request for <strong>${user.name}</strong> (${user.orgName || user.role}).
+          Provide a clear, actionable reason for rejecting the verification request for <strong>${targetUser.name}</strong> (${targetUser.orgName || targetUser.role}).
         </p>
         <div class="mb-3">
           <label class="form-label-custom">Rejection Reason</label>
@@ -694,6 +714,12 @@ class AdminPortalManager {
   }
 
   confirmRejectUser(userId) {
+    const user = window.SaveToServeAuth.getCurrentUser();
+    if (!user || user.role !== 'admin') {
+      window.SaveToServeApp?.showToast('Super Admin privileges required.', 'danger');
+      return;
+    }
+
     const preset = document.getElementById('rejectReasonPreset')?.value;
     const custom = document.getElementById('rejectCustomReason')?.value.trim();
     const reason = (preset === 'Custom' || !preset) ? (custom || 'Document verification could not be completed.') : (custom ? `${preset} Note: ${custom}` : preset);
@@ -715,6 +741,12 @@ class AdminPortalManager {
   }
 
   reconsiderUser(userId) {
+    const user = window.SaveToServeAuth.getCurrentUser();
+    if (!user || user.role !== 'admin') {
+      window.SaveToServeApp?.showToast('Super Admin privileges required.', 'danger');
+      return;
+    }
+
     const res = window.SaveToServeDB.updateKycStatus(userId, 'pending', '');
     if (res.success) {
       window.SaveToServeApp?.showToast(`Application reset to Pending for reconsideration.`, 'info');
@@ -772,6 +804,12 @@ class AdminPortalManager {
   }
 
   flagDonation(donationId) {
+    const user = window.SaveToServeAuth.getCurrentUser();
+    if (!user || user.role !== 'admin') {
+      window.SaveToServeApp?.showToast('Super Admin privileges required.', 'danger');
+      return;
+    }
+
     const d = window.SaveToServeDB.getDonationById(donationId);
     if (!d) return;
     d.status = 'flagged';
@@ -781,6 +819,12 @@ class AdminPortalManager {
   }
 
   removeDonation(donationId) {
+    const user = window.SaveToServeAuth.getCurrentUser();
+    if (!user || user.role !== 'admin') {
+      window.SaveToServeApp?.showToast('Super Admin privileges required.', 'danger');
+      return;
+    }
+
     if (confirm('Are you sure you want to remove this food listing from the platform?')) {
       const idx = window.SaveToServeDB.state.donations.findIndex(x => x.id === donationId);
       if (idx !== -1) {

@@ -42,11 +42,16 @@ class DonorPortalManager {
     if (!user || user.role !== 'donor') {
       container.innerHTML = `
         <div class="container py-5 text-center">
-          <div class="alert alert-danger d-inline-block px-4 py-3 shadow-sm">
+          <div class="alert alert-danger d-inline-block px-4 py-3 shadow-sm" style="max-width:500px;">
             <i class="bi bi-lock-fill fs-2 d-block mb-2 text-danger"></i>
             <h5 class="fw-bold">Donor Access Required</h5>
-            <p class="mb-3 text-muted">Please log in as a registered food donor to view this portal.</p>
-            <button class="btn btn-purple" onclick="window.SaveToServeApp.navigateTo('login')">Go to Login</button>
+            <p class="mb-3 text-muted">${user ? `You are currently logged in to the ${user.role.toUpperCase()} portal. Please log out before accessing another portal.` : 'Please log in as a registered food donor to view this portal.'}</p>
+            ${user ? `
+              <button class="btn btn-outline-danger me-2" onclick="window.SaveToServeApp.logout()"><i class="bi bi-box-arrow-right"></i> Logout</button>
+              <button class="btn btn-olive" onclick="window.SaveToServeApp.navigateTo('${user.role}-portal')">Go to My Dashboard</button>
+            ` : `
+              <button class="btn btn-olive" onclick="window.SaveToServeApp.openPortalAuth('donor')">Go to Donor Login</button>
+            `}
           </div>
         </div>`;
       return;
@@ -96,6 +101,9 @@ class DonorPortalManager {
           <div class="d-flex gap-2">
             <button class="btn btn-purple" onclick="window.SaveToServeDonor.switchTab('post-donation')" ${!isApproved ? 'disabled title="Verification required to post surplus"' : ''}>
               <i class="bi bi-plus-circle"></i> Post Surplus Food
+            </button>
+            <button class="btn btn-outline-danger" onclick="window.SaveToServeApp.logout()" title="Logout from Donor Portal">
+              <i class="bi bi-box-arrow-right"></i> Logout
             </button>
           </div>
         </div>
@@ -393,7 +401,10 @@ class DonorPortalManager {
   handlePostSubmit(event) {
     event.preventDefault();
     const user = window.SaveToServeAuth.getCurrentUser();
-    if (!user) return;
+    if (!user || user.role !== 'donor') {
+      window.SaveToServeApp?.showToast('Donor authentication required.', 'danger');
+      return;
+    }
 
     if (user.kycStatus !== 'approved') {
       window.SaveToServeApp?.showToast('Your account is pending admin verification.', 'warning');
@@ -438,6 +449,12 @@ class DonorPortalManager {
   }
 
   cancelDonation(donationId) {
+    const user = window.SaveToServeAuth.getCurrentUser();
+    if (!user || (user.role !== 'donor' && user.role !== 'admin')) {
+      window.SaveToServeApp?.showToast('Unauthorized action.', 'danger');
+      return;
+    }
+
     if (confirm('Are you sure you want to cancel this surplus food listing?')) {
       const res = window.SaveToServeDB.cancelDonation(donationId, 'Cancelled by donor');
       if (res) {

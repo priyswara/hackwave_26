@@ -1,8 +1,21 @@
 /**
  * Save to Serve - Master Application Controller & Router
  * Tagline: Save Food. Serve People. Reduce Waste.
- * Complete Portal Routing, Dedicated Auth Flow, and Toast Notifications
+ * Complete Portal Routing, Dedicated Role-Based Auth Flow, Session Isolation & Toast Notifications
+ * 
+ * NOTE ON SECURITY ARCHITECTURE:
+ * Client-side role checks and session validation provide immediate UI isolation
+ * and guard views during client sessions. In a multi-user production deployment,
+ * role authorization and session tokens must also be cryptographically signed
+ * and strictly validated by the backend server on every API endpoint.
  */
+
+const PORTAL_NAMES = {
+  donor: 'Donor',
+  ngo: 'NGO',
+  volunteer: 'Volunteer',
+  admin: 'Super Admin'
+};
 
 class SaveToServeAppController {
   constructor() {
@@ -35,50 +48,155 @@ class SaveToServeAppController {
   }
 
   openPortalAuth(role) {
-    this.activeAuthRole = role || 'donor';
+    const targetRole = role || 'donor';
     const user = window.SaveToServeAuth.getCurrentUser();
-    if (user && user.role === this.activeAuthRole) {
-      this.navigateTo(`${this.activeAuthRole}-portal`);
+
+    if (user) {
+      if (user.role === targetRole) {
+        this.navigateTo(`${targetRole}-portal`);
+      } else {
+        const activePortalName = PORTAL_NAMES[user.role] || user.role;
+        this.showToast(`You are currently logged in to the ${activePortalName} portal. Please log out before accessing another portal.`, 'warning');
+        this.showPortalConflictModal(targetRole, user.role);
+      }
     } else {
+      this.activeAuthRole = targetRole;
       this.navigateTo('login');
     }
   }
 
   openPortalRegister(role) {
-    this.activeAuthRole = role || 'donor';
-    this.navigateTo('register');
+    const targetRole = role || 'donor';
+    const user = window.SaveToServeAuth.getCurrentUser();
+
+    if (user) {
+      if (user.role === targetRole) {
+        this.showToast(`You are already logged into the ${PORTAL_NAMES[user.role]} portal.`, 'info');
+        this.navigateTo(`${targetRole}-portal`);
+      } else {
+        const activePortalName = PORTAL_NAMES[user.role] || user.role;
+        this.showToast(`You are currently logged in to the ${activePortalName} portal. Please log out before accessing another portal.`, 'warning');
+        this.showPortalConflictModal(targetRole, user.role);
+      }
+    } else {
+      this.activeAuthRole = targetRole;
+      this.navigateTo('register');
+    }
+  }
+
+  showPortalConflictModal(attemptedRole, activeRole) {
+    const modalTitle = document.getElementById('globalModalTitle');
+    const modalBody = document.getElementById('globalModalBody');
+    if (!modalTitle || !modalBody) return;
+
+    const activePortalName = PORTAL_NAMES[activeRole] || activeRole;
+    const attemptedPortalName = PORTAL_NAMES[attemptedRole] || attemptedRole;
+
+    modalTitle.innerHTML = `<i class="bi bi-shield-exclamation text-warning me-2"></i> Active Portal Session`;
+    modalBody.innerHTML = `
+      <div class="text-center py-3">
+        <div class="stat-icon mx-auto mb-3" style="width:60px;height:60px;border-radius:50%;background-color:var(--light-olive);color:var(--dark-olive);font-size:1.75rem;">
+          <i class="bi bi-person-lock"></i>
+        </div>
+        <h5 class="fw-bold mb-2" style="color:var(--dark-olive);">One Active Portal Per User Session</h5>
+        <div class="alert alert-warning py-2 small mb-3 text-start">
+          <i class="bi bi-exclamation-triangle-fill me-1"></i> You are currently logged in to the <strong>${activePortalName}</strong> portal. Please log out before accessing another portal.
+        </div>
+        <p class="text-muted small mb-4">
+          To switch to the <strong>${attemptedPortalName} Portal</strong>, please log out of your current <strong>${activePortalName}</strong> session.
+        </p>
+        <div class="d-flex flex-column flex-sm-row justify-content-center gap-2">
+          <button class="btn btn-outline-danger" onclick="window.SaveToServeApp.logoutAndOpenPortal('${attemptedRole}')">
+            <i class="bi bi-box-arrow-right"></i> Log Out & Switch to ${attemptedPortalName}
+          </button>
+          <button class="btn btn-olive" onclick="window.SaveToServeApp.closeConflictModalAndGoToDashboard()">
+            <i class="bi bi-arrow-return-left"></i> Return to ${activePortalName} Dashboard
+          </button>
+        </div>
+      </div>
+    `;
+
+    const modalEl = document.getElementById('globalModal');
+    if (modalEl && typeof bootstrap !== 'undefined') {
+      const bsModal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+      bsModal.show();
+    }
+  }
+
+  logoutAndOpenPortal(targetRole) {
+    const modalEl = document.getElementById('globalModal');
+    if (modalEl && typeof bootstrap !== 'undefined') {
+      const bsModal = bootstrap.Modal.getInstance(modalEl);
+      if (bsModal) bsModal.hide();
+    }
+    window.SaveToServeAuth.logout();
+    this.showToast('Logged out successfully.', 'info');
+    this.openPortalAuth(targetRole);
+  }
+
+  closeConflictModalAndGoToDashboard() {
+    const modalEl = document.getElementById('globalModal');
+    if (modalEl && typeof bootstrap !== 'undefined') {
+      const bsModal = bootstrap.Modal.getInstance(modalEl);
+      if (bsModal) bsModal.hide();
+    }
+    const user = window.SaveToServeAuth.getCurrentUser();
+    if (user) {
+      this.navigateTo(`${user.role}-portal`);
+    } else {
+      this.navigateTo('home');
+    }
   }
 
   navigateTo(route, updateHash = true) {
-    // Route guard checks for private portal dashboards
+    const portalRoutes = {
+      'donor-portal': 'donor',
+      'ngo-portal': 'ngo',
+      'volunteer-portal': 'volunteer',
+      'admin-portal': 'admin'
+    };
+
     const user = window.SaveToServeAuth.getCurrentUser();
-    
-    if (route === 'donor-portal' && (!user || user.role !== 'donor')) {
-      this.activeAuthRole = 'donor';
-      if (updateHash) window.location.hash = 'login';
-      this.renderAuthView('login', 'donor', 'Please sign in to access the Donor Portal.');
-      return;
+
+    // Route guard checks for private portal dashboards
+    if (portalRoutes[route]) {
+      const expectedRole = portalRoutes[route];
+      const expectedPortalName = PORTAL_NAMES[expectedRole] || expectedRole;
+
+      if (!user) {
+        // Unauthenticated access
+        this.activeAuthRole = expectedRole;
+        if (updateHash) window.location.hash = 'login';
+        this.renderAuthView('login', expectedRole, `Please sign in to access the ${expectedPortalName} Portal.`);
+        return;
+      }
+
+      if (user.role !== expectedRole) {
+        // Authenticated in wrong role!
+        const activePortalName = PORTAL_NAMES[user.role] || user.role;
+        this.showToast(`You are currently logged in to the ${activePortalName} portal. Please log out before accessing another portal.`, 'warning');
+        this.showPortalConflictModal(expectedRole, user.role);
+        if (updateHash) window.location.hash = `${user.role}-portal`;
+        this.navigateTo(`${user.role}-portal`, false);
+        return;
+      }
     }
 
-    if (route === 'ngo-portal' && (!user || user.role !== 'ngo')) {
-      this.activeAuthRole = 'ngo';
-      if (updateHash) window.location.hash = 'login';
-      this.renderAuthView('login', 'ngo', 'Please sign in to access the NGO Portal.');
-      return;
-    }
-
-    if (route === 'volunteer-portal' && (!user || user.role !== 'volunteer')) {
-      this.activeAuthRole = 'volunteer';
-      if (updateHash) window.location.hash = 'login';
-      this.renderAuthView('login', 'volunteer', 'Please sign in to access the Volunteer Portal.');
-      return;
-    }
-
-    if (route === 'admin-portal' && (!user || user.role !== 'admin')) {
-      this.activeAuthRole = 'admin';
-      if (updateHash) window.location.hash = 'login';
-      this.renderAuthView('login', 'admin', 'Super Admin authentication required.');
-      return;
+    // Guard for login/register while authenticated
+    if (route === 'login' || route === 'register') {
+      if (user) {
+        if (this.activeAuthRole && this.activeAuthRole !== user.role) {
+          const activePortalName = PORTAL_NAMES[user.role] || user.role;
+          this.showToast(`You are currently logged in to the ${activePortalName} portal. Please log out before accessing another portal.`, 'warning');
+          this.showPortalConflictModal(this.activeAuthRole, user.role);
+          if (updateHash) window.location.hash = `${user.role}-portal`;
+          this.navigateTo(`${user.role}-portal`, false);
+          return;
+        }
+        if (updateHash) window.location.hash = `${user.role}-portal`;
+        this.navigateTo(`${user.role}-portal`, false);
+        return;
+      }
     }
 
     this.currentRoute = route;
@@ -151,13 +269,17 @@ class SaveToServeAppController {
     if (!navUserContainer) return;
 
     if (user) {
+      const portalName = PORTAL_NAMES[user.role] || user.role.toUpperCase();
       navUserContainer.innerHTML = `
         <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-soft-olive d-none d-sm-inline-flex align-items-center gap-1" onclick="window.SaveToServeApp.navigateTo('${user.role}-portal')">
+            <i class="bi bi-grid-fill"></i> My Dashboard
+          </button>
           <div class="text-end d-none d-md-block" style="line-height:1.2;">
             <div class="fw-bold small" style="color:var(--dark-olive);">${user.name}</div>
-            <span class="badge badge-${user.role}" style="font-size:0.68rem;">${user.role.toUpperCase()}</span>
+            <span class="badge badge-${user.role}" style="font-size:0.68rem;">${portalName}</span>
           </div>
-          <button class="btn btn-sm btn-outline-secondary" onclick="window.SaveToServeApp.logout()">
+          <button class="btn btn-sm btn-outline-danger" onclick="window.SaveToServeApp.logout()" title="Logout from Save to Serve">
             <i class="bi bi-box-arrow-right"></i> Logout
           </button>
         </div>
@@ -177,6 +299,11 @@ class SaveToServeAppController {
   }
 
   logout() {
+    const modalEl = document.getElementById('globalModal');
+    if (modalEl && typeof bootstrap !== 'undefined') {
+      const bsModal = bootstrap.Modal.getInstance(modalEl);
+      if (bsModal) bsModal.hide();
+    }
     window.SaveToServeAuth.logout();
     this.showToast('Logged out successfully.', 'info');
     this.navigateTo('home');
@@ -216,7 +343,8 @@ class SaveToServeAppController {
   }
 
   renderHomeStats() {
-    const impact = window.SaveToServeDB.calculateImpact();
+    const impact = window.SaveToServeDB?.calculateImpact();
+    if (!impact) return;
     const pRescued = document.getElementById('homePortionsRescued');
     const wPrevented = document.getElementById('homeWastePrevented');
     const bReached = document.getElementById('homeBeneficiaries');
@@ -230,7 +358,7 @@ class SaveToServeAppController {
     const container = document.getElementById('browse-food-view');
     if (!container) return;
 
-    const donations = window.SaveToServeDB.getDonations().filter(d => d.status === 'available');
+    const donations = (window.SaveToServeDB?.getDonations() || []).filter(d => d.status === 'available');
 
     container.innerHTML = `
       <div class="container py-4">
@@ -482,7 +610,7 @@ class SaveToServeAppController {
     event.preventDefault();
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
-    const expectedRole = document.getElementById('loginExpectedRole')?.value || null;
+    const expectedRole = document.getElementById('loginExpectedRole')?.value || this.activeAuthRole || null;
 
     const errorAlert = document.getElementById('loginErrorAlert');
     const errorText = document.getElementById('loginErrorText');
