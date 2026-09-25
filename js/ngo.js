@@ -122,6 +122,9 @@ class NgoPortalManager {
           <button class="subnav-btn ${activeTab === 'post-req' ? 'active' : ''}" onclick="window.SaveToServeNGO.switchTab('post-req')">
             <i class="bi bi-bell"></i> Urgent Food Requirements
           </button>
+          <button class="subnav-btn ${activeTab === 'weather-map' ? 'active' : ''}" onclick="window.SaveToServeNGO.switchTab('weather-map')">
+            <i class="bi bi-cloud-rain-heavy"></i> Weather & Rescue Routes
+          </button>
           <button class="subnav-btn ${activeTab === 'qr-redemption' ? 'active' : ''}" onclick="window.SaveToServeNGO.switchTab('qr-redemption')">
             <i class="bi bi-qr-code-scan"></i> QR Voucher Terminal
           </button>
@@ -389,6 +392,17 @@ class NgoPortalManager {
               `}
             </div>
           </div>
+        </div>
+      `;
+    }
+
+    if (tabName === 'weather-map') {
+      setTimeout(() => {
+        window.SaveToServeWeather?.renderWeatherMapWidget('ngo-weather-map-container', 'ngo');
+      }, 50);
+      return `
+        <div class="custom-card">
+          <div id="ngo-weather-map-container"></div>
         </div>
       `;
     }

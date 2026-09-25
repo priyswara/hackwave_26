@@ -150,6 +150,9 @@ class DonorPortalManager {
           <button class="subnav-btn ${activeTab === 'track-pickups' ? 'active' : ''}" onclick="window.SaveToServeDonor.switchTab('track-pickups')">
             <i class="bi bi-truck"></i> Track Pickups & Codes
           </button>
+          <button class="subnav-btn ${activeTab === 'weather-map' ? 'active' : ''}" onclick="window.SaveToServeDonor.switchTab('weather-map')">
+            <i class="bi bi-cloud-rain-heavy"></i> Weather & Route Safety
+          </button>
           <button class="subnav-btn ${activeTab === 'kyc' ? 'active' : ''}" onclick="window.SaveToServeDonor.switchTab('kyc')">
             <i class="bi bi-shield-check"></i> Verification Status
           </button>
@@ -317,6 +320,17 @@ class DonorPortalManager {
               `).join('')}
             </div>
           `}
+        </div>
+      `;
+    }
+
+    if (tabName === 'weather-map') {
+      setTimeout(() => {
+        window.SaveToServeWeather?.renderWeatherMapWidget('donor-weather-map-container', 'donor');
+      }, 50);
+      return `
+        <div class="custom-card">
+          <div id="donor-weather-map-container"></div>
         </div>
       `;
     }

@@ -1146,12 +1146,36 @@ img {
   border-color: #E8DC8A;
 }
 
-#weatherMap {
+#weatherMap, [id^="leafletMap_"] {
   width: 100%;
-  height: 360px;
+  height: 400px;
+  min-height: 360px;
   border-radius: var(--radius-lg);
   border: 1px solid var(--portal-border);
   z-index: 10;
+}
+
+.weather-map-component {
+  width: 100%;
+}
+
+.map-legend-overlay {
+  background: rgba(255, 255, 255, 0.96) !important;
+  backdrop-filter: blur(6px);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  transition: opacity 0.2s ease;
+}
+
+@media (max-width: 768px) {
+  #weatherMap, [id^="leafletMap_"] {
+    height: 320px;
+  }
+  .map-legend-overlay {
+    position: static !important;
+    max-width: 100% !important;
+    margin-top: 12px;
+  }
 }
 
 /* ===================================================

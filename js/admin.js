@@ -137,8 +137,8 @@ class AdminPortalManager {
           <button class="subnav-btn ${activeTab === 'manage-users' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('manage-users')">
             <i class="bi bi-people"></i> Manage Users (${users.length})
           </button>
-          <button class="subnav-btn ${activeTab === 'weather-rescue' ? 'active' : ''}" onclick="window.SaveToServeApp.navigateTo('weather-rescue')">
-            <i class="bi bi-cloud-rain-heavy"></i> Weather Rescue
+          <button class="subnav-btn ${activeTab === 'weather-rescue' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('weather-rescue')">
+            <i class="bi bi-cloud-rain-heavy"></i> Weather Rescue Map
           </button>
           <button class="subnav-btn ${activeTab === 'holding-hubs' ? 'active' : ''}" onclick="window.SaveToServeApp.navigateTo('holding-hubs')">
             <i class="bi bi-snow"></i> Safe Hubs
@@ -726,6 +726,18 @@ class AdminPortalManager {
               </tbody>
             </table>
           </div>
+        </div>
+      `;
+    }
+
+    // 8. WEATHER RESCUE SECTION
+    if (tabName === 'weather-rescue') {
+      setTimeout(() => {
+        window.SaveToServeWeather?.renderWeatherMapWidget('admin-weather-map-container', 'admin');
+      }, 50);
+      return `
+        <div class="custom-card">
+          <div id="admin-weather-map-container"></div>
         </div>
       `;
     }

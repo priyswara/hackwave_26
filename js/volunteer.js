@@ -129,6 +129,9 @@ class VolunteerPortalManager {
           <button class="subnav-btn ${activeTab === 'available-tasks' ? 'active' : ''}" onclick="window.SaveToServeVolunteer.switchTab('available-tasks')">
             <i class="bi bi-plus-circle"></i> Browse Available Tasks (${availableTasks.length})
           </button>
+          <button class="subnav-btn ${activeTab === 'weather-map' ? 'active' : ''}" onclick="window.SaveToServeVolunteer.switchTab('weather-map')">
+            <i class="bi bi-cloud-rain-heavy"></i> Weather & Courier Safety
+          </button>
           <button class="subnav-btn ${activeTab === 'history' ? 'active' : ''}" onclick="window.SaveToServeVolunteer.switchTab('history')">
             <i class="bi bi-clock-history"></i> Rescue History (${completedTasks.length})
           </button>
@@ -233,6 +236,17 @@ class VolunteerPortalManager {
               </table>
             </div>
           `}
+        </div>
+      `;
+    }
+
+    if (tabName === 'weather-map') {
+      setTimeout(() => {
+        window.SaveToServeWeather?.renderWeatherMapWidget('volunteer-weather-map-container', 'volunteer');
+      }, 50);
+      return `
+        <div class="custom-card">
+          <div id="volunteer-weather-map-container"></div>
         </div>
       `;
     }

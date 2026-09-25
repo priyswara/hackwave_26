@@ -273,6 +273,9 @@ class SaveToServeAppController {
           <a href="#donor-portal" class="nav-link-custom" onclick="window.SaveToServeDonor?.switchTab('track-pickups')">
             <i class="bi bi-truck"></i> Track Donations
           </a>
+          <a href="#donor-portal" class="nav-link-custom" onclick="window.SaveToServeDonor?.switchTab('weather-map')">
+            <i class="bi bi-cloud-rain-heavy"></i> Weather Map
+          </a>
           <a href="#donor-portal" class="nav-link-custom" onclick="window.SaveToServeDonor?.switchTab('kyc')">
             <i class="bi bi-shield-check"></i> Verification
           </a>
@@ -285,8 +288,8 @@ class SaveToServeAppController {
         <a href="#donor-portal" class="mobile-nav-item" onclick="window.SaveToServeDonor?.switchTab('post-donation')">
           <i class="bi bi-plus-circle"></i><span>Post Food</span>
         </a>
-        <a href="#donor-portal" class="mobile-nav-item" onclick="window.SaveToServeDonor?.switchTab('track-pickups')">
-          <i class="bi bi-truck"></i><span>Track</span>
+        <a href="#donor-portal" class="mobile-nav-item" onclick="window.SaveToServeDonor?.switchTab('weather-map')">
+          <i class="bi bi-cloud-rain-heavy"></i><span>Weather</span>
         </a>
         <a href="#donor-portal" class="mobile-nav-item" onclick="window.SaveToServeDonor?.switchTab('kyc')">
           <i class="bi bi-shield-check"></i><span>KYC</span>
@@ -304,8 +307,8 @@ class SaveToServeAppController {
           <a href="#ngo-portal" class="nav-link-custom" onclick="window.SaveToServeNGO?.switchTab('my-claims')">
             <i class="bi bi-bag-check"></i> My Claims
           </a>
-          <a href="#ngo-portal" class="nav-link-custom" onclick="window.SaveToServeNGO?.switchTab('my-claims')">
-            <i class="bi bi-check2-circle"></i> Confirm Receipt
+          <a href="#ngo-portal" class="nav-link-custom" onclick="window.SaveToServeNGO?.switchTab('weather-map')">
+            <i class="bi bi-cloud-rain-heavy"></i> Weather Map
           </a>
           <a href="#ngo-portal" class="nav-link-custom" onclick="window.SaveToServeNGO?.switchTab('post-req')">
             <i class="bi bi-megaphone"></i> Urgent Requests
@@ -318,6 +321,9 @@ class SaveToServeAppController {
         </a>
         <a href="#ngo-portal" class="mobile-nav-item" onclick="window.SaveToServeNGO?.switchTab('my-claims')">
           <i class="bi bi-bag-check"></i><span>Claims</span>
+        </a>
+        <a href="#ngo-portal" class="mobile-nav-item" onclick="window.SaveToServeNGO?.switchTab('weather-map')">
+          <i class="bi bi-cloud-rain-heavy"></i><span>Weather</span>
         </a>
         <a href="#ngo-portal" class="mobile-nav-item" onclick="window.SaveToServeNGO?.switchTab('post-req')">
           <i class="bi bi-megaphone"></i><span>Requests</span>
@@ -332,8 +338,8 @@ class SaveToServeAppController {
           <a href="#volunteer-portal" class="nav-link-custom" onclick="window.SaveToServeVolunteer?.switchTab('available-tasks')">
             <i class="bi bi-bell"></i> Available Pickup Tasks
           </a>
-          <a href="#volunteer-portal" class="nav-link-custom" onclick="window.SaveToServeVolunteer?.switchTab('active-tasks')">
-            <i class="bi bi-box-seam"></i> My Active Tasks
+          <a href="#volunteer-portal" class="nav-link-custom" onclick="window.SaveToServeVolunteer?.switchTab('weather-map')">
+            <i class="bi bi-cloud-rain-heavy"></i> Weather Map
           </a>
           <a href="#volunteer-portal" class="nav-link-custom" onclick="window.SaveToServeVolunteer?.switchTab('history')">
             <i class="bi bi-clock-history"></i> Task History
@@ -349,6 +355,9 @@ class SaveToServeAppController {
         </a>
         <a href="#volunteer-portal" class="mobile-nav-item" onclick="window.SaveToServeVolunteer?.switchTab('available-tasks')">
           <i class="bi bi-bell"></i><span>Pickups</span>
+        </a>
+        <a href="#volunteer-portal" class="mobile-nav-item" onclick="window.SaveToServeVolunteer?.switchTab('weather-map')">
+          <i class="bi bi-cloud-rain-heavy"></i><span>Weather</span>
         </a>
         <a href="#volunteer-portal" class="mobile-nav-item" onclick="window.SaveToServeVolunteer?.switchTab('history')">
           <i class="bi bi-clock-history"></i><span>History</span>
