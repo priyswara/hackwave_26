@@ -7,6 +7,7 @@
 
 class AdminPortalManager {
   constructor() {
+    this.activeTab = 'donor-verification';
     this.donorFilter = 'all'; // 'all' | 'pending' | 'approved' | 'rejected' | 'reconsideration_requested'
     this.ngoFilter = 'all';
     this.volFilter = 'all';
@@ -17,12 +18,16 @@ class AdminPortalManager {
   initEventListeners() {
     window.addEventListener('savetoserve:statechange', () => {
       if (window.SaveToServeApp?.currentRoute === 'admin-portal') {
-        this.render();
+        this.render(this.activeTab);
       }
     });
   }
 
-  render(activeTab = 'donor-verification') {
+  render(activeTab = null) {
+    if (activeTab) {
+      this.activeTab = activeTab;
+    }
+    const currentTab = this.activeTab || 'donor-verification';
     const container = document.getElementById('admin-portal-view');
     if (!container) return;
 
@@ -119,41 +124,41 @@ class AdminPortalManager {
 
         <!-- Subnav with all management sections -->
         <div class="portal-subnav mb-4" style="overflow-x: auto; white-space: nowrap; display: flex; gap: 8px;">
-          <button class="subnav-btn ${activeTab === 'donor-verification' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('donor-verification')">
+          <button class="subnav-btn ${currentTab === 'donor-verification' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('donor-verification')">
             <i class="bi bi-shop"></i> Donor Verification ${pendingDonors.length > 0 ? `<span class="badge bg-warning text-dark">${pendingDonors.length}</span>` : ''}
           </button>
-          <button class="subnav-btn ${activeTab === 'ngo-verification' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('ngo-verification')">
+          <button class="subnav-btn ${currentTab === 'ngo-verification' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('ngo-verification')">
             <i class="bi bi-building"></i> NGO Verification ${pendingNgos.length > 0 ? `<span class="badge bg-warning text-dark">${pendingNgos.length}</span>` : ''}
           </button>
-          <button class="subnav-btn ${activeTab === 'volunteer-verification' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('volunteer-verification')">
+          <button class="subnav-btn ${currentTab === 'volunteer-verification' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('volunteer-verification')">
             <i class="bi bi-bicycle"></i> Volunteer Verification ${pendingVols.length > 0 ? `<span class="badge bg-warning text-dark">${pendingVols.length}</span>` : ''}
           </button>
-          <button class="subnav-btn ${activeTab === 'reconsideration-queue' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('reconsideration-queue')">
+          <button class="subnav-btn ${currentTab === 'reconsideration-queue' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('reconsideration-queue')">
             <i class="bi bi-arrow-repeat"></i> Reconsideration Queue ${reconsiderationUsers.length > 0 ? `<span class="badge bg-danger text-white">${reconsiderationUsers.length}</span>` : ''}
           </button>
-          <button class="subnav-btn ${activeTab === 'manage-donations' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('manage-donations')">
+          <button class="subnav-btn ${currentTab === 'manage-donations' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('manage-donations')">
             <i class="bi bi-box2-heart"></i> Manage Donations (${donations.length})
           </button>
-          <button class="subnav-btn ${activeTab === 'manage-users' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('manage-users')">
+          <button class="subnav-btn ${currentTab === 'manage-users' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('manage-users')">
             <i class="bi bi-people"></i> Manage Users (${users.length})
           </button>
-          <button class="subnav-btn ${activeTab === 'weather-rescue' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('weather-rescue')">
+          <button class="subnav-btn ${currentTab === 'weather-rescue' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('weather-rescue')">
             <i class="bi bi-cloud-rain-heavy"></i> Weather Rescue Map
           </button>
-          <button class="subnav-btn ${activeTab === 'holding-hubs' ? 'active' : ''}" onclick="window.SaveToServeApp.navigateTo('holding-hubs')">
+          <button class="subnav-btn ${currentTab === 'holding-hubs' ? 'active' : ''}" onclick="window.SaveToServeApp.navigateTo('holding-hubs')">
             <i class="bi bi-snow"></i> Safe Hubs
           </button>
-          <button class="subnav-btn ${activeTab === 'impact-dashboard' ? 'active' : ''}" onclick="window.SaveToServeApp.navigateTo('impact-dashboard')">
+          <button class="subnav-btn ${currentTab === 'impact-dashboard' ? 'active' : ''}" onclick="window.SaveToServeApp.navigateTo('impact-dashboard')">
             <i class="bi bi-graph-up-arrow"></i> Impact & Reports
           </button>
-          <button class="subnav-btn ${activeTab === 'audit-logs' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('audit-logs')">
+          <button class="subnav-btn ${currentTab === 'audit-logs' ? 'active' : ''}" onclick="window.SaveToServeAdmin.switchTab('audit-logs')">
             <i class="bi bi-journal-text"></i> Audit Logs (${logs.length})
           </button>
         </div>
 
         <!-- Tab Body -->
         <div id="admin-tab-content">
-          ${this.renderTabContent(activeTab, donors, ngos, volunteers, reconsiderationUsers, users, donations, hubs, logs)}
+          ${this.renderTabContent(currentTab, donors, ngos, volunteers, reconsiderationUsers, users, donations, hubs, logs)}
         </div>
       </div>
     `;

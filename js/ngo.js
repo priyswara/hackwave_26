@@ -6,6 +6,7 @@
 
 class NgoPortalManager {
   constructor() {
+    this.activeTab = 'browse-food';
     this.filters = {
       search: '',
       foodType: 'all',
@@ -18,12 +19,16 @@ class NgoPortalManager {
   initEventListeners() {
     window.addEventListener('savetoserve:statechange', () => {
       if (window.SaveToServeApp?.currentRoute === 'ngo-portal') {
-        this.render();
+        this.render(this.activeTab);
       }
     });
   }
 
-  render(activeTab = 'browse-food') {
+  render(activeTab = null) {
+    if (activeTab) {
+      this.activeTab = activeTab;
+    }
+    const currentTab = this.activeTab || 'browse-food';
     const container = document.getElementById('ngo-portal-view');
     if (!container) return;
 
@@ -113,26 +118,26 @@ class NgoPortalManager {
 
         <!-- Navigation Tabs -->
         <div class="portal-subnav">
-          <button class="subnav-btn ${activeTab === 'browse-food' ? 'active' : ''}" onclick="window.SaveToServeNGO.switchTab('browse-food')">
+          <button class="subnav-btn ${currentTab === 'browse-food' ? 'active' : ''}" onclick="window.SaveToServeNGO.switchTab('browse-food')">
             <i class="bi bi-grid-fill"></i> Browse Available Food (${availableDonations.length})
           </button>
-          <button class="subnav-btn ${activeTab === 'my-claims' ? 'active' : ''}" onclick="window.SaveToServeNGO.switchTab('my-claims')">
+          <button class="subnav-btn ${currentTab === 'my-claims' ? 'active' : ''}" onclick="window.SaveToServeNGO.switchTab('my-claims')">
             <i class="bi bi-card-checklist"></i> My Claims & Deliveries (${myClaims.length})
           </button>
-          <button class="subnav-btn ${activeTab === 'post-req' ? 'active' : ''}" onclick="window.SaveToServeNGO.switchTab('post-req')">
+          <button class="subnav-btn ${currentTab === 'post-req' ? 'active' : ''}" onclick="window.SaveToServeNGO.switchTab('post-req')">
             <i class="bi bi-bell"></i> Urgent Food Requirements
           </button>
-          <button class="subnav-btn ${activeTab === 'weather-map' ? 'active' : ''}" onclick="window.SaveToServeNGO.switchTab('weather-map')">
+          <button class="subnav-btn ${currentTab === 'weather-map' ? 'active' : ''}" onclick="window.SaveToServeNGO.switchTab('weather-map')">
             <i class="bi bi-cloud-rain-heavy"></i> Weather & Rescue Routes
           </button>
-          <button class="subnav-btn ${activeTab === 'qr-redemption' ? 'active' : ''}" onclick="window.SaveToServeNGO.switchTab('qr-redemption')">
+          <button class="subnav-btn ${currentTab === 'qr-redemption' ? 'active' : ''}" onclick="window.SaveToServeNGO.switchTab('qr-redemption')">
             <i class="bi bi-qr-code-scan"></i> QR Voucher Terminal
           </button>
         </div>
 
         <!-- Tab Content -->
         <div id="ngo-tab-content">
-          ${this.renderTabContent(activeTab, allDonations, myClaims, user)}
+          ${this.renderTabContent(currentTab, allDonations, myClaims, user)}
         </div>
       </div>
     `;

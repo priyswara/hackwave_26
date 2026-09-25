@@ -6,13 +6,14 @@
 
 class DonorPortalManager {
   constructor() {
+    this.activeTab = 'my-donations';
     this.initEventListeners();
   }
 
   initEventListeners() {
     window.addEventListener('savetoserve:statechange', () => {
       if (window.SaveToServeApp?.currentRoute === 'donor-portal') {
-        this.render();
+        this.render(this.activeTab);
       }
     });
   }
@@ -34,7 +35,11 @@ class DonorPortalManager {
     return `<span class="badge badge-expiry-safe"><i class="bi bi-check-circle me-1"></i> ${diffHours.toFixed(1)}h Safe</span>`;
   }
 
-  render(activeTab = 'my-donations') {
+  render(activeTab = null) {
+    if (activeTab) {
+      this.activeTab = activeTab;
+    }
+    const currentTab = this.activeTab || 'my-donations';
     const container = document.getElementById('donor-portal-view');
     if (!container) return;
 
@@ -141,26 +146,26 @@ class DonorPortalManager {
 
         <!-- Subnav Navigation Tabs -->
         <div class="portal-subnav">
-          <button class="subnav-btn ${activeTab === 'my-donations' ? 'active' : ''}" onclick="window.SaveToServeDonor.switchTab('my-donations')">
+          <button class="subnav-btn ${currentTab === 'my-donations' ? 'active' : ''}" onclick="window.SaveToServeDonor.switchTab('my-donations')">
             <i class="bi bi-list-ul"></i> My Food Listings (${myDonations.length})
           </button>
-          <button class="subnav-btn ${activeTab === 'post-donation' ? 'active' : ''}" onclick="window.SaveToServeDonor.switchTab('post-donation')">
+          <button class="subnav-btn ${currentTab === 'post-donation' ? 'active' : ''}" onclick="window.SaveToServeDonor.switchTab('post-donation')">
             <i class="bi bi-plus-square"></i> Post New Surplus Food
           </button>
-          <button class="subnav-btn ${activeTab === 'track-pickups' ? 'active' : ''}" onclick="window.SaveToServeDonor.switchTab('track-pickups')">
+          <button class="subnav-btn ${currentTab === 'track-pickups' ? 'active' : ''}" onclick="window.SaveToServeDonor.switchTab('track-pickups')">
             <i class="bi bi-truck"></i> Track Pickups & Codes
           </button>
-          <button class="subnav-btn ${activeTab === 'weather-map' ? 'active' : ''}" onclick="window.SaveToServeDonor.switchTab('weather-map')">
+          <button class="subnav-btn ${currentTab === 'weather-map' ? 'active' : ''}" onclick="window.SaveToServeDonor.switchTab('weather-map')">
             <i class="bi bi-cloud-rain-heavy"></i> Weather & Route Safety
           </button>
-          <button class="subnav-btn ${activeTab === 'kyc' ? 'active' : ''}" onclick="window.SaveToServeDonor.switchTab('kyc')">
+          <button class="subnav-btn ${currentTab === 'kyc' ? 'active' : ''}" onclick="window.SaveToServeDonor.switchTab('kyc')">
             <i class="bi bi-shield-check"></i> Verification Status
           </button>
         </div>
 
         <!-- Tab Content -->
         <div id="donor-tab-content">
-          ${this.renderTabContent(activeTab, myDonations, user, isApproved)}
+          ${this.renderTabContent(currentTab, myDonations, user, isApproved)}
         </div>
       </div>
     `;

@@ -602,8 +602,10 @@ class SaveToServeAppController {
   }
 
   refreshCountdowns() {
-    if (this.currentRoute === 'donor-portal') window.SaveToServeDonor?.render();
-    if (this.currentRoute === 'ngo-portal') window.SaveToServeNGO?.render();
+    if (this.currentRoute === 'donor-portal') window.SaveToServeDonor?.render(window.SaveToServeDonor.activeTab);
+    if (this.currentRoute === 'ngo-portal') window.SaveToServeNGO?.render(window.SaveToServeNGO.activeTab);
+    if (this.currentRoute === 'volunteer-portal') window.SaveToServeVolunteer?.render(window.SaveToServeVolunteer.activeTab);
+    if (this.currentRoute === 'admin-portal') window.SaveToServeAdmin?.render(window.SaveToServeAdmin.activeTab);
     if (this.currentRoute === 'weather-rescue') window.SaveToServeWeather?.renderWeatherDashboard();
   }
 

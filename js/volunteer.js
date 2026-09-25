@@ -6,18 +6,23 @@
 
 class VolunteerPortalManager {
   constructor() {
+    this.activeTab = 'active-tasks';
     this.initEventListeners();
   }
 
   initEventListeners() {
     window.addEventListener('savetoserve:statechange', () => {
       if (window.SaveToServeApp?.currentRoute === 'volunteer-portal') {
-        this.render();
+        this.render(this.activeTab);
       }
     });
   }
 
-  render(activeTab = 'active-tasks') {
+  render(activeTab = null) {
+    if (activeTab) {
+      this.activeTab = activeTab;
+    }
+    const currentTab = this.activeTab || 'active-tasks';
     const container = document.getElementById('volunteer-portal-view');
     if (!container) return;
 
@@ -123,26 +128,26 @@ class VolunteerPortalManager {
 
         <!-- Navigation Subnav -->
         <div class="portal-subnav">
-          <button class="subnav-btn ${activeTab === 'active-tasks' ? 'active' : ''}" onclick="window.SaveToServeVolunteer.switchTab('active-tasks')">
+          <button class="subnav-btn ${currentTab === 'active-tasks' ? 'active' : ''}" onclick="window.SaveToServeVolunteer.switchTab('active-tasks')">
             <i class="bi bi-pin-map-fill"></i> Active Pickups & Verification (${myAssignedTasks.length})
           </button>
-          <button class="subnav-btn ${activeTab === 'available-tasks' ? 'active' : ''}" onclick="window.SaveToServeVolunteer.switchTab('available-tasks')">
+          <button class="subnav-btn ${currentTab === 'available-tasks' ? 'active' : ''}" onclick="window.SaveToServeVolunteer.switchTab('available-tasks')">
             <i class="bi bi-plus-circle"></i> Browse Available Tasks (${availableTasks.length})
           </button>
-          <button class="subnav-btn ${activeTab === 'weather-map' ? 'active' : ''}" onclick="window.SaveToServeVolunteer.switchTab('weather-map')">
+          <button class="subnav-btn ${currentTab === 'weather-map' ? 'active' : ''}" onclick="window.SaveToServeVolunteer.switchTab('weather-map')">
             <i class="bi bi-cloud-rain-heavy"></i> Weather & Courier Safety
           </button>
-          <button class="subnav-btn ${activeTab === 'history' ? 'active' : ''}" onclick="window.SaveToServeVolunteer.switchTab('history')">
+          <button class="subnav-btn ${currentTab === 'history' ? 'active' : ''}" onclick="window.SaveToServeVolunteer.switchTab('history')">
             <i class="bi bi-clock-history"></i> Rescue History (${completedTasks.length})
           </button>
-          <button class="subnav-btn ${activeTab === 'kyc' ? 'active' : ''}" onclick="window.SaveToServeVolunteer.switchTab('kyc')">
+          <button class="subnav-btn ${currentTab === 'kyc' ? 'active' : ''}" onclick="window.SaveToServeVolunteer.switchTab('kyc')">
             <i class="bi bi-shield-check"></i> Verification Status
           </button>
         </div>
 
         <!-- Tab Content -->
         <div id="volunteer-tab-content">
-          ${this.renderTabContent(activeTab, myAssignedTasks, availableTasks, completedTasks, user, isApproved)}
+          ${this.renderTabContent(currentTab, myAssignedTasks, availableTasks, completedTasks, user, isApproved)}
         </div>
       </div>
     `;
