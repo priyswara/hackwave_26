@@ -35,10 +35,49 @@ class SaveToServeAppController {
       this.refreshCountdowns();
     }, 30000);
 
+    this.initInteractiveMouseEffects();
+
     document.addEventListener('DOMContentLoaded', () => {
       this.renderNavbar();
       this.handleRouting();
     });
+  }
+
+  initInteractiveMouseEffects() {
+    // Non-blocking, instant click feedback with micro-sparkles and ripple matching the current portal color
+    document.addEventListener('pointerdown', (e) => {
+      const target = e.target.closest('button, a, .portal-card, .custom-card, .stat-card, .subnav-btn, .scenario-btn, .badge, .form-control-custom, .form-select-custom, .donation-card');
+      if (!target) return;
+
+      const clickX = e.clientX;
+      const clickY = e.clientY;
+
+      // Create lightweight ripple element
+      const ripple = document.createElement('div');
+      ripple.className = 'sts-click-ripple';
+      ripple.style.left = `${clickX}px`;
+      ripple.style.top = `${clickY}px`;
+      document.body.appendChild(ripple);
+
+      // Create 3 subtle whimsical micro-sparkles radiating outwards
+      for (let i = 0; i < 3; i++) {
+        const sparkle = document.createElement('div');
+        sparkle.className = 'sts-sparkle';
+        const angle = (i * 120 + Math.random() * 40) * (Math.PI / 180);
+        const dist = 14 + Math.random() * 12;
+        const tx = Math.cos(angle) * dist;
+        const ty = Math.sin(angle) * dist;
+        sparkle.style.left = `${clickX}px`;
+        sparkle.style.top = `${clickY}px`;
+        sparkle.style.setProperty('--tx', `${tx}px`);
+        sparkle.style.setProperty('--ty', `${ty}px`);
+        document.body.appendChild(sparkle);
+
+        setTimeout(() => sparkle.remove(), 480);
+      }
+
+      setTimeout(() => ripple.remove(), 450);
+    }, { passive: true });
   }
 
   handleRouting() {
