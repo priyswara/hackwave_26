@@ -22,9 +22,9 @@
   <header class="app-header" id="mainAppHeader">
     <div class="container d-flex align-items-center justify-content-between py-2">
       <a href="#home" class="navbar-brand-custom" onclick="window.SaveToServeApp.navigateTo('home')">
-        <img src="assets/logo.png" alt="Save to Serve Logo">
+        <img src="assets/logo.png" alt="Save to Serve Logo" class="brand-logo-animated">
         <div>
-          <div class="brand-title">Save to Serve</div>
+          <div class="brand-title">Save to Serve <span class="brand-swaying-leaf">🌱</span></div>
           <div class="brand-tagline">Save Food. Serve People. Reduce Waste.</div>
         </div>
       </a>
@@ -41,8 +41,20 @@
 
     <!-- 1. HOMEPAGE — FOUR PORTALS ONLY -->
     <div id="home-view" class="app-view">
-      <section class="hero-portal-header">
-        <div class="container">
+      <section class="hero-portal-header position-relative overflow-hidden">
+        <!-- Floating organic background leaves and sparkles -->
+        <div class="floating-bg-decorations" aria-hidden="true">
+          <span class="floating-item float-item-1">🌱</span>
+          <span class="floating-item float-item-2">✨</span>
+          <span class="floating-item float-item-3">🍃</span>
+          <span class="floating-item float-item-4">🍲</span>
+          <span class="floating-item float-item-5">✨</span>
+          <span class="floating-item float-item-6">🌱</span>
+        </div>
+        <div class="container position-relative hero-content-entrance">
+          <div class="d-inline-flex align-items-center gap-2 px-3 py-1 mb-2 rounded-pill hero-welcome-badge">
+            <span class="pulse-dot"></span> A little kindness goes a long way 🌱
+          </div>
           <h1 class="hero-main-title">
             Save Food. Serve People. Reduce Waste.
           </h1>

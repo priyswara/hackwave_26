@@ -78,6 +78,67 @@ class SaveToServeAppController {
 
       setTimeout(() => ripple.remove(), 450);
     }, { passive: true });
+
+    // Whimsical 3D card tilt & cursor glow tracking on portal cards
+    document.addEventListener('mousemove', (e) => {
+      const card = e.target.closest('.portal-card');
+      if (!card) return;
+
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      
+      const rotateX = ((y - centerY) / centerY) * -6;
+      const rotateY = ((x - centerX) / centerX) * 6;
+
+      card.style.setProperty('--mouse-x', `${x}px`);
+      card.style.setProperty('--mouse-y', `${y}px`);
+      card.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-6px) scale(1.015)`;
+    }, { passive: true });
+
+    document.addEventListener('mouseout', (e) => {
+      const card = e.target.closest('.portal-card');
+      if (card && !card.contains(e.relatedTarget)) {
+        card.style.transform = '';
+      }
+    }, { passive: true });
+  }
+
+  triggerSuccessBurst(originElOrEvent = null, customEmoji = '💖') {
+    let x = window.innerWidth / 2;
+    let y = window.innerHeight / 2;
+
+    if (originElOrEvent instanceof Event && originElOrEvent.clientX) {
+      x = originElOrEvent.clientX;
+      y = originElOrEvent.clientY;
+    } else if (originElOrEvent && originElOrEvent.getBoundingClientRect) {
+      const rect = originElOrEvent.getBoundingClientRect();
+      x = rect.left + rect.width / 2;
+      y = rect.top + rect.height / 2;
+    }
+
+    const emojis = [customEmoji, '✨', '🌱', '🍲', '💚'];
+    for (let i = 0; i < 6; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'sts-floating-emoji-burst';
+      particle.textContent = emojis[i % emojis.length];
+      particle.style.left = `${x}px`;
+      particle.style.top = `${y}px`;
+      
+      const angle = (i * 60 + Math.random() * 20 - 10) * (Math.PI / 180);
+      const dist = 35 + Math.random() * 35;
+      const tx = Math.cos(angle) * dist;
+      const ty = Math.sin(angle) * dist - 30; // Float upwards
+      
+      particle.style.setProperty('--tx', `${tx}px`);
+      particle.style.setProperty('--ty', `${ty}px`);
+      document.body.appendChild(particle);
+
+      setTimeout(() => particle.remove(), 750);
+    }
   }
 
   handleRouting() {
@@ -495,13 +556,27 @@ class SaveToServeAppController {
     toast.className = `custom-toast toast-${type}`;
     
     let icon = 'bi-info-circle-fill text-success';
-    if (type === 'success') icon = 'bi-check-circle-fill text-success';
+    let warmSubtitle = '';
+    if (type === 'success') {
+      icon = 'bi-check-circle-fill text-success';
+      const microcopies = [
+        'A little kindness goes a long way 🌱',
+        'Yay! A meal is on its way! 🍲',
+        'Every rescued meal makes a difference 💚',
+        "You're making someone's day brighter! ✨"
+      ];
+      warmSubtitle = `<div class="text-muted mt-1" style="font-size:0.75rem; font-style:italic;">${microcopies[Math.floor(Math.random() * microcopies.length)]}</div>`;
+      this.triggerSuccessBurst(null, '💖');
+    }
     if (type === 'warning') icon = 'bi-exclamation-triangle-fill text-warning';
     if (type === 'danger') icon = 'bi-x-octagon-fill text-danger';
 
     toast.innerHTML = `
       <i class="bi ${icon} fs-5 mt-1"></i>
-      <div class="flex-grow-1 small font-weight-500">${message}</div>
+      <div class="flex-grow-1 small font-weight-500">
+        <div>${message}</div>
+        ${warmSubtitle}
+      </div>
     `;
 
     container.appendChild(toast);
