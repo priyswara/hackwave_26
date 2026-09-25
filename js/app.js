@@ -360,18 +360,18 @@ class SaveToServeAppController {
           <a href="#admin-portal" class="nav-link-custom" onclick="window.SaveToServeAdmin?.switchTab('donor-verification')">
             <i class="bi bi-speedometer2"></i> Dashboard
           </a>
-          <a href="#admin-portal" class="nav-link-custom" onclick="window.SaveToServeAdmin?.switchTab('donor-verification')">
-            <i class="bi bi-shop"></i> Donor Verification
-          </a>
-          <a href="#admin-portal" class="nav-link-custom" onclick="window.SaveToServeAdmin?.switchTab('ngo-verification')">
-            <i class="bi bi-building"></i> NGO Verification
-          </a>
-          <a href="#admin-portal" class="nav-link-custom" onclick="window.SaveToServeAdmin?.switchTab('volunteer-verification')">
-            <i class="bi bi-bicycle"></i> Volunteer Verification
-          </a>
-          <a href="#admin-portal" class="nav-link-custom" onclick="window.SaveToServeAdmin?.switchTab('reconsideration-queue')">
-            <i class="bi bi-arrow-repeat text-warning"></i> Reconsiderations
-          </a>
+          <div class="dropdown d-inline-block">
+            <button class="nav-link-custom dropdown-toggle border-0 bg-transparent" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-shield-check"></i> Verifications
+            </button>
+            <ul class="dropdown-menu shadow-sm" style="border-radius:10px; border:1px solid var(--portal-border);">
+              <li><a class="dropdown-item py-2" href="#admin-portal" onclick="window.SaveToServeAdmin?.switchTab('donor-verification')"><i class="bi bi-shop me-2 text-primary"></i> Donor Verification</a></li>
+              <li><a class="dropdown-item py-2" href="#admin-portal" onclick="window.SaveToServeAdmin?.switchTab('ngo-verification')"><i class="bi bi-building me-2 text-success"></i> NGO Verification</a></li>
+              <li><a class="dropdown-item py-2" href="#admin-portal" onclick="window.SaveToServeAdmin?.switchTab('volunteer-verification')"><i class="bi bi-bicycle me-2 text-info"></i> Volunteer Verification</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item py-2" href="#admin-portal" onclick="window.SaveToServeAdmin?.switchTab('reconsideration-queue')"><i class="bi bi-arrow-repeat me-2 text-warning"></i> Reconsiderations Queue</a></li>
+            </ul>
+          </div>
           <a href="#admin-portal" class="nav-link-custom" onclick="window.SaveToServeAdmin?.switchTab('manage-donations')">
             <i class="bi bi-box2-heart"></i> Manage Donations
           </a>
@@ -392,6 +392,9 @@ class SaveToServeAppController {
         </a>
         <a href="#admin-portal" class="mobile-nav-item" onclick="window.SaveToServeAdmin?.switchTab('reconsideration-queue')">
           <i class="bi bi-arrow-repeat"></i><span>Reconsider</span>
+        </a>
+        <a href="#admin-portal" class="mobile-nav-item" onclick="window.SaveToServeAdmin?.switchTab('manage-donations')">
+          <i class="bi bi-box2-heart"></i><span>Donations</span>
         </a>
         <a href="#weather-rescue" class="mobile-nav-item" onclick="window.SaveToServeApp.navigateTo('weather-rescue')">
           <i class="bi bi-cloud-rain"></i><span>Weather</span>

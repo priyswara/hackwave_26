@@ -340,11 +340,21 @@ img {
   transition: border-color 0.25s ease;
 }
 
+.app-header .container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.app-header .container::-webkit-scrollbar {
+  display: none;
+}
+
 .navbar-brand-custom {
   display: flex;
   align-items: center;
   gap: 12px;
   text-decoration: none;
+  flex-shrink: 0;
 }
 
 .navbar-brand-custom img {
@@ -353,6 +363,7 @@ img {
   border-radius: 10px;
   object-fit: cover;
   border: 1.5px solid var(--portal-light);
+  flex-shrink: 0;
 }
 
 .brand-title {
@@ -361,6 +372,7 @@ img {
   font-weight: 800;
   color: var(--portal-dark);
   line-height: 1;
+  white-space: nowrap;
 }
 
 .brand-tagline {
@@ -368,23 +380,38 @@ img {
   color: var(--portal-primary);
   font-weight: 600;
   letter-spacing: -0.2px;
+  white-space: nowrap;
 }
 
 .nav-link-custom {
   color: var(--text-primary);
   font-weight: 600;
-  font-size: 0.9rem;
-  padding: 8px 14px;
+  font-size: 0.88rem;
+  padding: 7px 12px;
   border-radius: var(--radius-sm);
   transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .nav-link-custom:hover, .nav-link-custom.active {
   color: var(--portal-dark);
   background-color: var(--portal-light);
+}
+
+.dropdown-item {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: all 0.15s ease;
+}
+
+.dropdown-item:hover {
+  background-color: var(--portal-light);
+  color: var(--portal-dark);
 }
 
 /* ===================================================

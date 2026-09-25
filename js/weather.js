@@ -268,14 +268,6 @@ class WeatherAdaptiveRescueEngine {
 
     container.innerHTML = `
       <div class="container py-4">
-        <!-- Safety Disclaimer Banner -->
-        <div class="alert alert-warning d-flex align-items-center gap-3 mb-4 shadow-sm" role="alert" style="background:#FFF8E6;border-color:#FFE4A0;">
-          <i class="bi bi-shield-exclamation text-warning fs-3"></i>
-          <div class="small text-dark">
-            <strong>DEMO SAFETY NOTICE:</strong> Weather conditions, route assessments, and risk calculations are simulated for demonstration purposes. Always follow official local authority guidance. Never travel through flooded, waterlogged, or hazardous roads.
-          </div>
-        </div>
-
         <!-- Header -->
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
           <div>
