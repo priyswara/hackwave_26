@@ -59,9 +59,10 @@ class QrVoucherManager {
         <p class="small text-muted mb-2">Issued to: <strong>${donation.claimedByNgoName || 'Authorized NGO'}</strong></p>
 
         <div class="p-2 bg-light rounded text-start small mb-3 border">
-          <div><i class="bi bi-shop me-1 text-primary"></i> <strong>Pickup From:</strong> ${donation.donorOrg} (${donation.donorAddress})</div>
-          <div><i class="bi bi-box me-1 text-success"></i> <strong>Portions:</strong> ${donation.portions} meals (~${donation.quantityKg} kg)</div>
-          <div><i class="bi bi-alarm me-1 text-danger"></i> <strong>Safe Deadline:</strong> ${new Date(donation.safeUntil).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+          <div class="mb-1"><i class="bi bi-shop me-1 text-primary"></i> <strong>Pickup From:</strong> ${donation.donorOrg} (${donation.donorAddress})</div>
+          <div class="mb-1"><i class="bi bi-box me-1 text-success"></i> <strong>Portions:</strong> ${donation.portions} meals (~${donation.quantityKg} kg)</div>
+          <div class="mb-1"><i class="bi bi-calendar-check me-1 text-primary"></i> <strong>Posted Time:</strong> ${SaveToServeStore.formatDateTime(donation.createdAt || donation.prepTime)}</div>
+          <div class="mb-1"><i class="bi bi-alarm me-1 text-danger"></i> <strong>Safe Expiry Deadline:</strong> ${SaveToServeStore.formatDateTime(donation.safeUntil)} (${SaveToServeStore.getExpiryCountdown(donation.safeUntil).countdownText})</div>
           <div><i class="bi bi-info-circle me-1 text-muted"></i> <strong>Status:</strong> ${donation.qrVoucherRedeemed ? '<span class="badge bg-success">REDEEMED</span>' : '<span class="badge bg-warning text-dark">UNREDEEMED</span>'}</div>
         </div>
 

@@ -19,6 +19,9 @@ class DonorPortalManager {
   }
 
   getUrgencyBadge(safeUntilISO) {
+    if (typeof SaveToServeStore !== 'undefined' && SaveToServeStore.getExpiryCountdown) {
+      return SaveToServeStore.getExpiryCountdown(safeUntilISO).badgeHtml;
+    }
     const safeUntil = new Date(safeUntilISO).getTime();
     const now = Date.now();
     const diffHours = (safeUntil - now) / 3600000;
@@ -33,6 +36,26 @@ class DonorPortalManager {
       return `<span class="badge badge-expiry-warning"><i class="bi bi-clock-history me-1"></i> ${diffHours.toFixed(1)}h Left</span>`;
     }
     return `<span class="badge badge-expiry-safe"><i class="bi bi-check-circle me-1"></i> ${diffHours.toFixed(1)}h Safe</span>`;
+  }
+
+  setPresetExpiryHours(hours) {
+    const input = document.getElementById('safeUntilDate');
+    if (!input) return;
+    const target = new Date(Date.now() + hours * 3600000);
+    const pad = (n) => String(n).padStart(2, '0');
+    input.value = `${target.getFullYear()}-${pad(target.getMonth() + 1)}-${pad(target.getDate())}T${pad(target.getHours())}:${pad(target.getMinutes())}`;
+  }
+
+  getMinExpiryInputString() {
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  }
+
+  getDefaultExpiryInputString(hours = 4) {
+    const target = new Date(Date.now() + hours * 3600000);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${target.getFullYear()}-${pad(target.getMonth() + 1)}-${pad(target.getDate())}T${pad(target.getHours())}:${pad(target.getMinutes())}`;
   }
 
   render(activeTab = null) {
@@ -192,6 +215,9 @@ class DonorPortalManager {
         `;
       }
 
+      const defaultExpiryValue = this.getDefaultExpiryInputString(4);
+      const minExpiryValue = this.getMinExpiryInputString();
+
       return `
         <div class="custom-card">
           <div class="custom-card-header">
@@ -200,7 +226,7 @@ class DonorPortalManager {
           </div>
 
           <div class="alert alert-info py-2 small mb-4">
-            <i class="bi bi-info-circle-fill me-1"></i> <strong>Save to Serve Principle:</strong> Only list <em>already-prepared, safe existing surplus food</em>. Do not prepare fresh food for donation.
+            <i class="bi bi-info-circle-fill me-1"></i> <strong>Save to Serve Principle:</strong> Only list <em>already-prepared, safe existing surplus food</em>. Set the exact expiry date and time by which the food must be collected and used.
           </div>
 
           <form id="postDonationForm" onsubmit="window.SaveToServeDonor.handlePostSubmit(event)">
@@ -235,14 +261,34 @@ class DonorPortalManager {
                 </select>
               </div>
               <div class="col-md-4">
-                <label class="form-label-custom">Safe-Use Deadline (Hours from now) *</label>
-                <select id="safeHours" class="form-select-custom w-100" required>
-                  <option value="2">2 Hours (Urgent Consumption)</option>
-                  <option value="3.5" selected>3.5 Hours (Standard Cooked Food)</option>
-                  <option value="6">6 Hours</option>
-                  <option value="12">12 Hours (Bakery / Dry)</option>
-                  <option value="24">24 Hours (Produce / Sealed)</option>
-                </select>
+                <label class="form-label-custom">Prepared / Cooked Time</label>
+                <input type="text" class="form-control-custom w-100 bg-light" value="Just now (${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})})" readonly>
+              </div>
+            </div>
+
+            <!-- Exact Expiry Date and Time Picker -->
+            <div class="p-3 rounded border mb-3" style="background:#FAFBFD; border-color:var(--portal-border)!important;">
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                <label class="form-label-custom mb-0 text-danger fw-bold">
+                  <i class="bi bi-alarm-fill me-1"></i> Food Expiry Date & Time (Must be collected and used before) *
+                </label>
+                <div class="d-flex align-items-center gap-1 flex-wrap">
+                  <span class="small text-muted me-1">Quick Presets:</span>
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:0.75rem;" onclick="window.SaveToServeDonor.setPresetExpiryHours(2)">+2 Hours</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:0.75rem;" onclick="window.SaveToServeDonor.setPresetExpiryHours(4)">+4 Hours</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:0.75rem;" onclick="window.SaveToServeDonor.setPresetExpiryHours(8)">+8 Hours</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:0.75rem;" onclick="window.SaveToServeDonor.setPresetExpiryHours(24)">+24 Hours</button>
+                </div>
+              </div>
+              <div class="row g-2 align-items-center">
+                <div class="col-md-6">
+                  <input type="datetime-local" id="safeUntilDate" class="form-control form-control-custom w-100 fw-bold text-danger" min="${minExpiryValue}" value="${defaultExpiryValue}" required>
+                </div>
+                <div class="col-md-6">
+                  <span class="small text-muted d-block">
+                    <i class="bi bi-info-circle"></i> Food will automatically be marked as Expired when this exact date & time passes. Times are saved and shown in your local timezone.
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -301,28 +347,58 @@ class DonorPortalManager {
             </div>
           ` : `
             <div class="row g-3">
-              ${claimedItems.map(d => `
-                <div class="col-lg-6">
-                  <div class="p-3 border rounded h-100" style="background:#FAF9FC;">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                      <h6 class="fw-bold mb-0" style="color:var(--dark-olive);">${d.foodName}</h6>
-                      <span class="badge ${d.status === 'completed' ? 'bg-success' : 'bg-warning text-dark'} text-uppercase">${d.status}</span>
-                    </div>
+              ${claimedItems.map(d => {
+                const expiryInfo = SaveToServeStore.getExpiryCountdown(d.safeUntil);
+                const postedTimeFormatted = SaveToServeStore.formatDateTime(d.createdAt || d.prepTime);
+                const expiryTimeFormatted = SaveToServeStore.formatDateTime(d.safeUntil);
 
-                    <p class="small text-muted mb-2">Claimed by: <strong>${d.claimedByNgoName || 'Authorized NGO Partner'}</strong></p>
+                return `
+                  <div class="col-lg-6">
+                    <div class="p-3 border rounded h-100 d-flex flex-column justify-content-between" style="background:#FAF9FC;">
+                      <div>
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                          <h6 class="fw-bold mb-0" style="color:var(--dark-olive);">${d.foodName}</h6>
+                          <span class="badge ${d.status === 'completed' ? 'bg-success' : 'bg-warning text-dark'} text-uppercase">${d.status}</span>
+                        </div>
 
-                    <div class="p-2 rounded mb-2 text-center" style="background:var(--light-olive); border: 1.5px dashed var(--primary-olive);">
-                      <div class="small text-muted">Handoff Verification Code:</div>
-                      <div class="fs-4 fw-bold font-monospace" style="color:var(--dark-olive); letter-spacing: 2px;">${d.pickupCode}</div>
-                    </div>
+                        <p class="small text-muted mb-2">Claimed by: <strong>${d.claimedByNgoName || 'Authorized NGO Partner'}</strong></p>
 
-                    <div class="small text-muted">
-                      <div><i class="bi bi-person-badge"></i> Assigned Courier: <strong>${d.assignedVolunteerName || 'NGO Staff Courier'}</strong></div>
-                      <div><i class="bi bi-clock"></i> Claimed: ${new Date(d.claimTimestamp || d.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+                        <div class="p-2 rounded mb-2 text-center" style="background:var(--light-olive); border: 1.5px dashed var(--primary-olive);">
+                          <div class="small text-muted">Handoff Verification Code:</div>
+                          <div class="fs-4 fw-bold font-monospace" style="color:var(--dark-olive); letter-spacing: 2px;">${d.pickupCode}</div>
+                        </div>
+
+                        <!-- Date & Time Details -->
+                        <div class="p-2 bg-white rounded border small mb-2">
+                          <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted"><i class="bi bi-calendar-check me-1 text-primary"></i><strong>Posted:</strong></span>
+                            <span>${postedTimeFormatted}</span>
+                          </div>
+                          <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted"><i class="bi bi-alarm me-1 text-danger"></i><strong>Expiry:</strong></span>
+                            <span class="fw-bold text-danger">${expiryTimeFormatted}</span>
+                          </div>
+                          <div class="d-flex justify-content-between align-items-center pt-1 border-top mt-1">
+                            <span class="text-muted">Deadline Status:</span>
+                            <span>${expiryInfo.badgeHtml}</span>
+                          </div>
+                        </div>
+
+                        <div class="small text-muted mb-2">
+                          <div><i class="bi bi-person-badge"></i> Assigned Courier: <strong>${d.assignedVolunteerName || 'NGO Staff Courier'}</strong></div>
+                          <div><i class="bi bi-clock"></i> Claimed: ${d.claimTimestamp ? SaveToServeStore.formatDateTime(d.claimTimestamp) : 'Recently'}</div>
+                        </div>
+                      </div>
+
+                      <div class="pt-2 border-top">
+                        <button class="btn btn-sm btn-soft-olive w-100" onclick="window.SaveToServeApp.showDonationDetailsModal('${d.id}')">
+                          <i class="bi bi-eye"></i> View Full Details
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              `).join('')}
+                `;
+              }).join('')}
             </div>
           `}
         </div>
@@ -358,59 +434,83 @@ class DonorPortalManager {
           </div>
         ` : `
           <div class="row g-3">
-            ${myDonations.map(d => `
-              <div class="col-md-6 col-lg-4">
-                <div class="donation-card">
-                  <div class="donation-card-img-wrap">
-                    <img src="${d.imageUrl || 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=500'}" class="donation-card-img" alt="${d.foodName}">
-                    <div class="donation-card-badge-top">
-                      <span class="badge ${d.foodType === 'veg' ? 'bg-success' : 'bg-danger'} text-uppercase">
-                        ${d.foodType}
-                      </span>
-                    </div>
-                    <div class="donation-card-badge-urgency">
-                      ${this.getUrgencyBadge(d.safeUntil)}
-                    </div>
-                  </div>
+            ${myDonations.map(d => {
+              const expiryInfo = SaveToServeStore.getExpiryCountdown(d.safeUntil);
+              const postedTimeFormatted = SaveToServeStore.formatDateTime(d.createdAt || d.prepTime);
+              const expiryTimeFormatted = SaveToServeStore.formatDateTime(d.safeUntil);
 
-                  <div class="donation-card-body">
-                    <h6 class="donation-title">${d.foodName}</h6>
-                    <div class="donation-donor-info">
-                      <i class="bi bi-geo-alt"></i> ${d.donorAddress}
-                    </div>
-
-                    <div class="donation-meta-grid">
-                      <div>
-                        <span class="meta-item-label">Portions</span>
-                        <span class="meta-item-value">${d.portions} meals (~${d.quantityKg} kg)</span>
+              return `
+                <div class="col-md-6 col-lg-4">
+                  <div class="donation-card ${expiryInfo.isExpired ? 'opacity-75' : ''}">
+                    <div class="donation-card-img-wrap">
+                      <img src="${d.imageUrl || 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=500'}" class="donation-card-img" alt="${d.foodName}">
+                      <div class="donation-card-badge-top">
+                        <span class="badge ${d.foodType === 'veg' ? 'bg-success' : 'bg-danger'} text-uppercase">
+                          ${d.foodType}
+                        </span>
                       </div>
-                      <div>
-                        <span class="meta-item-label">Status</span>
-                        <span class="meta-item-value text-uppercase" style="color:var(--primary-olive);">${d.status}</span>
+                      <div class="donation-card-badge-urgency">
+                        ${expiryInfo.badgeHtml}
                       </div>
                     </div>
 
-                    ${d.status === 'claimed' ? `
-                      <div class="alert alert-warning py-1 px-2 small mb-3">
-                        <i class="bi bi-person-check-fill me-1"></i> Claimed by <strong>${d.claimedByNgoName}</strong>
+                    <div class="donation-card-body">
+                      <h6 class="donation-title">${d.foodName}</h6>
+                      <div class="donation-donor-info">
+                        <i class="bi bi-geo-alt"></i> ${d.donorAddress}
                       </div>
-                    ` : ''}
 
-                    <div class="mt-auto d-flex gap-2 pt-2 border-top">
-                      ${d.status === 'available' ? `
-                        <button class="btn btn-sm btn-outline-danger w-100" onclick="window.SaveToServeDonor.cancelDonation('${d.id}')">
-                          <i class="bi bi-x-circle"></i> Cancel
+                      <!-- Approaching Expiry / Expired Warning Alert -->
+                      ${expiryInfo.warningHtml}
+
+                      <div class="donation-meta-grid mb-2">
+                        <div>
+                          <span class="meta-item-label">Portions</span>
+                          <span class="meta-item-value">${d.portions} meals (~${d.quantityKg} kg)</span>
+                        </div>
+                        <div>
+                          <span class="meta-item-label">Status</span>
+                          <span class="meta-item-value text-uppercase" style="color:var(--primary-olive);">${d.status}</span>
+                        </div>
+                      </div>
+
+                      <!-- Exact Timestamps Section (Posted & Expiry) -->
+                      <div class="p-2 rounded border small mb-3" style="background:#FAFBFD; font-size:0.78rem;">
+                        <div class="d-flex justify-content-between mb-1 pb-1 border-bottom">
+                          <span class="text-muted"><i class="bi bi-calendar-check text-primary me-1"></i><strong>Posted:</strong></span>
+                          <span class="text-dark fw-500">${postedTimeFormatted}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                          <span class="text-muted"><i class="bi bi-alarm text-danger me-1"></i><strong>Expiry:</strong></span>
+                          <span class="fw-bold ${expiryInfo.isExpired ? 'text-muted text-decoration-line-through' : 'text-danger'}">${expiryTimeFormatted}</span>
+                        </div>
+                      </div>
+
+                      ${d.status === 'claimed' ? `
+                        <div class="alert alert-warning py-1 px-2 small mb-3">
+                          <i class="bi bi-person-check-fill me-1"></i> Claimed by <strong>${d.claimedByNgoName}</strong>
+                        </div>
+                      ` : ''}
+
+                      <div class="mt-auto d-flex gap-2 pt-2 border-top">
+                        <button class="btn btn-sm btn-soft-olive w-50" onclick="window.SaveToServeApp.showDonationDetailsModal('${d.id}')" title="View Full Details">
+                          <i class="bi bi-eye"></i> Details
                         </button>
-                      ` : `
-                        <button class="btn btn-sm btn-soft-olive w-100" onclick="window.SaveToServeDonor.switchTab('track-pickups')">
-                          <i class="bi bi-eye"></i> View Code & Status
-                        </button>
-                      `}
+                        ${d.status === 'available' ? `
+                          <button class="btn btn-sm btn-outline-danger w-50" onclick="window.SaveToServeDonor.cancelDonation('${d.id}')">
+                            <i class="bi bi-x-circle"></i> Cancel
+                          </button>
+                        ` : `
+                          <button class="btn btn-sm btn-soft-olive w-50" onclick="window.SaveToServeDonor.switchTab('track-pickups')">
+                            <i class="bi bi-qr-code"></i> Code
+                          </button>
+                        `}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            `).join('')}
+              `;
+            }).join('')}
           </div>
         `}
       </div>
@@ -434,7 +534,7 @@ class DonorPortalManager {
     const category = document.getElementById('foodCategory').value;
     const portions = parseInt(document.getElementById('portions').value);
     const foodType = document.getElementById('foodType').value;
-    const safeHours = parseFloat(document.getElementById('safeHours').value);
+    const safeUntilDateValue = document.getElementById('safeUntilDate').value;
     const donorAddress = document.getElementById('donorAddress').value.trim();
     const storageInfo = document.getElementById('storageInfo').value.trim();
     const imageUrl = document.getElementById('imageUrl').value.trim();
@@ -444,15 +544,33 @@ class DonorPortalManager {
       return;
     }
 
-    const safeUntil = new Date(Date.now() + safeHours * 3600000).toISOString();
+    if (!safeUntilDateValue) {
+      window.SaveToServeApp?.showToast('Please specify a valid food expiry date and time.', 'warning');
+      return;
+    }
+
+    const expiryDateObj = new Date(safeUntilDateValue);
+    if (isNaN(expiryDateObj.getTime())) {
+      window.SaveToServeApp?.showToast('Invalid date and time selected.', 'warning');
+      return;
+    }
+
+    if (expiryDateObj.getTime() <= Date.now()) {
+      window.SaveToServeApp?.showToast('Food expiry date and time must be set in the future.', 'warning');
+      return;
+    }
+
+    const safeUntil = expiryDateObj.toISOString();
+    const nowISO = new Date().toISOString();
 
     window.SaveToServeDB.addDonation({
       foodName,
       category,
       portions,
       foodType,
-      prepTime: new Date().toISOString(),
+      prepTime: nowISO,
       safeUntil,
+      createdAt: nowISO,
       donorId: user.id,
       donorName: user.name,
       donorOrg: user.orgName || user.name,
@@ -463,7 +581,7 @@ class DonorPortalManager {
       imageUrl
     });
 
-    window.SaveToServeApp?.showToast(`Successfully listed ${portions} portions of ${foodName}!`, 'success');
+    window.SaveToServeApp?.showToast(`Successfully listed ${portions} portions of ${foodName}! Expiry: ${SaveToServeStore.formatDateTime(safeUntil)}`, 'success');
     this.switchTab('my-donations');
   }
 

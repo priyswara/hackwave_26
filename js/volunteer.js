@@ -173,26 +173,60 @@ class VolunteerPortalManager {
             </div>
           ` : `
             <div class="row g-3">
-              ${availableTasks.map(d => `
-                <div class="col-lg-6">
-                  <div class="p-3 border rounded h-100" style="background:#FAF9FC;">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                      <h6 class="fw-bold mb-0" style="color:var(--dark-olive);">${d.foodName}</h6>
-                      <span class="badge badge-expiry-warning">⏰ Safe until ${new Date(d.safeUntil).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
-                    </div>
+              ${availableTasks.map(d => {
+                const expiryInfo = SaveToServeStore.getExpiryCountdown(d.safeUntil);
+                const postedTimeFormatted = SaveToServeStore.formatDateTime(d.createdAt || d.prepTime);
+                const expiryTimeFormatted = SaveToServeStore.formatDateTime(d.safeUntil);
 
-                    <div class="small mb-3">
-                      <div class="text-muted"><i class="bi bi-shop text-primary"></i> Pickup: <strong>${d.donorOrg}</strong> (${d.donorAddress})</div>
-                      <div class="text-muted"><i class="bi bi-building text-success"></i> Deliver to: <strong>${d.claimedByNgoName}</strong></div>
-                      <div class="text-muted"><i class="bi bi-box"></i> Quantity: <strong>${d.portions} meals (~${d.quantityKg} kg)</strong></div>
-                    </div>
+                return `
+                  <div class="col-lg-6">
+                    <div class="p-3 border rounded h-100 d-flex flex-column justify-content-between" style="background:#FAF9FC;">
+                      <div>
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                          <h6 class="fw-bold mb-0" style="color:var(--dark-olive);">${d.foodName}</h6>
+                          <div>${expiryInfo.badgeHtml}</div>
+                        </div>
 
-                    <button class="btn btn-olive btn-sm w-100" onclick="window.SaveToServeVolunteer.acceptTask('${d.id}')" ${!isApproved ? 'disabled title="Volunteer verification required"' : ''}>
-                      <i class="bi bi-check2"></i> Accept Pickup Task
-                    </button>
+                        <!-- Approaching Expiry / Expired Warning Alert -->
+                        ${expiryInfo.warningHtml}
+
+                        <div class="small mb-2 p-2 bg-white rounded border">
+                          <div class="text-muted"><i class="bi bi-shop text-primary me-1"></i> Pickup: <strong>${d.donorOrg}</strong> (${d.donorAddress})</div>
+                          <div class="text-muted"><i class="bi bi-building text-success me-1"></i> Deliver to: <strong>${d.claimedByNgoName}</strong></div>
+                          <div class="text-muted"><i class="bi bi-box me-1"></i> Quantity: <strong>${d.portions} meals (~${d.quantityKg} kg)</strong> • ${(d.foodType || 'veg').toUpperCase()}</div>
+                        </div>
+
+                        <!-- Date & Time Breakdown -->
+                        <div class="p-2 bg-white rounded border small mb-3" style="font-size:0.78rem;">
+                          <div class="d-flex justify-content-between mb-1 pb-1 border-bottom">
+                            <span class="text-muted"><i class="bi bi-calendar-check text-primary me-1"></i><strong>Posted:</strong></span>
+                            <span>${postedTimeFormatted}</span>
+                          </div>
+                          <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted"><i class="bi bi-alarm text-danger me-1"></i><strong>Expiry:</strong></span>
+                            <span class="fw-bold text-danger">${expiryTimeFormatted}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="d-flex gap-2 pt-2 border-top">
+                        ${expiryInfo.isExpired || d.status === 'expired' ? `
+                          <button class="btn btn-secondary btn-sm w-50" disabled>
+                            <i class="bi bi-x-circle"></i> Task Expired
+                          </button>
+                        ` : `
+                          <button class="btn btn-olive btn-sm w-50" onclick="window.SaveToServeVolunteer.acceptTask('${d.id}')" ${!isApproved ? 'disabled title="Volunteer verification required"' : ''}>
+                            <i class="bi bi-check2"></i> Accept Task
+                          </button>
+                        `}
+                        <button class="btn btn-soft-olive btn-sm w-50" onclick="window.SaveToServeApp.showDonationDetailsModal('${d.id}')">
+                          <i class="bi bi-eye"></i> Details
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              `).join('')}
+                `;
+              }).join('')}
             </div>
           `}
         </div>
@@ -220,8 +254,11 @@ class VolunteerPortalManager {
                     <th>Food Item</th>
                     <th>Donor & NGO</th>
                     <th>Portions</th>
+                    <th>Posted Time</th>
+                    <th>Safe Expiry</th>
                     <th>Completed At</th>
                     <th>Status</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -233,8 +270,15 @@ class VolunteerPortalManager {
                         <div><small class="text-muted">To:</small> ${d.claimedByNgoName || 'Community'}</div>
                       </td>
                       <td><strong>${d.portions} portions</strong></td>
-                      <td>${new Date(d.distributionTimestamp || d.pickupTimestamp || d.createdAt).toLocaleDateString()} ${new Date(d.distributionTimestamp || d.pickupTimestamp || d.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</td>
+                      <td><span class="small">${SaveToServeStore.formatDateTime(d.createdAt || d.prepTime)}</span></td>
+                      <td><span class="small text-danger">${SaveToServeStore.formatDateTime(d.safeUntil)}</span></td>
+                      <td>${SaveToServeStore.formatDateTime(d.distributionTimestamp || d.pickupTimestamp || d.createdAt)}</td>
                       <td><span class="badge bg-success">Rescued & Delivered</span></td>
+                      <td>
+                        <button class="btn btn-sm btn-soft-olive" onclick="window.SaveToServeApp.showDonationDetailsModal('${d.id}')">
+                          <i class="bi bi-eye"></i>
+                        </button>
+                      </td>
                     </tr>
                   `).join('')}
                 </tbody>
@@ -279,50 +323,84 @@ class VolunteerPortalManager {
           </div>
         ` : `
           <div class="row g-3">
-            ${myAssignedTasks.map(d => `
-              <div class="col-lg-6">
-                <div class="p-3 border rounded h-100" style="background:#FAF9FC; border-color:var(--light-olive)!important;">
-                  <div class="d-flex justify-content-between align-items-start mb-2">
-                    <h6 class="fw-bold mb-0" style="color:var(--dark-olive);">${d.foodName}</h6>
-                    <span class="badge ${d.status === 'in-transit' ? 'bg-primary' : 'bg-warning text-dark'} text-uppercase">
-                      ${d.status === 'in-transit' ? '🚚 In Transit' : '⏳ Awaiting Pickup'}
-                    </span>
-                  </div>
+            ${myAssignedTasks.map(d => {
+              const expiryInfo = SaveToServeStore.getExpiryCountdown(d.safeUntil);
+              const postedTimeFormatted = SaveToServeStore.formatDateTime(d.createdAt || d.prepTime);
+              const expiryTimeFormatted = SaveToServeStore.formatDateTime(d.safeUntil);
 
-                  <div class="p-2 bg-white rounded border small mb-3">
-                    <div><strong>🏢 Pickup:</strong> ${d.donorOrg} (${d.donorAddress})</div>
-                    <div><strong>📞 Donor Phone:</strong> ${d.donorPhone}</div>
-                    <hr class="my-1">
-                    <div><strong>🏠 Destination:</strong> ${d.claimedByNgoName}</div>
-                    <div><strong>📦 Quantity:</strong> ${d.portions} portions (${d.category})</div>
-                    <div><strong>⏰ Deadline:</strong> ${new Date(d.safeUntil).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
-                  </div>
+              return `
+                <div class="col-lg-6">
+                  <div class="p-3 border rounded h-100 d-flex flex-column justify-content-between" style="background:#FAF9FC; border-color:var(--light-olive)!important;">
+                    <div>
+                      <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="fw-bold mb-0" style="color:var(--dark-olive);">${d.foodName}</h6>
+                        <span class="badge ${d.status === 'in-transit' ? 'bg-primary' : 'bg-warning text-dark'} text-uppercase">
+                          ${d.status === 'in-transit' ? '🚚 In Transit' : '⏳ Awaiting Pickup'}
+                        </span>
+                      </div>
 
-                  ${d.status === 'claimed' ? `
-                    <div class="p-2 rounded mb-2" style="background:var(--light-olive);">
-                      <div class="small fw-bold mb-1" style="color:var(--dark-olive);">Step 1: Confirm Pickup with Donor Code</div>
-                      <div class="input-group">
-                        <input type="text" id="pickupCodeInput-${d.id}" class="form-control form-control-sm font-monospace" placeholder="Enter Donor's Code (e.g. ${d.pickupCode})">
-                        <button class="btn btn-sm btn-olive" onclick="window.SaveToServeVolunteer.confirmPickupCode('${d.id}')">
-                          Verify & Start Transit
+                      <!-- Approaching Expiry / Expired Warning Alert -->
+                      ${expiryInfo.warningHtml}
+
+                      <div class="p-2 bg-white rounded border small mb-2">
+                        <div><strong>🏢 Pickup:</strong> ${d.donorOrg} (${d.donorAddress})</div>
+                        <div><strong>📞 Donor Phone:</strong> ${d.donorPhone}</div>
+                        <hr class="my-1">
+                        <div><strong>🏠 Destination:</strong> ${d.claimedByNgoName}</div>
+                        <div><strong>📦 Quantity:</strong> ${d.portions} portions (${d.category})</div>
+                      </div>
+
+                      <!-- Exact Date & Time Information -->
+                      <div class="p-2 bg-white rounded border small mb-3" style="font-size:0.78rem;">
+                        <div class="d-flex justify-content-between mb-1 pb-1 border-bottom">
+                          <span class="text-muted"><i class="bi bi-calendar-check text-primary me-1"></i><strong>Posted:</strong></span>
+                          <span>${postedTimeFormatted}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-1 pb-1 border-bottom">
+                          <span class="text-muted"><i class="bi bi-alarm text-danger me-1"></i><strong>Expiry:</strong></span>
+                          <span class="fw-bold text-danger">${expiryTimeFormatted}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                          <span class="text-muted">Deadline Status:</span>
+                          <span>${expiryInfo.badgeHtml}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      ${d.status === 'claimed' ? `
+                        <div class="p-2 rounded mb-2" style="background:var(--light-olive);">
+                          <div class="small fw-bold mb-1" style="color:var(--dark-olive);">Step 1: Confirm Pickup with Donor Code</div>
+                          <div class="input-group">
+                            <input type="text" id="pickupCodeInput-${d.id}" class="form-control form-control-sm font-monospace" placeholder="Enter Donor's Code (e.g. ${d.pickupCode})">
+                            <button class="btn btn-sm btn-olive" onclick="window.SaveToServeVolunteer.confirmPickupCode('${d.id}')">
+                              Verify & Start Transit
+                            </button>
+                          </div>
+                          <div class="text-muted" style="font-size:0.75rem; margin-top:4px;">
+                            <em>Demo helper: The donor's code is <strong>${d.pickupCode}</strong></em>
+                          </div>
+                        </div>
+                      ` : `
+                        <div class="p-2 rounded mb-2 bg-light border">
+                          <div class="small text-success fw-bold mb-1"><i class="bi bi-check-circle-fill"></i> Food Picked Up Safely</div>
+                          <div class="small text-muted mb-2">You are en route to ${d.claimedByNgoName}. Please ensure thermal containers remain closed during transit.</div>
+                          <button class="btn btn-sm btn-green w-100" onclick="window.SaveToServeVolunteer.markDeliveredToNGO('${d.id}')">
+                            <i class="bi bi-box-arrow-in-down"></i> Mark Handed Over to NGO
+                          </button>
+                        </div>
+                      `}
+                      
+                      <div class="pt-2 border-top mt-2">
+                        <button class="btn btn-sm btn-soft-olive w-100" onclick="window.SaveToServeApp.showDonationDetailsModal('${d.id}')">
+                          <i class="bi bi-eye"></i> View Full Details
                         </button>
                       </div>
-                      <div class="text-muted" style="font-size:0.75rem; margin-top:4px;">
-                        <em>Demo helper: The donor's code is <strong>${d.pickupCode}</strong></em>
-                      </div>
                     </div>
-                  ` : `
-                    <div class="p-2 rounded mb-2 bg-light border">
-                      <div class="small text-success fw-bold mb-1"><i class="bi bi-check-circle-fill"></i> Food Picked Up Safely</div>
-                      <div class="small text-muted mb-2">You are en route to ${d.claimedByNgoName}. Please ensure thermal containers remain closed during transit.</div>
-                      <button class="btn btn-sm btn-green w-100" onclick="window.SaveToServeVolunteer.markDeliveredToNGO('${d.id}')">
-                        <i class="bi bi-box-arrow-in-down"></i> Mark Handed Over to NGO
-                      </button>
-                    </div>
-                  `}
+                  </div>
                 </div>
-              </div>
-            `).join('')}
+              `;
+            }).join('')}
           </div>
         `}
       </div>

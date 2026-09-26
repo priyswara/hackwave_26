@@ -194,51 +194,81 @@ class NgoPortalManager {
             </div>
           ` : `
             <div class="row g-3">
-              ${filtered.map(d => `
-                <div class="col-md-6 col-lg-4">
-                  <div class="donation-card">
-                    <div class="donation-card-img-wrap">
-                      <img src="${d.imageUrl || 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=500'}" class="donation-card-img" alt="${d.foodName}">
-                      <div class="donation-card-badge-top">
-                        <span class="badge ${d.foodType === 'veg' ? 'bg-success' : 'bg-danger'} text-uppercase">
-                          ${d.foodType}
-                        </span>
-                      </div>
-                      <div class="donation-card-badge-urgency">
-                        ${window.SaveToServeDonor ? window.SaveToServeDonor.getUrgencyBadge(d.safeUntil) : ''}
-                      </div>
-                    </div>
+              ${filtered.map(d => {
+                const expiryInfo = SaveToServeStore.getExpiryCountdown(d.safeUntil);
+                const postedTimeFormatted = SaveToServeStore.formatDateTime(d.createdAt || d.prepTime);
+                const expiryTimeFormatted = SaveToServeStore.formatDateTime(d.safeUntil);
 
-                    <div class="donation-card-body">
-                      <h6 class="donation-title">${d.foodName}</h6>
-                      <div class="donation-donor-info">
-                        <i class="bi bi-shop"></i> ${d.donorOrg} (${d.donorAddress})
-                      </div>
-
-                      <div class="donation-meta-grid">
-                        <div>
-                          <span class="meta-item-label">Portions</span>
-                          <span class="meta-item-value">${d.portions} meals (~${d.quantityKg} kg)</span>
+                return `
+                  <div class="col-md-6 col-lg-4">
+                    <div class="donation-card ${expiryInfo.isExpired ? 'opacity-75' : ''}">
+                      <div class="donation-card-img-wrap">
+                        <img src="${d.imageUrl || 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=500'}" class="donation-card-img" alt="${d.foodName}">
+                        <div class="donation-card-badge-top">
+                          <span class="badge ${d.foodType === 'veg' ? 'bg-success' : 'bg-danger'} text-uppercase">
+                            ${d.foodType}
+                          </span>
                         </div>
-                        <div>
-                          <span class="meta-item-label">Category</span>
-                          <span class="meta-item-value">${d.category}</span>
+                        <div class="donation-card-badge-urgency">
+                          ${expiryInfo.badgeHtml}
                         </div>
                       </div>
 
-                      <p class="small text-muted mb-3">
-                        <i class="bi bi-info-circle me-1"></i> ${d.storageInfo}
-                      </p>
+                      <div class="donation-card-body">
+                        <h6 class="donation-title">${d.foodName}</h6>
+                        <div class="donation-donor-info">
+                          <i class="bi bi-shop"></i> ${d.donorOrg} (${d.donorAddress})
+                        </div>
 
-                      <div class="mt-auto pt-2 border-top">
-                        <button class="btn btn-green w-100" onclick="window.SaveToServeNGO.claimDonation('${d.id}')">
-                          <i class="bi bi-hand-thumbs-up"></i> Claim for Distribution
-                        </button>
+                        <!-- Approaching Expiry / Expired Warning Alert -->
+                        ${expiryInfo.warningHtml}
+
+                        <div class="donation-meta-grid mb-2">
+                          <div>
+                            <span class="meta-item-label">Portions</span>
+                            <span class="meta-item-value">${d.portions} meals (~${d.quantityKg} kg)</span>
+                          </div>
+                          <div>
+                            <span class="meta-item-label">Category</span>
+                            <span class="meta-item-value">${d.category}</span>
+                          </div>
+                        </div>
+
+                        <!-- Exact Stored Timestamps (Posted & Expiry) -->
+                        <div class="p-2 rounded border small mb-3" style="background:#FAFBFD; font-size:0.78rem;">
+                          <div class="d-flex justify-content-between mb-1 pb-1 border-bottom">
+                            <span class="text-muted"><i class="bi bi-calendar-check text-primary me-1"></i><strong>Posted:</strong></span>
+                            <span class="text-dark fw-500">${postedTimeFormatted}</span>
+                          </div>
+                          <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted"><i class="bi bi-alarm text-danger me-1"></i><strong>Expiry:</strong></span>
+                            <span class="fw-bold ${expiryInfo.isExpired ? 'text-muted text-decoration-line-through' : 'text-danger'}">${expiryTimeFormatted}</span>
+                          </div>
+                        </div>
+
+                        <p class="small text-muted mb-3">
+                          <i class="bi bi-info-circle me-1"></i> ${d.storageInfo}
+                        </p>
+
+                        <div class="mt-auto d-flex flex-column gap-2 pt-2 border-top">
+                          ${expiryInfo.isExpired || d.status === 'expired' ? `
+                            <button class="btn btn-secondary w-100" disabled>
+                              <i class="bi bi-x-circle"></i> Expired — Cannot Claim
+                            </button>
+                          ` : `
+                            <button class="btn btn-green w-100" onclick="window.SaveToServeNGO.claimDonation('${d.id}')">
+                              <i class="bi bi-hand-thumbs-up"></i> Claim for Distribution
+                            </button>
+                          `}
+                          <button class="btn btn-sm btn-soft-olive w-100" onclick="window.SaveToServeApp.showDonationDetailsModal('${d.id}')">
+                            <i class="bi bi-eye"></i> View Full Details
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              `).join('')}
+                `;
+              }).join('')}
             </div>
           `}
         </div>
@@ -260,60 +290,88 @@ class NgoPortalManager {
             </div>
           ` : `
             <div class="row g-3">
-              ${myClaims.map(d => `
-                <div class="col-lg-6">
-                  <div class="p-3 border rounded h-100 d-flex flex-column justify-content-between" style="background:#FAF9FC;">
-                    <div>
-                      <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h6 class="fw-bold mb-0" style="color:var(--dark-olive);">${d.foodName}</h6>
-                        <span class="badge ${d.status === 'completed' ? 'bg-success' : d.status === 'in-transit' ? 'bg-primary' : 'bg-warning text-dark'} text-uppercase">
-                          ${d.status}
-                        </span>
+              ${myClaims.map(d => {
+                const expiryInfo = SaveToServeStore.getExpiryCountdown(d.safeUntil);
+                const postedTimeFormatted = SaveToServeStore.formatDateTime(d.createdAt || d.prepTime);
+                const expiryTimeFormatted = SaveToServeStore.formatDateTime(d.safeUntil);
+
+                return `
+                  <div class="col-lg-6">
+                    <div class="p-3 border rounded h-100 d-flex flex-column justify-content-between" style="background:#FAF9FC;">
+                      <div>
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                          <h6 class="fw-bold mb-0" style="color:var(--dark-olive);">${d.foodName}</h6>
+                          <span class="badge ${d.status === 'completed' ? 'bg-success' : d.status === 'in-transit' ? 'bg-primary' : 'bg-warning text-dark'} text-uppercase">
+                            ${d.status}
+                          </span>
+                        </div>
+
+                        <p class="small text-muted mb-2">
+                          <i class="bi bi-geo-alt me-1"></i> Donor: <strong>${d.donorOrg}</strong> (${d.donorPhone})
+                        </p>
+
+                        <div class="p-2 bg-white rounded border small mb-2">
+                          <div class="d-flex justify-content-between mb-1">
+                            <span>Portions:</span>
+                            <strong>${d.portions} portions</strong>
+                          </div>
+                          <div class="d-flex justify-content-between mb-1">
+                            <span>Pickup Verification Code:</span>
+                            <strong class="font-monospace text-primary">${d.pickupCode}</strong>
+                          </div>
+                          <div class="d-flex justify-content-between">
+                            <span>Assigned Courier:</span>
+                            <strong>${d.assignedVolunteerName || 'Authorized Volunteer'}</strong>
+                          </div>
+                        </div>
+
+                        <!-- Date & Time Information -->
+                        <div class="p-2 bg-white rounded border small mb-3">
+                          <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted"><i class="bi bi-calendar-check me-1 text-primary"></i><strong>Posted:</strong></span>
+                            <span>${postedTimeFormatted}</span>
+                          </div>
+                          <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted"><i class="bi bi-alarm me-1 text-danger"></i><strong>Expiry:</strong></span>
+                            <span class="fw-bold text-danger">${expiryTimeFormatted}</span>
+                          </div>
+                          <div class="d-flex justify-content-between align-items-center pt-1 border-top mt-1">
+                            <span class="text-muted">Safe-Use Status:</span>
+                            <span>${expiryInfo.badgeHtml}</span>
+                          </div>
+                        </div>
                       </div>
 
-                      <p class="small text-muted mb-2">
-                        <i class="bi bi-geo-alt me-1"></i> Donor: <strong>${d.donorOrg}</strong> (${d.donorPhone})
-                      </p>
-
-                      <div class="p-2 bg-white rounded border small mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                          <span>Portions:</span>
-                          <strong>${d.portions} portions</strong>
-                        </div>
-                        <div class="d-flex justify-content-between mb-1">
-                          <span>Pickup Verification Code:</span>
-                          <strong class="font-monospace text-primary">${d.pickupCode}</strong>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                          <span>Assigned Courier:</span>
-                          <strong>${d.assignedVolunteerName || 'Authorized Volunteer'}</strong>
-                        </div>
+                      <div class="mt-2 pt-2 border-top">
+                        ${d.status === 'claimed' ? `
+                          <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-soft-olive w-50" onclick="window.SaveToServeQR.showVoucherModal('${d.id}')">
+                              <i class="bi bi-qr-code"></i> QR Voucher
+                            </button>
+                            <button class="btn btn-sm btn-soft-olive w-50" onclick="window.SaveToServeApp.showDonationDetailsModal('${d.id}')">
+                              <i class="bi bi-eye"></i> Details
+                            </button>
+                          </div>
+                        ` : d.status === 'in-transit' ? `
+                          <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-green w-100" onclick="window.SaveToServeNGO.promptConfirmDistribution('${d.id}', ${d.portions})">
+                              <i class="bi bi-check2-circle"></i> Confirm Receipt & Distribution
+                            </button>
+                          </div>
+                        ` : `
+                          <div class="alert alert-success py-1 px-2 mb-2 small d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-check-circle-fill"></i> Distributed to ${d.beneficiariesReached || d.portions} people</span>
+                            <span class="text-muted">${SaveToServeStore.formatTime(d.distributionTimestamp || d.createdAt)}</span>
+                          </div>
+                          <button class="btn btn-sm btn-soft-olive w-100" onclick="window.SaveToServeApp.showDonationDetailsModal('${d.id}')">
+                            <i class="bi bi-eye"></i> View Full Details
+                          </button>
+                        `}
                       </div>
-                    </div>
-
-                    <div class="mt-2 pt-2 border-top">
-                      ${d.status === 'claimed' ? `
-                        <div class="d-flex gap-2">
-                          <button class="btn btn-sm btn-soft-olive w-100" onclick="window.SaveToServeQR.showVoucherModal('${d.id}')">
-                            <i class="bi bi-qr-code"></i> View QR Voucher
-                          </button>
-                        </div>
-                      ` : d.status === 'in-transit' ? `
-                        <div class="d-flex gap-2">
-                          <button class="btn btn-sm btn-green w-100" onclick="window.SaveToServeNGO.promptConfirmDistribution('${d.id}', ${d.portions})">
-                            <i class="bi bi-check2-circle"></i> Confirm Receipt & Distribution
-                          </button>
-                        </div>
-                      ` : `
-                        <div class="alert alert-success py-1 px-2 mb-0 small d-flex justify-content-between align-items-center">
-                          <span><i class="bi bi-check-circle-fill"></i> Distributed to ${d.beneficiariesReached || d.portions} people</span>
-                          <span class="text-muted">${new Date(d.distributionTimestamp || d.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
-                        </div>
-                      `}
                     </div>
                   </div>
-                </div>
-              `).join('')}
+                `;
+              }).join('')}
             </div>
           `}
         </div>

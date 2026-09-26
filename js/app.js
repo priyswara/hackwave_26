@@ -33,7 +33,7 @@ class SaveToServeAppController {
 
     setInterval(() => {
       this.refreshCountdowns();
-    }, 30000);
+    }, 10000);
 
     this.initInteractiveMouseEffects();
 
@@ -601,7 +601,163 @@ class SaveToServeAppController {
     }, durationMs);
   }
 
+  showDonationDetailsModal(donationId) {
+    const d = window.SaveToServeDB?.getDonationById(donationId);
+    if (!d) return;
+
+    const modalTitle = document.getElementById('globalModalTitle');
+    const modalBody = document.getElementById('globalModalBody');
+    if (!modalTitle || !modalBody) return;
+
+    const user = window.SaveToServeAuth?.getCurrentUser();
+    const expiryInfo = SaveToServeStore.getExpiryCountdown(d.safeUntil);
+    const postedTimeFormatted = SaveToServeStore.formatDateTime(d.createdAt || d.prepTime);
+    const expiryTimeFormatted = SaveToServeStore.formatDateTime(d.safeUntil);
+
+    modalTitle.innerHTML = `<i class="bi bi-box2-heart text-success me-2"></i> ${d.foodName || 'Donation Details'}`;
+    modalBody.innerHTML = `
+      <div>
+        ${expiryInfo.isExpired ? `
+          <div class="alert alert-danger py-2 px-3 small d-flex align-items-center gap-2 mb-3 shadow-sm">
+            <i class="bi bi-x-octagon-fill fs-5 text-danger flex-shrink-0"></i>
+            <div>
+              <strong>Food Expired:</strong> Safe consumption window for this surplus food has elapsed. It is marked as Expired and cannot be claimed.
+            </div>
+          </div>
+        ` : expiryInfo.isApproachingExpiry ? `
+          <div class="alert alert-warning py-2 px-3 small d-flex align-items-center gap-2 mb-3 shadow-sm">
+            <i class="bi bi-exclamation-triangle-fill fs-5 text-warning flex-shrink-0"></i>
+            <div>
+              <strong>Approaching Expiry:</strong> This surplus food is nearing its safe-use deadline (${expiryInfo.countdownText}). Priority collection is advised!
+            </div>
+          </div>
+        ` : ''}
+
+        <div class="row g-3">
+          <div class="col-md-5">
+            <div class="rounded overflow-hidden border mb-2 position-relative" style="background:var(--portal-light); height:210px;">
+              <img src="${d.imageUrl || 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600'}" alt="${d.foodName || 'Food Image'}" style="width:100%;height:100%;object-fit:cover;">
+              <div style="position:absolute; top:10px; left:10px;">
+                <span class="badge ${d.foodType === 'veg' ? 'bg-success' : 'bg-danger'} text-uppercase">
+                  ${d.foodType || 'veg'}
+                </span>
+              </div>
+              <div style="position:absolute; top:10px; right:10px;">
+                ${expiryInfo.badgeHtml}
+              </div>
+            </div>
+            
+            <div class="p-3 bg-light rounded small border">
+              <div class="d-flex justify-content-between mb-1">
+                <span class="text-muted">Category:</span>
+                <strong>${d.category || 'Cooked Meal'}</strong>
+              </div>
+              <div class="d-flex justify-content-between mb-1">
+                <span class="text-muted">Quantity:</span>
+                <strong>${d.portions ? `${d.portions} portions (~${d.quantityKg || (d.portions * 0.35).toFixed(1)} kg)` : 'Not provided'}</strong>
+              </div>
+              <div class="d-flex justify-content-between mb-1">
+                <span class="text-muted">Status:</span>
+                <span class="badge ${d.status === 'completed' ? 'bg-success' : d.status === 'claimed' || d.status === 'in-transit' ? 'bg-primary' : d.status === 'expired' ? 'badge-expired' : d.status === 'flagged' ? 'bg-danger' : 'bg-warning text-dark'} text-uppercase">${d.status || 'AVAILABLE'}</span>
+              </div>
+              ${d.pickupCode ? `
+                <div class="d-flex justify-content-between pt-1 border-top mt-1">
+                  <span class="text-muted">Pickup Code:</span>
+                  <strong class="font-monospace text-primary">${d.pickupCode}</strong>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+
+          <div class="col-md-7">
+            <h5 class="fw-bold mb-1" style="color:var(--dark-olive);">${d.foodName || 'Food Listing'}</h5>
+            <p class="text-muted small mb-3"><i class="bi bi-info-circle me-1"></i>${d.storageInfo || 'Freshly prepared surplus cooked meal packaged safely for community rescue.'}</p>
+
+            <!-- Prominent Timestamps Section -->
+            <div class="p-3 rounded border mb-3" style="background:#FAFBFD;">
+              <div class="row g-2">
+                <div class="col-sm-6">
+                  <div class="p-2 border rounded bg-white h-100">
+                    <span class="text-muted d-block" style="font-size:0.72rem;font-weight:700;letter-spacing:0.3px;">
+                      <i class="bi bi-calendar-check text-primary me-1"></i>POSTED TIME
+                    </span>
+                    <strong class="d-block mt-1" style="color:var(--dark-olive); font-size:0.9rem;">${postedTimeFormatted}</strong>
+                    <div class="small text-muted" style="font-size:0.75rem;">(User's Local Time)</div>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="p-2 border rounded bg-white h-100" style="${expiryInfo.isApproachingExpiry ? 'border-color:#F5BDB5!important; background:#FFFBFB!important;' : ''}">
+                    <span class="text-muted d-block" style="font-size:0.72rem;font-weight:700;letter-spacing:0.3px;">
+                      <i class="bi bi-alarm ${expiryInfo.isExpired ? 'text-danger' : expiryInfo.isApproachingExpiry ? 'text-warning' : 'text-danger'} me-1"></i>EXPIRY DATE & TIME
+                    </span>
+                    <strong class="d-block mt-1 ${expiryInfo.isExpired ? 'text-danger' : expiryInfo.isApproachingExpiry ? 'text-danger' : 'text-dark'}" style="font-size:0.9rem;">${expiryTimeFormatted}</strong>
+                    <div class="mt-1">${expiryInfo.badgeHtml}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Donor & Pickup Address -->
+            <div class="p-3 rounded small border mb-3" style="background:var(--portal-soft-bg);">
+              <div class="row g-2">
+                <div class="col-sm-6">
+                  <span class="text-muted d-block" style="font-size:0.72rem;font-weight:700;">DONOR / KITCHEN</span>
+                  <strong>${d.donorOrg || d.donorName || 'Not provided'}</strong>
+                  ${d.donorName && d.donorName !== d.donorOrg ? `<div class="text-muted">${d.donorName}</div>` : ''}
+                  ${d.donorPhone ? `<div class="font-monospace text-muted mt-1"><i class="bi bi-telephone me-1"></i>${d.donorPhone}</div>` : ''}
+                </div>
+                <div class="col-sm-6">
+                  <span class="text-muted d-block" style="font-size:0.72rem;font-weight:700;">PICKUP ADDRESS</span>
+                  <div><i class="bi bi-geo-alt text-danger me-1"></i>${d.donorAddress || 'Not provided'}</div>
+                </div>
+                ${d.claimedByNgoName ? `
+                  <div class="col-12 pt-2 border-top mt-1">
+                    <span class="text-muted d-block" style="font-size:0.72rem;font-weight:700;">CLAIMED BY NGO</span>
+                    <div><i class="bi bi-building text-success me-1"></i><strong>${d.claimedByNgoName}</strong></div>
+                  </div>
+                ` : ''}
+                ${d.assignedVolunteerName ? `
+                  <div class="col-12 pt-1">
+                    <span class="text-muted d-block" style="font-size:0.72rem;font-weight:700;">ASSIGNED COURIER</span>
+                    <div><i class="bi bi-bicycle text-info me-1"></i><strong>${d.assignedVolunteerName}</strong></div>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+
+            <!-- Contextual Actions depending on user role and listing status -->
+            <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+              ${user && user.role === 'ngo' && d.status === 'available' && !expiryInfo.isExpired ? `
+                <button class="btn btn-green" onclick="bootstrap.Modal.getInstance(document.getElementById('globalModal')).hide(); window.SaveToServeNGO.claimDonation('${d.id}')">
+                  <i class="bi bi-hand-thumbs-up"></i> Claim for Distribution
+                </button>
+              ` : ''}
+              ${user && user.role === 'volunteer' && d.status === 'claimed' && !d.assignedVolunteerId && !expiryInfo.isExpired ? `
+                <button class="btn btn-olive" onclick="bootstrap.Modal.getInstance(document.getElementById('globalModal')).hide(); window.SaveToServeVolunteer.acceptTask('${d.id}')">
+                  <i class="bi bi-check2"></i> Accept Pickup Task
+                </button>
+              ` : ''}
+              ${user && user.role === 'donor' && (d.donorId === user.id || d.donorName === user.name) && d.status === 'available' ? `
+                <button class="btn btn-outline-danger" onclick="bootstrap.Modal.getInstance(document.getElementById('globalModal')).hide(); window.SaveToServeDonor.cancelDonation('${d.id}')">
+                  <i class="bi bi-x-circle"></i> Cancel Listing
+                </button>
+              ` : ''}
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const modalEl = document.getElementById('globalModal');
+    if (modalEl && typeof bootstrap !== 'undefined') {
+      const bsModal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+      bsModal.show();
+    }
+  }
+
   refreshCountdowns() {
+    window.SaveToServeDB?.checkAndExpireDonations();
     if (this.currentRoute === 'donor-portal') window.SaveToServeDonor?.render(window.SaveToServeDonor.activeTab);
     if (this.currentRoute === 'ngo-portal') window.SaveToServeNGO?.render(window.SaveToServeNGO.activeTab);
     if (this.currentRoute === 'volunteer-portal') window.SaveToServeVolunteer?.render(window.SaveToServeVolunteer.activeTab);

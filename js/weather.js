@@ -208,14 +208,27 @@ class WeatherRescueEngine {
       donations.forEach(d => {
         if (d.donorCoords && d.donorCoords.length === 2) {
           const marker = L.marker(d.donorCoords, { icon: activeIcon }).addTo(map);
+          const expiryInfo = typeof SaveToServeStore !== 'undefined' ? SaveToServeStore.getExpiryCountdown(d.safeUntil) : { countdownText: '' };
+          const postedTime = typeof SaveToServeStore !== 'undefined' ? SaveToServeStore.formatDateTime(d.createdAt || d.prepTime) : '';
+          const expiryTime = typeof SaveToServeStore !== 'undefined' ? SaveToServeStore.formatDateTime(d.safeUntil) : '';
+
           marker.bindPopup(`
-            <div style="font-family:sans-serif;font-size:13px;padding:2px;min-width:180px;">
+            <div style="font-family:sans-serif;font-size:13px;padding:2px;min-width:200px;">
               <span class="badge ${activeBadge}">${weather.riskLevel} RISK</span><br>
               <strong style="margin-top:4px;display:inline-block;font-size:13px;color:#333;">${d.foodName}</strong><br>
               <span style="color:#666;">${d.donorOrg}</span><br>
               <span style="color:#888;font-size:12px;">${d.donorAddress}</span><br>
-              <span style="font-weight:bold;color:#444;">${d.portions} portions</span><br>
-              <div class="mt-1 small text-muted"><em>Weather: ${weather.available ? weather.name : 'Data unavailable'}</em></div>
+              <span style="font-weight:bold;color:#444;">${d.portions} portions (~${d.quantityKg || (d.portions * 0.35).toFixed(1)} kg)</span><br>
+              <div style="font-size:11px;color:#555;margin-top:4px;border-top:1px solid #eee;padding-top:3px;">
+                <div><strong>Posted:</strong> ${postedTime}</div>
+                <div><strong>Expires:</strong> <span style="color:#dc2626;font-weight:bold;">${expiryTime}</span></div>
+                <div><em>Status: ${expiryInfo.countdownText || d.status}</em></div>
+              </div>
+              <div class="mt-2 text-center">
+                <button class="btn btn-xs btn-outline-dark w-100" style="font-size:11px;padding:2px 6px;" onclick="window.SaveToServeApp?.showDonationDetailsModal('${d.id}')">
+                  View Full Details
+                </button>
+              </div>
             </div>
           `);
         }

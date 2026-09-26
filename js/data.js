@@ -148,7 +148,7 @@ const INITIAL_STATE = {
       portions: 50,
       quantityKg: 17.5,
       foodType: 'veg',
-      prepTime: new Date(Date.now() - 2 * 3600000).toISOString(),
+      prepTime: new Date(Date.now() - 1.5 * 3600000).toISOString(),
       safeUntil: new Date(Date.now() + 3.5 * 3600000).toISOString(),
       donorId: 'usr-donor-1',
       donorName: 'Chef Rajesh Sharma',
@@ -173,7 +173,78 @@ const INITIAL_STATE = {
       qrVoucherRedeemed: false,
       holdingHubId: null,
       weatherRescuePlan: null,
-      createdAt: new Date(Date.now() - 1 * 3600000).toISOString()
+      createdAt: new Date(Date.now() - 1 * 3600000).toISOString(),
+      isDemo: true
+    },
+    {
+      id: 'DON-2026-104',
+      foodName: '60 Portions Dal Tadka, Jeera Rice & Phulkas',
+      category: 'Cooked Meal',
+      portions: 60,
+      quantityKg: 21.0,
+      foodType: 'veg',
+      prepTime: new Date(Date.now() - 1 * 3600000).toISOString(),
+      safeUntil: new Date(Date.now() + 4.5 * 3600000).toISOString(),
+      donorId: 'usr-donor-1',
+      donorName: 'Chef Rajesh Sharma',
+      donorOrg: 'Spice Symphony Grand Banquet',
+      donorPhone: '+91 98765 43210',
+      donorAddress: '24 MG Road, Indiranagar, Bengaluru',
+      donorCoords: [12.9784, 77.6408],
+      storageInfo: 'Packed in insulated warm cambros. Safe temperature maintained.',
+      imageUrl: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=500&auto=format&fit=crop&q=60',
+      status: 'available',
+      claimedByNgoId: null,
+      claimedByNgoName: null,
+      claimTimestamp: null,
+      assignedVolunteerId: null,
+      assignedVolunteerName: null,
+      pickupCode: 'STS-6612',
+      pickupTimestamp: null,
+      deliveryTimestamp: null,
+      distributionTimestamp: null,
+      beneficiariesReached: 0,
+      qrVoucherCode: 'VOUCHER-STS-104',
+      qrVoucherRedeemed: false,
+      holdingHubId: null,
+      weatherRescuePlan: null,
+      createdAt: new Date(Date.now() - 50 * 60000).toISOString(),
+      isDemo: true
+    },
+    {
+      id: 'DON-2026-105',
+      foodName: '45 Portions Veg Pulao & Mix Veg Korma',
+      category: 'Cooked Meal',
+      portions: 45,
+      quantityKg: 15.5,
+      foodType: 'veg',
+      prepTime: new Date(Date.now() - 2 * 3600000).toISOString(),
+      safeUntil: new Date(Date.now() + 3 * 3600000).toISOString(),
+      donorId: 'usr-donor-1',
+      donorName: 'Chef Rajesh Sharma',
+      donorOrg: 'Spice Symphony Grand Banquet',
+      donorPhone: '+91 98765 43210',
+      donorAddress: '24 MG Road, Indiranagar, Bengaluru',
+      donorCoords: [12.9784, 77.6408],
+      storageInfo: 'Thermal catering trays. Awaiting volunteer courier pickup.',
+      imageUrl: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&auto=format&fit=crop&q=60',
+      status: 'claimed',
+      claimedByNgoId: 'usr-ngo-1',
+      claimedByNgoName: 'Asha Food & Hope Shelter',
+      claimTimestamp: new Date(Date.now() - 20 * 60000).toISOString(),
+      assignedVolunteerId: null,
+      assignedVolunteerName: null,
+      pickupCode: 'STS-5521',
+      pickupTimestamp: null,
+      deliveryTimestamp: null,
+      distributionTimestamp: null,
+      beneficiariesReached: 0,
+      qrVoucherCode: 'VOUCHER-STS-105',
+      qrVoucherRedeemed: false,
+      holdingHubId: null,
+      weatherRescuePlan: null,
+      createdAt: new Date(Date.now() - 1.8 * 3600000).toISOString(),
+      isDemo: true
     },
     {
       id: 'DON-2026-102',
@@ -182,7 +253,7 @@ const INITIAL_STATE = {
       portions: 35,
       quantityKg: 12.0,
       foodType: 'veg',
-      prepTime: new Date(Date.now() - 3 * 3600000).toISOString(),
+      prepTime: new Date(Date.now() - 2.5 * 3600000).toISOString(),
       safeUntil: new Date(Date.now() + 2 * 3600000).toISOString(),
       donorId: 'usr-donor-1',
       donorName: 'Chef Rajesh Sharma',
@@ -207,7 +278,43 @@ const INITIAL_STATE = {
       qrVoucherRedeemed: false,
       holdingHubId: null,
       weatherRescuePlan: null,
-      createdAt: new Date(Date.now() - 2.5 * 3600000).toISOString()
+      createdAt: new Date(Date.now() - 2.5 * 3600000).toISOString(),
+      isDemo: true
+    },
+    {
+      id: 'DON-2026-106',
+      foodName: '25 Boxes Garden Fresh Salad & Seasonal Fruits',
+      category: 'Produce',
+      portions: 25,
+      quantityKg: 9.0,
+      foodType: 'vegan',
+      prepTime: new Date(Date.now() - 2 * 3600000).toISOString(),
+      safeUntil: new Date(Date.now() + 2.5 * 3600000).toISOString(),
+      donorId: 'usr-donor-1',
+      donorName: 'Chef Rajesh Sharma',
+      donorOrg: 'Spice Symphony Grand Banquet',
+      donorPhone: '+91 98765 43210',
+      donorAddress: '24 MG Road, Indiranagar, Bengaluru',
+      donorCoords: [12.9784, 77.6408],
+      storageInfo: 'Sealed eco-friendly fresh boxes with ice pack lining.',
+      imageUrl: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=500&auto=format&fit=crop&q=60',
+      status: 'in-transit',
+      claimedByNgoId: 'usr-ngo-1',
+      claimedByNgoName: 'Asha Food & Hope Shelter',
+      claimTimestamp: new Date(Date.now() - 45 * 60000).toISOString(),
+      assignedVolunteerId: 'usr-vol-1',
+      assignedVolunteerName: 'Karan Verma',
+      pickupCode: 'STS-4190',
+      pickupTimestamp: new Date(Date.now() - 20 * 60000).toISOString(),
+      deliveryTimestamp: null,
+      distributionTimestamp: null,
+      beneficiariesReached: 0,
+      qrVoucherCode: 'VOUCHER-STS-106',
+      qrVoucherRedeemed: false,
+      holdingHubId: null,
+      weatherRescuePlan: null,
+      createdAt: new Date(Date.now() - 2 * 3600000).toISOString(),
+      isDemo: true
     },
     {
       id: 'DON-2026-103',
@@ -241,7 +348,8 @@ const INITIAL_STATE = {
       qrVoucherRedeemed: true,
       holdingHubId: null,
       weatherRescuePlan: null,
-      createdAt: new Date(Date.now() - 6 * 3600000).toISOString()
+      createdAt: new Date(Date.now() - 6 * 3600000).toISOString(),
+      isDemo: true
     }
   ],
 
@@ -421,6 +529,27 @@ class SaveToServeStore {
               parsed.users.push(seedUser);
             }
           });
+
+          // Ensure all default demo sample donations exist without overwriting user-created donations
+          INITIAL_STATE.donations.forEach(seedDon => {
+            const existingIdx = parsed.donations.findIndex(d => d.id === seedDon.id);
+            if (existingIdx === -1) {
+              parsed.donations.push(JSON.parse(JSON.stringify(seedDon)));
+            } else if (parsed.donations[existingIdx].isDemo) {
+              // Refresh demo expiry times if they have expired in localStorage to keep demo active
+              const currSafe = new Date(parsed.donations[existingIdx].safeUntil).getTime();
+              if (isNaN(currSafe) || currSafe <= Date.now()) {
+                parsed.donations[existingIdx].safeUntil = seedDon.safeUntil;
+                parsed.donations[existingIdx].prepTime = seedDon.prepTime;
+                parsed.donations[existingIdx].createdAt = seedDon.createdAt;
+                if (seedDon.status !== parsed.donations[existingIdx].status && parsed.donations[existingIdx].status === 'expired') {
+                  parsed.donations[existingIdx].status = seedDon.status;
+                }
+              }
+            }
+          });
+
+          this.saveState(parsed);
           return parsed;
         }
       }
@@ -580,13 +709,163 @@ class SaveToServeStore {
     return { success: true, user };
   }
 
+  // --- Helper Date & Time Utilities (Local Timezone & Countdowns) ---
+  static formatDateTime(isoString) {
+    if (!isoString) return 'Not specified';
+    try {
+      const d = new Date(isoString);
+      if (isNaN(d.getTime())) return 'Invalid date';
+      return d.toLocaleDateString(undefined, { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      }) + ', ' + d.toLocaleTimeString(undefined, { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+    } catch (e) {
+      return String(isoString);
+    }
+  }
+
+  static formatDate(isoString) {
+    if (!isoString) return 'Not specified';
+    try {
+      const d = new Date(isoString);
+      if (isNaN(d.getTime())) return 'Invalid date';
+      return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    } catch (e) {
+      return String(isoString);
+    }
+  }
+
+  static formatTime(isoString) {
+    if (!isoString) return '';
+    try {
+      const d = new Date(isoString);
+      if (isNaN(d.getTime())) return '';
+      return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    } catch (e) {
+      return '';
+    }
+  }
+
+  static getExpiryCountdown(safeUntilISO) {
+    if (!safeUntilISO) {
+      return {
+        isExpired: false,
+        isApproachingExpiry: false,
+        diffHours: 0,
+        diffMs: 0,
+        countdownText: 'No deadline set',
+        badgeHtml: '<span class="badge bg-secondary">No Expiry</span>',
+        warningHtml: ''
+      };
+    }
+
+    const safeUntil = new Date(safeUntilISO).getTime();
+    const now = Date.now();
+    const diffMs = safeUntil - now;
+    const diffHours = diffMs / 3600000;
+
+    if (diffMs <= 0) {
+      return {
+        isExpired: true,
+        isApproachingExpiry: false,
+        diffHours: 0,
+        diffMs,
+        countdownText: 'Expired',
+        badgeHtml: '<span class="badge badge-expired"><i class="bi bi-x-circle me-1"></i> Expired</span>',
+        warningHtml: '<div class="alert alert-danger py-1 px-2 small mb-2 d-flex align-items-center gap-1"><i class="bi bi-x-octagon-fill text-danger"></i> <span><strong>Food Expired:</strong> Safe consumption window has elapsed.</span></div>'
+      };
+    }
+
+    const totalSeconds = Math.floor(diffMs / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+    let timeString = '';
+    if (days > 0) {
+      timeString = `${days}d ${hours}h left`;
+    } else if (hours > 0) {
+      timeString = `${hours}h ${minutes}m left`;
+    } else {
+      timeString = `${minutes}m left`;
+    }
+
+    const isApproachingExpiry = diffHours < 2; // Approaching expiry threshold (< 2 hours)
+
+    if (isApproachingExpiry) {
+      return {
+        isExpired: false,
+        isApproachingExpiry: true,
+        diffHours,
+        diffMs,
+        countdownText: `${timeString} (Urgent)`,
+        badgeHtml: `<span class="badge badge-expiry-urgent"><i class="bi bi-alarm-fill me-1"></i> ${timeString} (Urgent)</span>`,
+        warningHtml: `<div class="alert alert-warning py-1 px-2 small mb-2 d-flex align-items-center gap-1"><i class="bi bi-exclamation-triangle-fill text-warning"></i> <span><strong>Approaching Expiry:</strong> Must be collected within ${timeString}!</span></div>`
+      };
+    }
+
+    if (diffHours < 4) {
+      return {
+        isExpired: false,
+        isApproachingExpiry: false,
+        diffHours,
+        diffMs,
+        countdownText: timeString,
+        badgeHtml: `<span class="badge badge-expiry-warning"><i class="bi bi-clock-history me-1"></i> ${timeString}</span>`,
+        warningHtml: ''
+      };
+    }
+
+    return {
+      isExpired: false,
+      isApproachingExpiry: false,
+      diffHours,
+      diffMs,
+      countdownText: timeString,
+      badgeHtml: `<span class="badge badge-expiry-safe"><i class="bi bi-check-circle me-1"></i> ${timeString} Safe</span>`,
+      warningHtml: ''
+    };
+  }
+
   // --- Donation Operations ---
-  getDonations() { return this.state.donations; }
-  getDonationById(id) { return this.state.donations.find(d => d.id === id); }
+  checkAndExpireDonations() {
+    let changed = false;
+    const now = Date.now();
+    this.state.donations.forEach(d => {
+      if (d.status === 'available' && d.safeUntil) {
+        if (new Date(d.safeUntil).getTime() <= now) {
+          d.status = 'expired';
+          changed = true;
+          this.logActivity('System Safety Protocol', `Marked surplus food ${d.foodName} as Expired`, d.id, 'Food Expired');
+        }
+      }
+    });
+
+    if (changed) {
+      this.saveState();
+      this.notifySubscribers('DONATIONS_EXPIRED');
+    }
+    return changed;
+  }
+
+  getDonations() { 
+    this.checkAndExpireDonations();
+    return this.state.donations; 
+  }
+
+  getDonationById(id) { 
+    this.checkAndExpireDonations();
+    return this.state.donations.find(d => d.id === id); 
+  }
 
   addDonation(donationData) {
     const id = 'DON-' + new Date().getFullYear() + '-' + Math.floor(100 + Math.random() * 900);
     const quantityKg = donationData.quantityKg || (donationData.portions * (this.state.settings.kgPerPortion || 0.35));
+    const nowISO = new Date().toISOString();
     const newDonation = {
       id,
       ...donationData,
@@ -606,7 +885,9 @@ class SaveToServeStore {
       qrVoucherRedeemed: false,
       holdingHubId: null,
       weatherRescuePlan: null,
-      createdAt: new Date().toISOString()
+      prepTime: donationData.prepTime || nowISO,
+      safeUntil: donationData.safeUntil || new Date(Date.now() + 4 * 3600000).toISOString(),
+      createdAt: donationData.createdAt || nowISO
     };
 
     this.state.donations.unshift(newDonation);
@@ -617,7 +898,7 @@ class SaveToServeStore {
     this.addNotification({
       recipientRole: 'ngo',
       title: '🍲 New Surplus Food Available',
-      message: `${newDonation.donorOrg} listed ${newDonation.portions} portions of ${newDonation.foodName}.`,
+      message: `${newDonation.donorOrg} listed ${newDonation.portions} portions of ${newDonation.foodName}. Safe until ${SaveToServeStore.formatDateTime(newDonation.safeUntil)}.`,
       type: 'donation'
     });
 
@@ -638,7 +919,7 @@ class SaveToServeStore {
 
   cancelDonation(id, reason = 'Cancelled by donor') {
     const donation = this.getDonationById(id);
-    if (donation && donation.status === 'available') {
+    if (donation && (donation.status === 'available' || donation.status === 'expired')) {
       donation.status = 'cancelled';
       this.saveState();
       this.logActivity(donation.donorName, `Cancelled donation ${donation.id}: ${reason}`, donation.id, 'Cancelled');
@@ -651,14 +932,15 @@ class SaveToServeStore {
   claimDonation(donationId, ngoUser) {
     const donation = this.getDonationById(donationId);
     if (!donation) return { success: false, message: 'Donation not found.' };
-    if (donation.status !== 'available') {
-      return { success: false, message: `Cannot claim: this donation is currently ${donation.status}.` };
-    }
-
-    if (new Date(donation.safeUntil).getTime() < Date.now()) {
+    
+    if (donation.status === 'expired' || (donation.safeUntil && new Date(donation.safeUntil).getTime() <= Date.now())) {
       donation.status = 'expired';
       this.saveState();
-      return { success: false, message: 'Cannot claim: food has reached its safe-use deadline.' };
+      return { success: false, message: 'Cannot claim: This food donation has reached its expiry deadline and is expired.' };
+    }
+
+    if (donation.status !== 'available') {
+      return { success: false, message: `Cannot claim: this donation is currently ${donation.status}.` };
     }
 
     donation.status = 'claimed';
@@ -701,6 +983,13 @@ class SaveToServeStore {
   acceptVolunteerTask(donationId, volunteerUser) {
     const donation = this.getDonationById(donationId);
     if (!donation) return { success: false, message: 'Task not found.' };
+    
+    if (donation.status === 'expired' || (donation.safeUntil && new Date(donation.safeUntil).getTime() <= Date.now())) {
+      donation.status = 'expired';
+      this.saveState();
+      return { success: false, message: 'Cannot accept task: This food donation has reached its expiry deadline and is expired.' };
+    }
+
     if (donation.status !== 'claimed') return { success: false, message: 'Task is no longer awaiting volunteer acceptance.' };
 
     donation.assignedVolunteerId = volunteerUser.id;

@@ -548,9 +548,9 @@ class AdminPortalManager {
                   <th>Food Photo</th>
                   <th>Food Name</th>
                   <th>Donor/Restaurant</th>
-                  <th>Donor Phone</th>
-                  <th>Quantity & Unit</th>
+                  <th>Quantity</th>
                   <th>Pickup Address</th>
+                  <th>Posted Time</th>
                   <th>Food Expiry Date & Time</th>
                   <th>Status</th>
                   <th>Actions</th>
@@ -558,8 +558,9 @@ class AdminPortalManager {
               </thead>
               <tbody>
                 ${donations.map(d => {
-                  const isExpiringSoon = d.safeUntil && (new Date(d.safeUntil).getTime() - Date.now() < 2 * 3600000) && (new Date(d.safeUntil).getTime() - Date.now() > 0);
-                  const isExpired = d.safeUntil && (new Date(d.safeUntil).getTime() <= Date.now());
+                  const expiryInfo = SaveToServeStore.getExpiryCountdown(d.safeUntil);
+                  const postedTimeFormatted = SaveToServeStore.formatDateTime(d.createdAt || d.prepTime);
+                  const expiryTimeFormatted = SaveToServeStore.formatDateTime(d.safeUntil);
 
                   return `
                     <tr>
@@ -572,46 +573,48 @@ class AdminPortalManager {
                       </td>
                       <td>
                         <strong>${d.donorOrg || d.donorName || 'Not provided'}</strong>
-                        ${d.donorName && d.donorName !== d.donorOrg ? `<div class="small text-muted">${d.donorName}</div>` : ''}
-                      </td>
-                      <td>
-                        <span class="small font-monospace">${d.donorPhone || 'Not provided'}</span>
+                        <div class="small text-muted font-monospace">${d.donorPhone || ''}</div>
                       </td>
                       <td>
                         <strong>${d.portions ? `${d.portions} portions` : 'Not provided'}</strong>
                         <div class="small text-muted">~${d.quantityKg || (d.portions ? (d.portions * 0.35).toFixed(1) : '0')} kg</div>
                       </td>
                       <td>
-                        <div class="small" style="max-width:220px;white-space:normal;line-height:1.35;">
+                        <div class="small" style="max-width:200px;white-space:normal;line-height:1.35;">
                           <i class="bi bi-geo-alt me-1 text-danger"></i>${d.donorAddress || 'Not provided'}
                         </div>
                       </td>
                       <td>
-                        <div class="small">
-                          <strong>${d.safeUntil ? new Date(d.safeUntil).toLocaleDateString() : 'Not provided'}</strong>
+                        <div class="small fw-500 text-dark">
+                          <i class="bi bi-calendar-check text-primary me-1"></i>${postedTimeFormatted}
                         </div>
-                        <div class="small text-muted">${d.safeUntil ? new Date(d.safeUntil).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : ''}</div>
-                        ${isExpiringSoon ? `<span class="badge bg-danger" style="font-size:0.65rem;">⏰ &lt;2h remaining</span>` : ''}
-                        ${isExpired ? `<span class="badge bg-secondary" style="font-size:0.65rem;">Expired</span>` : ''}
                       </td>
                       <td>
-                        <span class="badge ${d.status === 'completed' ? 'bg-success' : d.status === 'claimed' || d.status === 'in-transit' ? 'bg-primary' : d.status === 'flagged' ? 'bg-danger' : 'bg-warning text-dark'} text-uppercase">
+                        <div class="small">
+                          <strong class="${expiryInfo.isExpired ? 'text-muted text-decoration-line-through' : 'text-danger'}">
+                            <i class="bi bi-alarm me-1"></i>${expiryTimeFormatted}
+                          </strong>
+                        </div>
+                        <div class="mt-1">${expiryInfo.badgeHtml}</div>
+                      </td>
+                      <td>
+                        <span class="badge ${d.status === 'completed' ? 'bg-success' : d.status === 'claimed' || d.status === 'in-transit' ? 'bg-primary' : d.status === 'expired' ? 'badge-expired' : d.status === 'flagged' ? 'bg-danger' : 'bg-warning text-dark'} text-uppercase">
                           ${d.status || 'AVAILABLE'}
                         </span>
                       </td>
                       <td>
                         <div class="d-flex flex-column gap-1">
-                          <button class="btn btn-sm btn-soft-olive w-100" onclick="window.SaveToServeAdmin.viewDonationDetails('${d.id}')" title="View Full Donation Details">
-                            <i class="bi bi-eye"></i> View Details
+                          <button class="btn btn-sm btn-soft-olive w-100" onclick="window.SaveToServeApp.showDonationDetailsModal('${d.id}')" title="View Full Donation Details">
+                            <i class="bi bi-eye"></i> Details
                           </button>
                           <div class="d-flex gap-1">
                             ${d.status !== 'flagged' ? `
                               <button class="btn btn-sm btn-outline-warning w-50" title="Flag listing for review" onclick="window.SaveToServeAdmin.flagDonation('${d.id}')">
-                                <i class="bi bi-flag"></i> Flag
+                                <i class="bi bi-flag"></i>
                               </button>
                             ` : ''}
                             <button class="btn btn-sm btn-outline-danger ${d.status === 'flagged' ? 'w-100' : 'w-50'}" title="Remove listing" onclick="window.SaveToServeAdmin.removeDonation('${d.id}')">
-                              <i class="bi bi-trash"></i> Delete
+                              <i class="bi bi-trash"></i>
                             </button>
                           </div>
                         </div>
@@ -956,102 +959,8 @@ class AdminPortalManager {
   }
 
   viewDonationDetails(donationId) {
-    const d = window.SaveToServeDB?.getDonationById(donationId);
-    if (!d) return;
-
-    const modalTitle = document.getElementById('globalModalTitle');
-    const modalBody = document.getElementById('globalModalBody');
-    if (!modalTitle || !modalBody) return;
-
-    const isExpiringSoon = d.safeUntil && (new Date(d.safeUntil).getTime() - Date.now() < 2 * 3600000) && (new Date(d.safeUntil).getTime() - Date.now() > 0);
-    const isExpired = d.safeUntil && (new Date(d.safeUntil).getTime() <= Date.now());
-
-    modalTitle.innerHTML = `<i class="bi bi-box2-heart text-success me-2"></i> ${d.foodName || 'Donation Details'} — Full Inspection`;
-    modalBody.innerHTML = `
-      <div>
-        ${isExpiringSoon ? `
-          <div class="alert alert-warning py-2 px-3 small d-flex align-items-center gap-2 mb-3">
-            <i class="bi bi-exclamation-triangle-fill fs-5 text-warning"></i>
-            <div>
-              <strong>Urgent Expiry Notice:</strong> This food donation is approaching its safe consumption deadline (within 2 hours). Prioritize volunteer pickup!
-            </div>
-          </div>
-        ` : ''}
-        ${isExpired ? `
-          <div class="alert alert-danger py-2 px-3 small d-flex align-items-center gap-2 mb-3">
-            <i class="bi bi-x-octagon-fill fs-5 text-danger"></i>
-            <div>
-              <strong>Safety Notice:</strong> Safe consumption window for this surplus food has elapsed. Do not distribute without quality re-inspection.
-            </div>
-          </div>
-        ` : ''}
-
-        <div class="row g-3">
-          <div class="col-md-5">
-            <div class="rounded overflow-hidden border mb-2" style="background:var(--portal-light); height:220px;">
-              <img src="${d.imageUrl || 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600'}" alt="${d.foodName || 'Food Image'}" style="width:100%;height:100%;object-fit:cover;">
-            </div>
-            <div class="p-2 bg-light rounded small border">
-              <div><strong>Category:</strong> ${d.category || 'Cooked Food'} (${(d.foodType || 'veg').toUpperCase()})</div>
-              <div><strong>Quantity:</strong> ${d.portions ? `${d.portions} portions (~${d.quantityKg || (d.portions * 0.35).toFixed(1)} kg)` : 'Not provided'}</div>
-              <div><strong>Handoff Code:</strong> <span class="font-monospace fw-bold text-primary">${d.pickupCode || 'Not generated'}</span></div>
-            </div>
-          </div>
-
-          <div class="col-md-7">
-            <h5 class="fw-bold mb-2" style="color:var(--dark-olive);">${d.foodName || 'Not provided'}</h5>
-            <p class="text-muted small mb-3">${d.storageInfo || 'Freshly prepared surplus cooked meal packaged safely for community rescue.'}</p>
-
-            <div class="p-3 rounded small border mb-3" style="background:#FAFBFD;">
-              <div class="row g-2">
-                <div class="col-sm-6">
-                  <span class="text-muted d-block" style="font-size:0.75rem;font-weight:700;">DONOR / RESTAURANT</span>
-                  <strong>${d.donorOrg || d.donorName || 'Not provided'}</strong>
-                  ${d.donorName && d.donorName !== d.donorOrg ? `<div class="text-muted">${d.donorName}</div>` : ''}
-                </div>
-                <div class="col-sm-6">
-                  <span class="text-muted d-block" style="font-size:0.75rem;font-weight:700;">DONOR PHONE</span>
-                  <span class="font-monospace">${d.donorPhone || 'Not provided'}</span>
-                </div>
-                <div class="col-12">
-                  <span class="text-muted d-block" style="font-size:0.75rem;font-weight:700;">PICKUP ADDRESS</span>
-                  <div><i class="bi bi-geo-alt text-danger me-1"></i>${d.donorAddress || 'Not provided'}</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="row g-2 small">
-              <div class="col-6">
-                <div class="p-2 border rounded bg-white">
-                  <span class="text-muted d-block" style="font-size:0.72rem;font-weight:700;">PREPARED / POSTED DATE</span>
-                  <div>${d.prepTime ? new Date(d.prepTime).toLocaleString() : d.createdAt ? new Date(d.createdAt).toLocaleString() : 'Not provided'}</div>
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="p-2 border rounded bg-white">
-                  <span class="text-muted d-block" style="font-size:0.72rem;font-weight:700;">EXACT EXPIRY DATE & TIME</span>
-                  <div class="text-danger fw-bold">${d.safeUntil ? new Date(d.safeUntil).toLocaleString() : 'Not provided'}</div>
-                </div>
-              </div>
-              <div class="col-12">
-                <div class="p-2 border rounded bg-white d-flex justify-content-between align-items-center">
-                  <div>
-                    <span class="text-muted d-block" style="font-size:0.72rem;font-weight:700;">CURRENT STATUS</span>
-                    <span class="badge ${d.status === 'completed' ? 'bg-success' : d.status === 'claimed' || d.status === 'in-transit' ? 'bg-primary' : d.status === 'flagged' ? 'bg-danger' : 'bg-warning text-dark'} text-uppercase">${d.status || 'AVAILABLE'}</span>
-                  </div>
-                  ${d.claimedByNgoName ? `<div class="text-end small"><span class="text-muted">Claimed by:</span><br><strong>${d.claimedByNgoName}</strong></div>` : ''}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    const modalEl = document.getElementById('globalModal');
-    if (modalEl && typeof bootstrap !== 'undefined') {
-      const bsModal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-      bsModal.show();
+    if (window.SaveToServeApp?.showDonationDetailsModal) {
+      window.SaveToServeApp.showDonationDetailsModal(donationId);
     }
   }
 
