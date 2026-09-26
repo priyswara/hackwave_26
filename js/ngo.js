@@ -67,8 +67,8 @@ class NgoPortalManager {
     }
 
     const allDonations = window.SaveToServeDB.getDonations();
-    const availableDonations = allDonations.filter(d => d.status === 'available');
-    const myClaims = allDonations.filter(d => d.claimedByNgoId === user.id);
+    const availableDonations = allDonations.filter(d => (d.status === 'available' || ((d.availableQuantity || 0) > 0 && d.status !== 'cancelled' && d.status !== 'expired')) && (d.availableQuantity === undefined || d.availableQuantity > 0));
+    const myClaims = window.SaveToServeDB.getClaimsForNgo(user.id);
     const nearbySummary = window.SaveToServeDB.getNearbyDonorsWithListings(user.coords, 10);
     const donorReviews = window.SaveToServeDB.getAllDonorReviews();
 
@@ -406,12 +406,23 @@ class NgoPortalManager {
 
                       <div class="donation-meta-grid mb-2">
                         <div>
-                          <span class="meta-item-label">Portions</span>
-                          <span class="meta-item-value">${d.portions} meals (~${d.quantityKg || (d.portions * 0.35).toFixed(1)} kg)</span>
+                          <span class="meta-item-label">Available Inventory</span>
+                          <span class="meta-item-value text-success fw-bold">${d.availableQuantity !== undefined ? d.availableQuantity : d.portions} ${d.quantityUnit || 'servings'}</span>
                         </div>
                         <div>
                           <span class="meta-item-label">Category</span>
                           <span class="meta-item-value">${d.category}</span>
+                        </div>
+                      </div>
+
+                      <div class="p-2 bg-light rounded border small mb-2" style="font-size:0.75rem;">
+                        <div class="d-flex justify-content-between mb-1">
+                          <span class="text-muted">Total Listed:</span>
+                          <span>${d.originalQuantity || d.portions} ${d.quantityUnit || 'servings'}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                          <span class="text-muted">Already Claimed:</span>
+                          <span class="text-primary fw-500">${d.claimedQuantity || 0} ${d.quantityUnit || 'servings'}</span>
                         </div>
                       </div>
 
@@ -436,9 +447,13 @@ class NgoPortalManager {
                           <button class="btn btn-secondary w-100" disabled>
                             <i class="bi bi-x-circle"></i> Expired — Cannot Claim
                           </button>
+                        ` : (d.availableQuantity !== undefined && d.availableQuantity <= 0) || d.status === 'claimed' ? `
+                          <button class="btn btn-secondary w-100" disabled>
+                            <i class="bi bi-check-circle"></i> Fully Claimed
+                          </button>
                         ` : `
-                          <button class="btn btn-green w-100" onclick="window.SaveToServeNGO.claimDonation('${d.id}')">
-                            <i class="bi bi-hand-thumbs-up"></i> Claim for Distribution
+                          <button class="btn btn-green w-100" onclick="window.SaveToServeNGO.openClaimModal('${d.id}')">
+                            <i class="bi bi-hand-thumbs-up"></i> Select Quantity & Claim
                           </button>
                         `}
                         <button class="btn btn-sm btn-soft-olive w-100" onclick="window.SaveToServeApp.showDonationDetailsModal('${d.id}')">
@@ -681,8 +696,8 @@ class NgoPortalManager {
 
                         <div class="p-2 bg-light rounded border small mb-2">
                           <div class="d-flex justify-content-between mb-1">
-                            <span class="text-muted">Quantity:</span>
-                            <strong>${d.portions} portions (~${d.quantityKg || (d.portions * 0.35).toFixed(1)} kg)</strong>
+                            <span class="text-muted">Available Quantity:</span>
+                            <strong class="text-success">${d.availableQuantity !== undefined ? d.availableQuantity : d.portions} ${d.quantityUnit || 'servings'}</strong>
                           </div>
                           <div class="d-flex justify-content-between">
                             <span class="text-muted">Expiry Deadline:</span>
@@ -691,9 +706,15 @@ class NgoPortalManager {
                         </div>
 
                         <div class="mt-auto d-flex flex-column gap-2 pt-2 border-top">
-                          <button class="btn btn-green w-100" onclick="window.SaveToServeNGO.claimDonation('${d.id}')">
-                            <i class="bi bi-hand-thumbs-up"></i> Claim for Distribution
-                          </button>
+                          ${(d.availableQuantity !== undefined && d.availableQuantity <= 0) || d.status === 'claimed' ? `
+                            <button class="btn btn-secondary w-100" disabled>
+                              <i class="bi bi-check-circle"></i> Fully Claimed
+                            </button>
+                          ` : `
+                            <button class="btn btn-green w-100" onclick="window.SaveToServeNGO.openClaimModal('${d.id}')">
+                              <i class="bi bi-hand-thumbs-up"></i> Select Quantity & Claim
+                            </button>
+                          `}
                           <button class="btn btn-sm btn-soft-olive w-100" onclick="window.SaveToServeApp.showDonationDetailsModal('${d.id}')">
                             <i class="bi bi-eye"></i> View Full Details & Reviews
                           </button>
@@ -788,59 +809,71 @@ class NgoPortalManager {
   renderMyClaimsTab(myClaims, user) {
     return `
       <div class="custom-card">
-        <div class="custom-card-header">
-          <h5 class="card-title-custom"><i class="bi bi-card-checklist text-primary"></i> My Claims & Food Collections</h5>
+        <div class="custom-card-header d-flex justify-content-between align-items-center">
+          <h5 class="card-title-custom mb-0"><i class="bi bi-card-checklist text-primary me-2"></i> My Claims & Food Collections</h5>
+          <span class="badge bg-light text-dark border">Total Claims: ${myClaims.length}</span>
         </div>
 
         ${myClaims.length === 0 ? `
           <div class="p-4 text-center text-muted">
             <i class="bi bi-clipboard-x fs-2 mb-2 d-block"></i>
             <p>Your NGO has not claimed any surplus food donations yet.</p>
-            <button class="btn btn-sm btn-olive" onclick="window.SaveToServeNGO.switchTab('nearby-donors')">
-              Browse Nearby Donors
+            <button class="btn btn-sm btn-olive" onclick="window.SaveToServeNGO.switchTab('browse-food')">
+              Browse Available Food
             </button>
           </div>
         ` : `
           <div class="row g-3 p-3">
-            ${myClaims.map(d => {
-              const expiryInfo = SaveToServeStore.getExpiryCountdown(d.safeUntil);
-              const postedTimeFormatted = SaveToServeStore.formatDateTime(d.createdAt || d.prepTime);
-              const expiryTimeFormatted = SaveToServeStore.formatDateTime(d.safeUntil);
-              const donorRating = window.SaveToServeDB.getDonorRatingStats(d.donorId || 'usr-donor-1');
-              const hasReviewed = (window.SaveToServeDB.getReviewsForDonor(d.donorId) || []).some(r => r.transactionId === d.id && (r.reviewerNgoId === user.id || r.reviewerId === user.id));
+            ${myClaims.map(c => {
+              const expiryInfo = SaveToServeStore.getExpiryCountdown(c.safeUntil);
+              const postedTimeFormatted = SaveToServeStore.formatDateTime(c.createdAt || c.prepTime);
+              const expiryTimeFormatted = SaveToServeStore.formatDateTime(c.safeUntil);
+              const claimTimeFormatted = SaveToServeStore.formatDateTime(c.claimTimestamp);
+              const donorRating = window.SaveToServeDB.getDonorRatingStats(c.donorId || 'usr-donor-1');
+              const hasReviewed = (window.SaveToServeDB.getReviewsForDonor(c.donorId) || []).some(r => (r.transactionId === c.donationId || r.transactionId === c.claimId) && (r.reviewerNgoId === user.id || r.reviewerId === user.id));
 
               return `
                 <div class="col-lg-6">
                   <div class="p-3 border rounded h-100 d-flex flex-column justify-content-between" style="background:#FAFDFB; border-color:rgba(140,184,165,0.4) !important;">
                     <div>
                       <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h6 class="fw-bold mb-0" style="color:var(--portal-dark);">${d.foodName}</h6>
-                        <span class="badge ${d.status === 'completed' ? 'bg-success' : d.status === 'in-transit' ? 'bg-primary' : 'bg-warning text-dark'} text-uppercase">
-                          ${d.status}
+                        <h6 class="fw-bold mb-0" style="color:var(--portal-dark);">${c.foodName}</h6>
+                        <span class="badge ${c.status === 'completed' ? 'bg-success' : c.status === 'in-transit' ? 'bg-primary' : c.status === 'cancelled' ? 'bg-secondary' : 'bg-warning text-dark'} text-uppercase">
+                          ${c.status}
                         </span>
                       </div>
 
                       <p class="small text-muted mb-1">
-                        <i class="bi bi-shop me-1 text-success"></i> Donor: <strong>${d.donorOrg}</strong>
+                        <i class="bi bi-shop me-1 text-success"></i> Donor: <strong>${c.donorOrg}</strong>
                         ${donorRating.totalReviews > 0 ? `<span class="badge bg-warning text-dark ms-1">⭐ ${donorRating.averageFormatted}</span>` : ''}
                       </p>
 
+                      <!-- Claimed Quantity Highlight Pill -->
+                      <div class="p-2 rounded border mb-2 d-flex justify-content-between align-items-center" style="background:#E2F1EA; border-color:#8CB8A5 !important;">
+                        <span class="small" style="color:#265944;"><i class="bi bi-bag-check-fill me-1"></i><strong>Claimed Quantity:</strong></span>
+                        <span class="badge bg-white font-monospace fs-6" style="color:#265944; border:1px solid #8CB8A5;">${c.claimedQuantity} ${c.unit}</span>
+                      </div>
+
                       <div class="p-2 bg-white rounded border small mb-2">
                         <div class="d-flex justify-content-between mb-1">
-                          <span>Quantity:</span>
-                          <strong>${d.portions} portions (~${d.quantityKg || (d.portions * 0.35).toFixed(1)} kg)</strong>
+                          <span>Pickup Verification Code:</span>
+                          <strong class="font-monospace text-primary fs-6">${c.pickupCode}</strong>
                         </div>
                         <div class="d-flex justify-content-between mb-1">
-                          <span>Pickup Verification Code:</span>
-                          <strong class="font-monospace text-primary">${d.pickupCode}</strong>
+                          <span>Pickup Address:</span>
+                          <span class="text-truncate" style="max-width:200px;">${c.donorAddress || 'Bengaluru'}</span>
                         </div>
                         <div class="d-flex justify-content-between">
                           <span>Assigned Courier:</span>
-                          <strong>${d.assignedVolunteerName || 'Authorized Courier'}</strong>
+                          <strong>${c.assignedVolunteerName || 'NGO Staff Courier'}</strong>
                         </div>
                       </div>
 
                       <div class="p-2 bg-white rounded border small mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                          <span class="text-muted"><i class="bi bi-clock-history me-1 text-primary"></i>Claimed At:</span>
+                          <span>${claimTimeFormatted}</span>
+                        </div>
                         <div class="d-flex justify-content-between mb-1">
                           <span class="text-muted"><i class="bi bi-calendar-check me-1 text-primary"></i>Posted:</span>
                           <span>${postedTimeFormatted}</span>
@@ -853,35 +886,48 @@ class NgoPortalManager {
                     </div>
 
                     <div class="mt-2 pt-2 border-top">
-                      ${d.status === 'claimed' ? `
-                        <div class="d-flex gap-2">
-                          <button class="btn btn-sm btn-soft-olive w-50" onclick="window.SaveToServeQR.showVoucherModal('${d.id}')">
+                      ${c.status === 'claimed' ? `
+                        <div class="d-flex flex-wrap gap-2">
+                          <button class="btn btn-sm btn-soft-olive flex-grow-1" onclick="window.SaveToServeQR.showVoucherModal('${c.donationId}')">
                             <i class="bi bi-qr-code"></i> QR Voucher
                           </button>
-                          <button class="btn btn-sm btn-soft-olive w-50" onclick="window.SaveToServeApp.showDonationDetailsModal('${d.id}')">
+                          <button class="btn btn-sm btn-soft-olive flex-grow-1" onclick="window.SaveToServeApp.showDonationDetailsModal('${c.donationId}')">
                             <i class="bi bi-eye"></i> Details
                           </button>
-                        </div>
-                      ` : d.status === 'in-transit' ? `
-                        <div class="d-flex gap-2">
-                          <button class="btn btn-sm btn-green w-100" onclick="window.SaveToServeNGO.promptConfirmDistribution('${d.id}', ${d.portions})">
-                            <i class="bi bi-check2-circle"></i> Confirm Receipt & Distribution
+                          <button class="btn btn-sm btn-outline-danger" onclick="window.SaveToServeNGO.cancelClaim('${c.claimId}')" title="Cancel this claim & restore quantity to donor">
+                            <i class="bi bi-x-circle"></i> Cancel Claim
                           </button>
                         </div>
+                      ` : c.status === 'in-transit' ? `
+                        <div class="d-flex gap-2">
+                          <button class="btn btn-sm btn-green w-100" onclick="window.SaveToServeNGO.promptConfirmDistribution('${c.donationId}', ${c.claimedQuantity})">
+                            <i class="bi bi-check2-circle"></i> Confirm Receipt & Distribution (${c.claimedQuantity} ${c.unit})
+                          </button>
+                          <button class="btn btn-sm btn-soft-olive" onclick="window.SaveToServeApp.showDonationDetailsModal('${c.donationId}')">
+                            <i class="bi bi-eye"></i>
+                          </button>
+                        </div>
+                      ` : c.status === 'cancelled' ? `
+                        <div class="alert alert-secondary py-1 px-2 mb-2 small">
+                          <i class="bi bi-info-circle"></i> Claim cancelled. Quantity was restored to donor listing.
+                        </div>
+                        <button class="btn btn-sm btn-soft-olive w-100" onclick="window.SaveToServeApp.showDonationDetailsModal('${c.donationId}')">
+                          <i class="bi bi-eye"></i> View Listing Details
+                        </button>
                       ` : `
                         <div class="alert alert-success py-1 px-2 mb-2 small d-flex justify-content-between align-items-center">
-                          <span><i class="bi bi-check-circle-fill"></i> Distributed to ${d.beneficiariesReached || d.portions} people</span>
-                          <span class="text-muted">${SaveToServeStore.formatTime(d.distributionTimestamp || d.createdAt)}</span>
+                          <span><i class="bi bi-check-circle-fill"></i> Nourished ${c.beneficiariesReached || c.claimedQuantity} people</span>
+                          <span class="text-muted">${SaveToServeStore.formatTime(c.distributionTimestamp || c.createdAt)}</span>
                         </div>
                         <div class="d-flex gap-2">
                           ${!hasReviewed ? `
-                            <button class="btn btn-sm btn-olive w-50" onclick="window.SaveToServeNGO.openDonorReviewModal('${d.id}')">
+                            <button class="btn btn-sm btn-olive w-50" onclick="window.SaveToServeNGO.openDonorReviewModal('${c.donationId}')">
                               <i class="bi bi-star"></i> Rate Donor
                             </button>
                           ` : `
                             <span class="badge bg-success-subtle text-success p-2 w-50 text-center"><i class="bi bi-check-circle"></i> Reviewed</span>
                           `}
-                          <button class="btn btn-sm btn-soft-olive w-50" onclick="window.SaveToServeApp.showDonationDetailsModal('${d.id}')">
+                          <button class="btn btn-sm btn-soft-olive w-50" onclick="window.SaveToServeApp.showDonationDetailsModal('${c.donationId}')">
                             <i class="bi bi-eye"></i> Details
                           </button>
                         </div>
@@ -1160,19 +1206,168 @@ class NgoPortalManager {
     this.render('nearby-donors');
   }
 
-  claimDonation(donationId) {
+  openClaimModal(donationId, initialQuantity = null) {
     const user = window.SaveToServeAuth.getCurrentUser();
     if (!user || user.role !== 'ngo') {
       window.SaveToServeApp?.showToast('NGO Shelter authentication required.', 'danger');
       return;
     }
 
-    const res = window.SaveToServeDB.claimDonation(donationId, user);
+    const donation = window.SaveToServeDB.getDonationById(donationId);
+    if (!donation) {
+      window.SaveToServeApp?.showToast('Food listing not found.', 'danger');
+      return;
+    }
+
+    const modalTitle = document.getElementById('globalModalTitle');
+    const modalBody = document.getElementById('globalModalBody');
+    if (!modalTitle || !modalBody) return;
+
+    const unit = donation.quantityUnit || 'servings';
+    const availQty = donation.availableQuantity !== undefined ? donation.availableQuantity : (donation.status === 'available' ? donation.portions : 0);
+    const expiryInfo = SaveToServeStore.getExpiryCountdown(donation.safeUntil);
+    const defaultClaim = Math.min(availQty, initialQuantity !== null ? initialQuantity : (availQty || 1));
+
+    modalTitle.innerHTML = `<i class="bi bi-cart-check text-success me-2"></i> Select Claim Quantity`;
+    modalBody.innerHTML = `
+      <form onsubmit="window.SaveToServeNGO.handleConfirmClaimModal(event, '${donation.id}')">
+        <div class="p-3 bg-light rounded border mb-3">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+              <h6 class="fw-bold mb-1" style="color:var(--portal-dark);">${donation.foodName}</h6>
+              <div class="small text-muted"><i class="bi bi-shop me-1 text-success"></i><strong>${donation.donorOrg}</strong> • ${donation.donorAddress}</div>
+            </div>
+            <span class="badge ${donation.foodType === 'veg' ? 'bg-success' : 'bg-danger'} text-uppercase">${donation.foodType}</span>
+          </div>
+
+          <div class="row g-2 text-center small mt-2">
+            <div class="col-6">
+              <div class="p-2 bg-white rounded border border-success">
+                <span class="text-muted d-block" style="font-size:0.72rem;">AVAILABLE TO CLAIM</span>
+                <strong class="fs-5 text-success" id="claimModalAvailQty">${availQty}</strong> <span class="text-muted">${unit}</span>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-2 bg-white rounded border">
+                <span class="text-muted d-block" style="font-size:0.72rem;">SAFE EXPIRY</span>
+                <strong class="text-danger">${expiryInfo.countdownText}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label-custom fw-bold text-dark d-flex justify-content-between align-items-center mb-1">
+            <span><i class="bi bi-plus-slash-minus text-primary me-1"></i> Claim Quantity (${unit}) *</span>
+            <span class="small text-muted">Max: <strong>${availQty} ${unit}</strong></span>
+          </label>
+          
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <button type="button" class="btn btn-outline-secondary px-3 py-2 fw-bold fs-5" onclick="window.SaveToServeNGO.adjustClaimQtyInput(-5, ${availQty})">-5</button>
+            <button type="button" class="btn btn-outline-secondary px-3 py-2 fw-bold fs-5" onclick="window.SaveToServeNGO.adjustClaimQtyInput(-1, ${availQty})">-1</button>
+            <input type="number" id="claimQtyInputField" class="form-control form-control-custom text-center fs-3 fw-bold text-success" min="1" max="${availQty}" value="${defaultClaim}" oninput="window.SaveToServeNGO.updateClaimModalPreview(${availQty}, '${unit}')" required>
+            <button type="button" class="btn btn-outline-secondary px-3 py-2 fw-bold fs-5" onclick="window.SaveToServeNGO.adjustClaimQtyInput(1, ${availQty})">+1</button>
+            <button type="button" class="btn btn-outline-secondary px-3 py-2 fw-bold fs-5" onclick="window.SaveToServeNGO.adjustClaimQtyInput(5, ${availQty})">+5</button>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-1">
+            <button type="button" class="btn btn-sm btn-outline-success py-1" onclick="document.getElementById('claimQtyInputField').value='${availQty}'; window.SaveToServeNGO.updateClaimModalPreview(${availQty}, '${unit}');">
+              <i class="bi bi-check-all"></i> Claim All (${availQty} ${unit})
+            </button>
+            <span class="small text-muted" id="claimRemainingPreviewText">Remaining for other NGOs: <strong>${availQty - defaultClaim} ${unit}</strong></span>
+          </div>
+        </div>
+
+        <div class="p-2 bg-white rounded border small mb-3">
+          <div class="text-muted mb-1"><i class="bi bi-geo-alt-fill text-danger me-1"></i><strong>Pickup & Safe Storage:</strong></div>
+          <div class="text-muted mb-1">${donation.donorAddress}</div>
+          <div class="fst-italic">${donation.storageInfo || 'Packed safely. An instant verification code & QR voucher will be issued immediately upon confirmation.'}</div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-green">
+            <i class="bi bi-check2-circle"></i> Confirm & Claim Food
+          </button>
+        </div>
+      </form>
+    `;
+
+    const modalEl = document.getElementById('globalModal');
+    if (modalEl && typeof bootstrap !== 'undefined') {
+      const bsModal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+      bsModal.show();
+    }
+  }
+
+  adjustClaimQtyInput(delta, maxQty) {
+    const input = document.getElementById('claimQtyInputField');
+    if (!input) return;
+    let val = parseInt(input.value) || 1;
+    val = Math.max(1, Math.min(maxQty, val + delta));
+    input.value = val;
+    input.dispatchEvent(new Event('input'));
+  }
+
+  updateClaimModalPreview(availQty, unit) {
+    const input = document.getElementById('claimQtyInputField');
+    const preview = document.getElementById('claimRemainingPreviewText');
+    if (!input || !preview) return;
+    let val = parseInt(input.value) || 0;
+    if (val > availQty) {
+      val = availQty;
+      input.value = val;
+    }
+    const rem = Math.max(0, availQty - val);
+    preview.innerHTML = `Remaining for other NGOs: <strong>${rem} ${unit}</strong>`;
+  }
+
+  handleConfirmClaimModal(event, donationId) {
+    event.preventDefault();
+    const user = window.SaveToServeAuth.getCurrentUser();
+    if (!user || user.role !== 'ngo') {
+      window.SaveToServeApp?.showToast('NGO Shelter authentication required.', 'danger');
+      return;
+    }
+
+    const input = document.getElementById('claimQtyInputField');
+    const qty = input ? parseInt(input.value) : null;
+
+    const res = window.SaveToServeDB.claimDonation(donationId, user, qty);
     if (res.success) {
-      window.SaveToServeApp?.showToast(`Successfully claimed ${res.donation.portions} portions of ${res.donation.foodName}!`, 'success');
+      window.SaveToServeApp?.showToast(`Successfully claimed ${res.claim.claimedQuantity} ${res.claim.unit} of ${res.donation.foodName}! Pickup Code: ${res.claim.pickupCode}`, 'success');
+      
+      const modalEl = document.getElementById('globalModal');
+      if (modalEl && typeof bootstrap !== 'undefined') {
+        const bsModal = bootstrap.Modal.getInstance(modalEl);
+        if (bsModal) bsModal.hide();
+      }
+
       this.switchTab('my-claims');
     } else {
       window.SaveToServeApp?.showToast(res.message, 'danger');
+    }
+  }
+
+  claimDonation(donationId, quantity = null) {
+    this.openClaimModal(donationId, quantity);
+  }
+
+  cancelClaim(claimId) {
+    const user = window.SaveToServeAuth.getCurrentUser();
+    if (!user || user.role !== 'ngo') {
+      window.SaveToServeApp?.showToast('NGO Shelter authentication required.', 'danger');
+      return;
+    }
+
+    if (confirm('Are you sure you want to cancel this food claim? The claimed quantity will immediately be returned to the donor listing for other NGOs to rescue.')) {
+      const res = window.SaveToServeDB.cancelClaim(claimId, 'Cancelled by NGO');
+      if (res.success) {
+        window.SaveToServeApp?.showToast(res.message, 'info');
+        this.render('my-claims');
+      } else {
+        window.SaveToServeApp?.showToast(res.message, 'danger');
+      }
     }
   }
 

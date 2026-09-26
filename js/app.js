@@ -860,12 +860,20 @@ class SaveToServeAppController {
                 <strong>${d.category || 'Cooked Meal'}</strong>
               </div>
               <div class="d-flex justify-content-between mb-1">
-                <span class="text-muted">Quantity:</span>
-                <strong>${d.portions ? `${d.portions} portions (~${d.quantityKg || (d.portions * 0.35).toFixed(1)} kg)` : 'Not provided'}</strong>
+                <span class="text-muted">Original Listed:</span>
+                <strong>${d.originalQuantity || d.portions} ${d.quantityUnit || 'servings'}</strong>
+              </div>
+              <div class="d-flex justify-content-between mb-1">
+                <span class="text-muted">Available Now:</span>
+                <strong class="text-success">${d.availableQuantity !== undefined ? d.availableQuantity : (d.status === 'available' ? d.portions : 0)} ${d.quantityUnit || 'servings'}</strong>
+              </div>
+              <div class="d-flex justify-content-between mb-1">
+                <span class="text-muted">Already Claimed:</span>
+                <strong class="text-primary">${d.claimedQuantity || 0} ${d.quantityUnit || 'servings'}</strong>
               </div>
               <div class="d-flex justify-content-between mb-1">
                 <span class="text-muted">Status:</span>
-                <span class="badge ${d.status === 'completed' ? 'bg-success' : d.status === 'claimed' || d.status === 'in-transit' ? 'bg-primary' : d.status === 'expired' ? 'badge-expired' : d.status === 'flagged' ? 'bg-danger' : 'bg-warning text-dark'} text-uppercase">${d.status || 'AVAILABLE'}</span>
+                <span class="badge ${d.status === 'completed' ? 'bg-success' : d.status === 'claimed' ? 'bg-warning text-dark' : d.status === 'in-transit' ? 'bg-primary' : d.status === 'expired' ? 'badge-expired' : d.status === 'flagged' ? 'bg-danger' : 'bg-success'} text-uppercase">${(d.availableQuantity === 0 && d.claimedQuantity > 0) ? 'FULLY CLAIMED' : d.status || 'AVAILABLE'}</span>
               </div>
               ${d.pickupCode ? `
                 <div class="d-flex justify-content-between pt-1 border-top mt-1">
@@ -954,10 +962,15 @@ class SaveToServeAppController {
             })()}
 
             <!-- Contextual Actions depending on user role and listing status -->
-            <div class="d-flex justify-content-end gap-2 pt-2 border-top">
-              ${user && user.role === 'ngo' && d.status === 'available' && !expiryInfo.isExpired ? `
-                <button class="btn btn-green" onclick="bootstrap.Modal.getInstance(document.getElementById('globalModal')).hide(); window.SaveToServeNGO.claimDonation('${d.id}')">
-                  <i class="bi bi-hand-thumbs-up"></i> Claim for Distribution
+            <div class="d-flex flex-wrap justify-content-end gap-2 pt-2 border-top">
+              ${user && user.role === 'ngo' && (d.availableQuantity > 0 || d.status === 'available') && !expiryInfo.isExpired ? `
+                <button class="btn btn-green" onclick="bootstrap.Modal.getInstance(document.getElementById('globalModal')).hide(); window.SaveToServeNGO.openClaimModal('${d.id}')">
+                  <i class="bi bi-cart-plus"></i> Select Quantity & Claim
+                </button>
+              ` : ''}
+              ${user && user.role === 'donor' && (d.donorId === user.id || d.donorName === user.name) && d.status !== 'completed' && d.status !== 'cancelled' ? `
+                <button class="btn btn-outline-success" onclick="bootstrap.Modal.getInstance(document.getElementById('globalModal')).hide(); window.SaveToServeDonor.openEditQuantityModal('${d.id}')">
+                  <i class="bi bi-pencil-square"></i> Adjust Quantity
                 </button>
               ` : ''}
               ${user && user.role === 'volunteer' && d.status === 'claimed' && !d.assignedVolunteerId && !expiryInfo.isExpired ? `
@@ -965,7 +978,7 @@ class SaveToServeAppController {
                   <i class="bi bi-check2"></i> Accept Pickup Task
                 </button>
               ` : ''}
-              ${user && user.role === 'donor' && (d.donorId === user.id || d.donorName === user.name) && d.status === 'available' ? `
+              ${user && user.role === 'donor' && (d.donorId === user.id || d.donorName === user.name) && (d.status === 'available' || d.availableQuantity > 0) ? `
                 <button class="btn btn-outline-danger" onclick="bootstrap.Modal.getInstance(document.getElementById('globalModal')).hide(); window.SaveToServeDonor.cancelDonation('${d.id}')">
                   <i class="bi bi-x-circle"></i> Cancel Listing
                 </button>

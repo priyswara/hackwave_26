@@ -1947,3 +1947,67 @@ img {
   box-shadow: 0 6px 18px rgba(38, 89, 68, 0.08);
 }
 
+/* --- Inventory & Quantity Stepper Controls --- */
+.qty-control-group {
+  display: inline-flex;
+  align-items: center;
+  border: 1.5px solid #8CB8A5;
+  border-radius: var(--radius-sm);
+  background: #FFFFFF;
+  overflow: hidden;
+}
+
+.qty-control-group .btn-qty {
+  background: #E2F1EA;
+  color: #265944;
+  border: none;
+  width: 38px;
+  height: 38px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.qty-control-group .btn-qty:hover {
+  background: #539378;
+  color: #FFFFFF;
+}
+
+.qty-control-group .qty-input {
+  width: 64px;
+  height: 38px;
+  text-align: center;
+  border: none;
+  font-weight: 700;
+  color: #265944;
+  font-size: 1rem;
+  outline: none;
+}
+
+.inventory-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.inventory-pill-available {
+  background: #E2F1EA;
+  color: #265944;
+  border: 1px solid #8CB8A5;
+}
+
+.inventory-pill-claimed {
+  background: #EFF6FF;
+  color: #1E40AF;
+  border: 1px solid #93C5FD;
+}
+
+

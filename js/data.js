@@ -203,6 +203,10 @@ const INITIAL_STATE = {
       id: 'DON-2026-101',
       foodName: '50 Portions Veg Dum Biryani & Raitha',
       category: 'Cooked Meal',
+      originalQuantity: 50,
+      availableQuantity: 50,
+      claimedQuantity: 0,
+      quantityUnit: 'servings',
       portions: 50,
       quantityKg: 17.5,
       foodType: 'veg',
@@ -231,6 +235,7 @@ const INITIAL_STATE = {
       qrVoucherRedeemed: false,
       holdingHubId: null,
       weatherRescuePlan: null,
+      claims: [],
       createdAt: new Date(Date.now() - 1 * 3600000).toISOString(),
       isDemo: true
     },
@@ -238,6 +243,10 @@ const INITIAL_STATE = {
       id: 'DON-2026-104',
       foodName: '60 Portions Dal Tadka, Jeera Rice & Phulkas',
       category: 'Cooked Meal',
+      originalQuantity: 60,
+      availableQuantity: 60,
+      claimedQuantity: 0,
+      quantityUnit: 'servings',
       portions: 60,
       quantityKg: 21.0,
       foodType: 'veg',
@@ -266,6 +275,7 @@ const INITIAL_STATE = {
       qrVoucherRedeemed: false,
       holdingHubId: null,
       weatherRescuePlan: null,
+      claims: [],
       createdAt: new Date(Date.now() - 50 * 60000).toISOString(),
       isDemo: true
     },
@@ -273,6 +283,10 @@ const INITIAL_STATE = {
       id: 'DON-2026-105',
       foodName: '45 Portions Veg Pulao & Mix Veg Korma',
       category: 'Cooked Meal',
+      originalQuantity: 45,
+      availableQuantity: 0,
+      claimedQuantity: 45,
+      quantityUnit: 'servings',
       portions: 45,
       quantityKg: 15.5,
       foodType: 'veg',
@@ -301,6 +315,27 @@ const INITIAL_STATE = {
       qrVoucherRedeemed: false,
       holdingHubId: null,
       weatherRescuePlan: null,
+      claims: [
+        {
+          claimId: 'CLM-DON-2026-105-1',
+          donationId: 'DON-2026-105',
+          ngoId: 'usr-ngo-1',
+          ngoName: 'Asha Food & Hope Shelter',
+          claimedQuantity: 45,
+          unit: 'servings',
+          claimTimestamp: new Date(Date.now() - 20 * 60000).toISOString(),
+          status: 'claimed',
+          pickupCode: 'STS-5521',
+          qrVoucherCode: 'VOUCHER-STS-105',
+          qrVoucherRedeemed: false,
+          assignedVolunteerId: null,
+          assignedVolunteerName: null,
+          pickupTimestamp: null,
+          deliveryTimestamp: null,
+          distributionTimestamp: null,
+          beneficiariesReached: 0
+        }
+      ],
       createdAt: new Date(Date.now() - 1.8 * 3600000).toISOString(),
       isDemo: true
     },
@@ -308,6 +343,10 @@ const INITIAL_STATE = {
       id: 'DON-2026-102',
       foodName: '35 Meal Packs: Paneer Butter Masala & Roti',
       category: 'Cooked Meal',
+      originalQuantity: 35,
+      availableQuantity: 0,
+      claimedQuantity: 35,
+      quantityUnit: 'packets',
       portions: 35,
       quantityKg: 12.0,
       foodType: 'veg',
@@ -336,6 +375,27 @@ const INITIAL_STATE = {
       qrVoucherRedeemed: false,
       holdingHubId: null,
       weatherRescuePlan: null,
+      claims: [
+        {
+          claimId: 'CLM-DON-2026-102-1',
+          donationId: 'DON-2026-102',
+          ngoId: 'usr-ngo-1',
+          ngoName: 'Asha Food & Hope Shelter',
+          claimedQuantity: 35,
+          unit: 'packets',
+          claimTimestamp: new Date(Date.now() - 40 * 60000).toISOString(),
+          status: 'claimed',
+          pickupCode: 'STS-8831',
+          qrVoucherCode: 'VOUCHER-STS-102',
+          qrVoucherRedeemed: false,
+          assignedVolunteerId: 'usr-vol-1',
+          assignedVolunteerName: 'Karan Verma',
+          pickupTimestamp: null,
+          deliveryTimestamp: null,
+          distributionTimestamp: null,
+          beneficiariesReached: 0
+        }
+      ],
       createdAt: new Date(Date.now() - 2.5 * 3600000).toISOString(),
       isDemo: true
     },
@@ -343,6 +403,10 @@ const INITIAL_STATE = {
       id: 'DON-2026-106',
       foodName: '25 Boxes Garden Fresh Salad & Seasonal Fruits',
       category: 'Produce',
+      originalQuantity: 25,
+      availableQuantity: 0,
+      claimedQuantity: 25,
+      quantityUnit: 'boxes',
       portions: 25,
       quantityKg: 9.0,
       foodType: 'vegan',
@@ -371,6 +435,27 @@ const INITIAL_STATE = {
       qrVoucherRedeemed: false,
       holdingHubId: null,
       weatherRescuePlan: null,
+      claims: [
+        {
+          claimId: 'CLM-DON-2026-106-1',
+          donationId: 'DON-2026-106',
+          ngoId: 'usr-ngo-1',
+          ngoName: 'Asha Food & Hope Shelter',
+          claimedQuantity: 25,
+          unit: 'boxes',
+          claimTimestamp: new Date(Date.now() - 45 * 60000).toISOString(),
+          status: 'in-transit',
+          pickupCode: 'STS-4190',
+          qrVoucherCode: 'VOUCHER-STS-106',
+          qrVoucherRedeemed: false,
+          assignedVolunteerId: 'usr-vol-1',
+          assignedVolunteerName: 'Karan Verma',
+          pickupTimestamp: new Date(Date.now() - 20 * 60000).toISOString(),
+          deliveryTimestamp: null,
+          distributionTimestamp: null,
+          beneficiariesReached: 0
+        }
+      ],
       createdAt: new Date(Date.now() - 2 * 3600000).toISOString(),
       isDemo: true
     },
@@ -378,6 +463,10 @@ const INITIAL_STATE = {
       id: 'DON-2026-103',
       foodName: '40 Fresh Baked Whole Wheat Breads & Buns',
       category: 'Bakery',
+      originalQuantity: 40,
+      availableQuantity: 0,
+      claimedQuantity: 40,
+      quantityUnit: 'packets',
       portions: 40,
       quantityKg: 10.0,
       foodType: 'veg',
@@ -406,6 +495,27 @@ const INITIAL_STATE = {
       qrVoucherRedeemed: true,
       holdingHubId: null,
       weatherRescuePlan: null,
+      claims: [
+        {
+          claimId: 'CLM-DON-2026-103-1',
+          donationId: 'DON-2026-103',
+          ngoId: 'usr-ngo-1',
+          ngoName: 'Asha Food & Hope Shelter',
+          claimedQuantity: 40,
+          unit: 'packets',
+          claimTimestamp: new Date(Date.now() - 5 * 3600000).toISOString(),
+          status: 'completed',
+          pickupCode: 'STS-3319',
+          qrVoucherCode: 'VOUCHER-STS-103',
+          qrVoucherRedeemed: true,
+          assignedVolunteerId: 'usr-vol-1',
+          assignedVolunteerName: 'Karan Verma',
+          pickupTimestamp: new Date(Date.now() - 4 * 3600000).toISOString(),
+          deliveryTimestamp: new Date(Date.now() - 3 * 3600000).toISOString(),
+          distributionTimestamp: new Date(Date.now() - 2 * 3600000).toISOString(),
+          beneficiariesReached: 40
+        }
+      ],
       createdAt: new Date(Date.now() - 6 * 3600000).toISOString(),
       isDemo: true
     },
@@ -413,6 +523,10 @@ const INITIAL_STATE = {
       id: 'DON-2026-107',
       foodName: '40 Servings Organic Lentil Soup & Quinoa Bowls',
       category: 'Cooked Meal',
+      originalQuantity: 40,
+      availableQuantity: 40,
+      claimedQuantity: 0,
+      quantityUnit: 'servings',
       portions: 40,
       quantityKg: 14.0,
       foodType: 'veg',
@@ -441,6 +555,7 @@ const INITIAL_STATE = {
       qrVoucherRedeemed: false,
       holdingHubId: null,
       weatherRescuePlan: null,
+      claims: [],
       createdAt: new Date(Date.now() - 45 * 60000).toISOString(),
       isDemo: true
     },
@@ -448,6 +563,10 @@ const INITIAL_STATE = {
       id: 'DON-2026-108',
       foodName: '30 Packs Fresh Harvest Salad & Seed Rolls',
       category: 'Produce',
+      originalQuantity: 30,
+      availableQuantity: 30,
+      claimedQuantity: 0,
+      quantityUnit: 'packets',
       portions: 30,
       quantityKg: 9.0,
       foodType: 'vegan',
@@ -476,6 +595,7 @@ const INITIAL_STATE = {
       qrVoucherRedeemed: false,
       holdingHubId: null,
       weatherRescuePlan: null,
+      claims: [],
       createdAt: new Date(Date.now() - 2 * 3600000).toISOString(),
       isDemo: true
     },
@@ -483,6 +603,10 @@ const INITIAL_STATE = {
       id: 'DON-2026-109',
       foodName: '50 Portions Veg Fried Rice & Manchurian',
       category: 'Cooked Meal',
+      originalQuantity: 50,
+      availableQuantity: 50,
+      claimedQuantity: 0,
+      quantityUnit: 'servings',
       portions: 50,
       quantityKg: 18.0,
       foodType: 'veg',
@@ -511,6 +635,7 @@ const INITIAL_STATE = {
       qrVoucherRedeemed: false,
       holdingHubId: null,
       weatherRescuePlan: null,
+      claims: [],
       createdAt: new Date(Date.now() - 30 * 60000).toISOString(),
       isDemo: true
     }
@@ -760,6 +885,46 @@ class SaveToServeStore {
                 if (seedDon.status !== parsed.donations[existingIdx].status && parsed.donations[existingIdx].status === 'expired') {
                   parsed.donations[existingIdx].status = seedDon.status;
                 }
+              }
+            }
+          });
+
+          // Normalize all donations in state to support inventory quantity management
+          parsed.donations.forEach(d => {
+            if (d.originalQuantity === undefined) {
+              d.originalQuantity = d.portions || 1;
+            }
+            if (d.quantityUnit === undefined) {
+              d.quantityUnit = 'servings';
+            }
+            if (d.claimedQuantity === undefined) {
+              d.claimedQuantity = (d.status === 'claimed' || d.status === 'in-transit' || d.status === 'completed') ? (d.portions || 0) : 0;
+            }
+            if (d.availableQuantity === undefined) {
+              d.availableQuantity = (d.status === 'claimed' || d.status === 'in-transit' || d.status === 'completed') ? 0 : Math.max(0, d.originalQuantity - d.claimedQuantity);
+            }
+            if (!Array.isArray(d.claims)) {
+              d.claims = [];
+              if (d.claimedByNgoId || d.status === 'claimed' || d.status === 'in-transit' || d.status === 'completed') {
+                d.claims.push({
+                  claimId: 'CLM-' + d.id,
+                  donationId: d.id,
+                  ngoId: d.claimedByNgoId || 'usr-ngo-1',
+                  ngoName: d.claimedByNgoName || 'Asha Food & Hope Shelter',
+                  claimedQuantity: d.claimedQuantity || d.portions || d.originalQuantity,
+                  unit: d.quantityUnit || 'servings',
+                  claimTimestamp: d.claimTimestamp || d.createdAt || new Date().toISOString(),
+                  status: d.status,
+                  pickupCode: d.pickupCode || 'STS-' + Math.floor(1000 + Math.random() * 9000),
+                  qrVoucherCode: d.qrVoucherCode || 'VOUCHER-' + d.id,
+                  qrVoucherRedeemed: !!d.qrVoucherRedeemed,
+                  assignedVolunteerId: d.assignedVolunteerId || null,
+                  assignedVolunteerName: d.assignedVolunteerName || null,
+                  pickupTimestamp: d.pickupTimestamp || null,
+                  deliveryTimestamp: d.deliveryTimestamp || null,
+                  distributionTimestamp: d.distributionTimestamp || null,
+                  beneficiariesReached: d.beneficiariesReached || 0
+                });
               }
             }
           });
@@ -1079,11 +1244,31 @@ class SaveToServeStore {
 
   addDonation(donationData) {
     const id = 'DON-' + new Date().getFullYear() + '-' + Math.floor(100 + Math.random() * 900);
-    const quantityKg = donationData.quantityKg || (donationData.portions * (this.state.settings.kgPerPortion || 0.35));
+    const originalQuantity = parseInt(donationData.originalQuantity || donationData.portions || 1);
+    const quantityUnit = donationData.quantityUnit || 'servings';
+    const portions = originalQuantity;
+    
+    // Calculate approximate KG based on unit
+    let quantityKg = 0;
+    if (quantityUnit === 'kg') {
+      quantityKg = originalQuantity;
+    } else if (quantityUnit === 'grams') {
+      quantityKg = originalQuantity / 1000;
+    } else if (quantityUnit === 'litres') {
+      quantityKg = originalQuantity * 1.0;
+    } else {
+      quantityKg = donationData.quantityKg || (portions * (this.state.settings.kgPerPortion || 0.35));
+    }
+
     const nowISO = new Date().toISOString();
     const newDonation = {
       id,
       ...donationData,
+      originalQuantity,
+      availableQuantity: originalQuantity,
+      claimedQuantity: 0,
+      quantityUnit,
+      portions,
       quantityKg: parseFloat(quantityKg.toFixed(1)),
       status: 'available',
       claimedByNgoId: null,
@@ -1100,6 +1285,7 @@ class SaveToServeStore {
       qrVoucherRedeemed: false,
       holdingHubId: null,
       weatherRescuePlan: null,
+      claims: [],
       prepTime: donationData.prepTime || nowISO,
       safeUntil: donationData.safeUntil || new Date(Date.now() + 4 * 3600000).toISOString(),
       createdAt: donationData.createdAt || nowISO
@@ -1108,12 +1294,12 @@ class SaveToServeStore {
     this.state.donations.unshift(newDonation);
     this.saveState();
 
-    this.logActivity(newDonation.donorName, `Posted surplus food: ${newDonation.foodName} (${newDonation.portions} portions)`, newDonation.id, 'Surplus Posted');
+    this.logActivity(newDonation.donorName, `Posted surplus food: ${newDonation.foodName} (${newDonation.originalQuantity} ${newDonation.quantityUnit})`, newDonation.id, 'Surplus Posted');
     
     this.addNotification({
       recipientRole: 'ngo',
       title: '🍲 New Surplus Food Available',
-      message: `${newDonation.donorOrg} listed ${newDonation.portions} portions of ${newDonation.foodName}. Safe until ${SaveToServeStore.formatDateTime(newDonation.safeUntil)}.`,
+      message: `${newDonation.donorOrg} listed ${newDonation.originalQuantity} ${newDonation.quantityUnit} of ${newDonation.foodName}. Safe until ${SaveToServeStore.formatDateTime(newDonation.safeUntil)}.`,
       type: 'donation'
     });
 
@@ -1132,10 +1318,46 @@ class SaveToServeStore {
     return null;
   }
 
+  updateDonationQuantity(donationId, newAvailableQuantity) {
+    const donation = this.getDonationById(donationId);
+    if (!donation) return { success: false, message: 'Donation listing not found.' };
+
+    const parsedQty = parseInt(newAvailableQuantity);
+    if (isNaN(parsedQty) || parsedQty < 0) {
+      return { success: false, message: 'Available quantity must be a non-negative number (0 or greater).' };
+    }
+
+    const prevAvailable = donation.availableQuantity || 0;
+    donation.availableQuantity = parsedQty;
+    donation.originalQuantity = (donation.claimedQuantity || 0) + parsedQty;
+    donation.portions = parsedQty;
+
+    if (parsedQty === 0 && donation.status === 'available') {
+      donation.status = 'claimed';
+    } else if (parsedQty > 0 && (donation.status === 'claimed' || donation.status === 'unavailable')) {
+      donation.status = 'available';
+    }
+
+    this.saveState();
+
+    this.logActivity(donation.donorName, `Updated available quantity of ${donation.foodName} to ${parsedQty} ${donation.quantityUnit || 'servings'}`, donation.id, 'Quantity Updated');
+
+    this.addNotification({
+      recipientRole: 'ngo',
+      title: '📦 Surplus Food Quantity Updated',
+      message: `${donation.donorOrg} updated ${donation.foodName}: ${parsedQty} ${donation.quantityUnit || 'servings'} now available.`,
+      type: 'donation'
+    });
+
+    this.notifySubscribers('DONATION_QUANTITY_UPDATED', donation);
+    return { success: true, donation, previousAvailable: prevAvailable, newAvailable: parsedQty };
+  }
+
   cancelDonation(id, reason = 'Cancelled by donor') {
     const donation = this.getDonationById(id);
-    if (donation && (donation.status === 'available' || donation.status === 'expired')) {
+    if (donation && (donation.status === 'available' || donation.status === 'expired' || donation.status === 'claimed')) {
       donation.status = 'cancelled';
+      donation.availableQuantity = 0;
       this.saveState();
       this.logActivity(donation.donorName, `Cancelled donation ${donation.id}: ${reason}`, donation.id, 'Cancelled');
       this.notifySubscribers('DONATION_CANCELLED', donation);
@@ -1144,7 +1366,7 @@ class SaveToServeStore {
     return false;
   }
 
-  claimDonation(donationId, ngoUser) {
+  claimDonation(donationId, ngoUser, requestedQuantity = null) {
     const donation = this.getDonationById(donationId);
     if (!donation) return { success: false, message: 'Donation not found.' };
     
@@ -1154,16 +1376,76 @@ class SaveToServeStore {
       return { success: false, message: 'Cannot claim: This food donation has reached its expiry deadline and is expired.' };
     }
 
-    if (donation.status !== 'available') {
-      return { success: false, message: `Cannot claim: this donation is currently ${donation.status}.` };
+    const currentAvailable = donation.availableQuantity !== undefined ? donation.availableQuantity : (donation.status === 'available' ? donation.portions : 0);
+
+    if (currentAvailable <= 0 || donation.status === 'cancelled' || donation.status === 'completed') {
+      return { success: false, message: `Cannot claim: This food listing has already been fully claimed or is unavailable.` };
     }
 
-    donation.status = 'claimed';
-    donation.claimedByNgoId = ngoUser.id;
-    donation.claimedByNgoName = ngoUser.orgName || ngoUser.name;
-    donation.claimTimestamp = new Date().toISOString();
+    // Determine quantity to claim
+    const claimQty = requestedQuantity !== null && requestedQuantity !== undefined 
+      ? parseInt(requestedQuantity) 
+      : currentAvailable;
+
+    if (isNaN(claimQty) || claimQty <= 0) {
+      return { success: false, message: 'Please specify a valid claim quantity greater than 0.' };
+    }
+
+    if (claimQty > currentAvailable) {
+      return { 
+        success: false, 
+        message: `Requested ${claimQty} ${donation.quantityUnit || 'servings'} exceeds currently available inventory (${currentAvailable} ${donation.quantityUnit || 'servings'} left).` 
+      };
+    }
+
+    // Decrease available inventory and increase claimed
+    donation.availableQuantity = currentAvailable - claimQty;
+    donation.claimedQuantity = (donation.claimedQuantity || 0) + claimQty;
+    donation.portions = donation.availableQuantity;
+
+    // Update listing status
+    if (donation.availableQuantity === 0) {
+      donation.status = 'claimed';
+    } else {
+      donation.status = 'available';
+    }
+
+    const claimId = 'CLM-' + Date.now().toString(36) + '-' + Math.floor(100 + Math.random() * 900);
+    const pickupCode = 'STS-' + Math.floor(1000 + Math.random() * 9000);
+    const qrVoucherCode = 'VOUCHER-' + donation.id + '-' + Math.floor(100 + Math.random() * 900);
+    const claimTimestamp = new Date().toISOString();
 
     const availableVol = this.state.users.find(u => u.role === 'volunteer' && u.kycStatus === 'approved');
+
+    const claimRecord = {
+      claimId,
+      donationId: donation.id,
+      ngoId: ngoUser.id,
+      ngoName: ngoUser.orgName || ngoUser.name,
+      claimedQuantity: claimQty,
+      unit: donation.quantityUnit || 'servings',
+      claimTimestamp,
+      status: 'claimed',
+      pickupCode,
+      qrVoucherCode,
+      qrVoucherRedeemed: false,
+      assignedVolunteerId: availableVol ? availableVol.id : null,
+      assignedVolunteerName: availableVol ? availableVol.name : null,
+      pickupTimestamp: null,
+      deliveryTimestamp: null,
+      distributionTimestamp: null,
+      beneficiariesReached: 0
+    };
+
+    if (!Array.isArray(donation.claims)) donation.claims = [];
+    donation.claims.unshift(claimRecord);
+
+    // Sync primary fields on donation object for compatibility
+    donation.claimedByNgoId = ngoUser.id;
+    donation.claimedByNgoName = ngoUser.orgName || ngoUser.name;
+    donation.claimTimestamp = claimTimestamp;
+    donation.pickupCode = pickupCode;
+    donation.qrVoucherCode = qrVoucherCode;
     if (availableVol) {
       donation.assignedVolunteerId = availableVol.id;
       donation.assignedVolunteerName = availableVol.name;
@@ -1171,28 +1453,177 @@ class SaveToServeStore {
 
     this.saveState();
 
-    this.logActivity(donation.claimedByNgoName, `Claimed ${donation.portions} portions of ${donation.foodName} from ${donation.donorOrg}`, donation.id, 'Claimed');
+    this.logActivity(
+      ngoUser.orgName || ngoUser.name, 
+      `Claimed ${claimQty} ${donation.quantityUnit || 'servings'} of ${donation.foodName} from ${donation.donorOrg} (${donation.availableQuantity} remaining)`, 
+      donation.id, 
+      'Claimed'
+    );
 
     this.addNotification({
       recipientRole: 'donor',
       recipientId: donation.donorId,
       title: '✅ Surplus Food Claimed',
-      message: `${donation.claimedByNgoName} has claimed ${donation.foodName}. Pickup verification code: ${donation.pickupCode}`,
+      message: `${ngoUser.orgName || ngoUser.name} claimed ${claimQty} ${donation.quantityUnit || 'servings'} of ${donation.foodName}. Remaining available: ${donation.availableQuantity} ${donation.quantityUnit || 'servings'}. Pickup code: ${pickupCode}`,
       type: 'claim'
     });
 
-    if (donation.assignedVolunteerId) {
+    if (claimRecord.assignedVolunteerId) {
       this.addNotification({
         recipientRole: 'volunteer',
-        recipientId: donation.assignedVolunteerId,
+        recipientId: claimRecord.assignedVolunteerId,
         title: '🚴 New Pickup Task Assigned',
-        message: `Pickup ${donation.portions} portions from ${donation.donorOrg} -> Deliver to ${donation.claimedByNgoName}.`,
+        message: `Pickup ${claimQty} ${donation.quantityUnit || 'servings'} from ${donation.donorOrg} -> Deliver to ${ngoUser.orgName || ngoUser.name}.`,
         type: 'task'
       });
     }
 
-    this.notifySubscribers('DONATION_CLAIMED', donation);
-    return { success: true, donation };
+    this.notifySubscribers('DONATION_CLAIMED', { donation, claim: claimRecord });
+    return { success: true, donation, claim: claimRecord };
+  }
+
+  cancelClaim(claimId, reason = 'Cancelled by NGO') {
+    let targetDonation = null;
+    let targetClaim = null;
+
+    for (const d of this.state.donations) {
+      if (Array.isArray(d.claims)) {
+        const found = d.claims.find(c => c.claimId === claimId || c.id === claimId);
+        if (found) {
+          targetDonation = d;
+          targetClaim = found;
+          break;
+        }
+      }
+      if (d.id === claimId && d.status === 'claimed') {
+        targetDonation = d;
+        targetClaim = {
+          claimId: 'CLM-' + d.id,
+          claimedQuantity: d.claimedQuantity || d.portions || d.originalQuantity || 1,
+          status: d.status
+        };
+        break;
+      }
+    }
+
+    if (!targetDonation || !targetClaim) {
+      return { success: false, message: 'Claim record not found.' };
+    }
+
+    if (targetClaim.status !== 'claimed') {
+      return { success: false, message: `Cannot cancel claim: food handoff is already ${targetClaim.status}.` };
+    }
+
+    const restoreQty = targetClaim.claimedQuantity || 0;
+    targetClaim.status = 'cancelled';
+    targetClaim.cancelledAt = new Date().toISOString();
+
+    // Restore inventory to parent donation
+    targetDonation.availableQuantity = (targetDonation.availableQuantity || 0) + restoreQty;
+    targetDonation.claimedQuantity = Math.max(0, (targetDonation.claimedQuantity || 0) - restoreQty);
+    targetDonation.portions = targetDonation.availableQuantity;
+
+    if (targetDonation.availableQuantity > 0 && (targetDonation.status === 'claimed' || targetDonation.status === 'cancelled')) {
+      targetDonation.status = 'available';
+    }
+
+    this.saveState();
+
+    this.logActivity(
+      targetClaim.ngoName || 'NGO', 
+      `Cancelled claim of ${restoreQty} ${targetDonation.quantityUnit || 'servings'} for ${targetDonation.foodName}. Inventory restored.`, 
+      targetDonation.id, 
+      'Claim Cancelled'
+    );
+
+    this.addNotification({
+      recipientRole: 'donor',
+      recipientId: targetDonation.donorId,
+      title: '🔄 Surplus Food Quantity Restored',
+      message: `Claim for ${restoreQty} ${targetDonation.quantityUnit || 'servings'} of ${targetDonation.foodName} was cancelled. ${targetDonation.availableQuantity} ${targetDonation.quantityUnit || 'servings'} is now available again for other NGOs.`,
+      type: 'donation'
+    });
+
+    this.notifySubscribers('CLAIM_CANCELLED', { donation: targetDonation, claim: targetClaim });
+    return { 
+      success: true, 
+      message: `Claim successfully cancelled. ${restoreQty} ${targetDonation.quantityUnit || 'servings'} restored to inventory!`, 
+      donation: targetDonation, 
+      claim: targetClaim 
+    };
+  }
+
+  getClaimsForNgo(ngoId) {
+    const claims = [];
+    this.checkAndExpireDonations();
+
+    this.state.donations.forEach(d => {
+      if (Array.isArray(d.claims) && d.claims.length > 0) {
+        d.claims.forEach(c => {
+          if (c.ngoId === ngoId || c.claimedByNgoId === ngoId) {
+            claims.push({
+              ...c,
+              donationId: d.id,
+              foodName: d.foodName,
+              category: d.category,
+              foodType: d.foodType,
+              safeUntil: d.safeUntil,
+              prepTime: d.prepTime,
+              createdAt: d.createdAt,
+              donorId: d.donorId,
+              donorName: d.donorName,
+              donorOrg: d.donorOrg,
+              donorPhone: d.donorPhone,
+              donorAddress: d.donorAddress,
+              donorCoords: d.donorCoords,
+              imageUrl: d.imageUrl,
+              storageInfo: d.storageInfo,
+              originalQuantity: d.originalQuantity,
+              availableQuantity: d.availableQuantity,
+              unit: c.unit || d.quantityUnit || 'servings'
+            });
+          }
+        });
+      } else if (d.claimedByNgoId === ngoId && ['claimed', 'in-transit', 'completed'].includes(d.status)) {
+        claims.push({
+          claimId: 'CLM-' + d.id,
+          donationId: d.id,
+          ngoId: d.claimedByNgoId,
+          ngoName: d.claimedByNgoName,
+          claimedQuantity: d.claimedQuantity || d.portions || d.originalQuantity || 1,
+          unit: d.quantityUnit || 'servings',
+          claimTimestamp: d.claimTimestamp || d.createdAt,
+          status: d.status,
+          pickupCode: d.pickupCode,
+          qrVoucherCode: d.qrVoucherCode,
+          qrVoucherRedeemed: d.qrVoucherRedeemed,
+          assignedVolunteerId: d.assignedVolunteerId,
+          assignedVolunteerName: d.assignedVolunteerName,
+          pickupTimestamp: d.pickupTimestamp,
+          deliveryTimestamp: d.deliveryTimestamp,
+          distributionTimestamp: d.distributionTimestamp,
+          beneficiariesReached: d.beneficiariesReached,
+          foodName: d.foodName,
+          category: d.category,
+          foodType: d.foodType,
+          safeUntil: d.safeUntil,
+          prepTime: d.prepTime,
+          createdAt: d.createdAt,
+          donorId: d.donorId,
+          donorName: d.donorName,
+          donorOrg: d.donorOrg,
+          donorPhone: d.donorPhone,
+          donorAddress: d.donorAddress,
+          donorCoords: d.donorCoords,
+          imageUrl: d.imageUrl,
+          storageInfo: d.storageInfo,
+          originalQuantity: d.originalQuantity,
+          availableQuantity: d.availableQuantity
+        });
+      }
+    });
+
+    return claims.sort((a, b) => new Date(b.claimTimestamp || 0) - new Date(a.claimTimestamp || 0));
   }
 
   acceptVolunteerTask(donationId, volunteerUser) {
@@ -1267,20 +1698,56 @@ class SaveToServeStore {
   }
 
   redeemVoucher(voucherCode) {
-    const donation = this.state.donations.find(d => d.qrVoucherCode === voucherCode.trim().toUpperCase());
-    if (!donation) return { success: false, message: 'Invalid or unrecognized QR voucher code.' };
-    if (donation.qrVoucherRedeemed) return { success: false, message: 'This voucher has already been redeemed.' };
+    const cleanCode = voucherCode.trim().toUpperCase();
+    let targetDonation = null;
+    let targetClaim = null;
 
-    donation.qrVoucherRedeemed = true;
-    donation.status = 'completed';
-    donation.deliveryTimestamp = new Date().toISOString();
-    donation.distributionTimestamp = new Date().toISOString();
-    donation.beneficiariesReached = donation.portions;
+    for (const d of this.state.donations) {
+      if (Array.isArray(d.claims)) {
+        const found = d.claims.find(c => c.qrVoucherCode === cleanCode);
+        if (found) {
+          targetDonation = d;
+          targetClaim = found;
+          break;
+        }
+      }
+      if (d.qrVoucherCode === cleanCode) {
+        targetDonation = d;
+        break;
+      }
+    }
+
+    if (!targetDonation) return { success: false, message: 'Invalid or unrecognized QR voucher code.' };
+    
+    if (targetClaim) {
+      if (targetClaim.qrVoucherRedeemed) return { success: false, message: 'This voucher has already been redeemed.' };
+      targetClaim.qrVoucherRedeemed = true;
+      targetClaim.status = 'completed';
+      targetClaim.deliveryTimestamp = new Date().toISOString();
+      targetClaim.distributionTimestamp = new Date().toISOString();
+      targetClaim.beneficiariesReached = targetClaim.claimedQuantity;
+      
+      // If all claims completed and no available inventory left, mark donation completed
+      const allClaimsDone = targetDonation.claims.every(c => c.status === 'completed' || c.status === 'cancelled');
+      if (allClaimsDone && (targetDonation.availableQuantity || 0) === 0) {
+        targetDonation.status = 'completed';
+        targetDonation.qrVoucherRedeemed = true;
+      }
+    } else {
+      if (targetDonation.qrVoucherRedeemed) return { success: false, message: 'This voucher has already been redeemed.' };
+      targetDonation.qrVoucherRedeemed = true;
+      targetDonation.status = 'completed';
+      targetDonation.deliveryTimestamp = new Date().toISOString();
+      targetDonation.distributionTimestamp = new Date().toISOString();
+      targetDonation.beneficiariesReached = targetDonation.portions || targetDonation.originalQuantity;
+    }
+
     this.saveState();
 
-    this.logActivity('Direct QR Redemption Desk', `Redeemed voucher ${voucherCode} for ${donation.portions} portions of ${donation.foodName}`, donation.id, 'Voucher Redeemed');
-    this.notifySubscribers('VOUCHER_REDEEMED', donation);
-    return { success: true, donation };
+    const redeemedQty = targetClaim ? `${targetClaim.claimedQuantity} ${targetClaim.unit}` : `${targetDonation.portions} portions`;
+    this.logActivity('Direct QR Redemption Desk', `Redeemed voucher ${cleanCode} for ${redeemedQty} of ${targetDonation.foodName}`, targetDonation.id, 'Voucher Redeemed');
+    this.notifySubscribers('VOUCHER_REDEEMED', targetDonation);
+    return { success: true, donation: targetDonation, claim: targetClaim };
   }
 
   setWeatherScenario(scenarioKey) {
@@ -1504,7 +1971,8 @@ class SaveToServeStore {
     const ngoLon = parseFloat(ngoCoords[1]);
     const now = Date.now();
     const availableDonations = this.state.donations.filter(d => 
-      d.status === 'available' && 
+      (d.status === 'available' || ((d.availableQuantity || 0) > 0 && d.status !== 'cancelled' && d.status !== 'expired')) && 
+      (d.availableQuantity === undefined || d.availableQuantity > 0) &&
       d.safeUntil && 
       new Date(d.safeUntil).getTime() > now
     );
