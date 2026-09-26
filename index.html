@@ -23,7 +23,7 @@
     <div class="container d-flex align-items-center justify-content-between py-2">
       <a href="#home" class="navbar-brand-custom" onclick="window.SaveToServeApp.navigateTo('home')">
         <img src="assets/logo.png" alt="Save to Serve Logo" class="brand-logo-animated">
-        <div>
+        <div class="brand-text-container">
           <div class="brand-title">Save to Serve <span class="brand-swaying-leaf">🌱</span></div>
           <div class="brand-tagline">Save Food. Serve People. Reduce Waste.</div>
         </div>
@@ -35,6 +35,23 @@
       </div>
     </div>
   </header>
+
+  <!-- Responsive Mobile Offcanvas Navigation Drawer -->
+  <div class="offcanvas offcanvas-end mobile-nav-offcanvas" tabindex="-1" id="mobileNavOffcanvas" aria-labelledby="mobileNavOffcanvasLabel">
+    <div class="offcanvas-header border-bottom">
+      <div class="d-flex align-items-center gap-2">
+        <img src="assets/logo.png" alt="Logo" style="width:32px;height:32px;border-radius:8px;object-fit:cover;">
+        <div>
+          <div class="offcanvas-title fw-bold" id="mobileNavOffcanvasLabel" style="color:var(--portal-dark);line-height:1.2;">Save to Serve</div>
+          <div class="small" style="font-size:0.72rem;color:var(--portal-primary);">Save Food. Serve People.</div>
+        </div>
+      </div>
+      <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body d-flex flex-column p-3" id="mobileNavDrawerBody">
+      <!-- Injected dynamically in SaveToServeApp.renderNavbar() -->
+    </div>
+  </div>
 
   <!-- Main View Area -->
   <main class="main-wrapper">

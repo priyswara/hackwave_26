@@ -35,6 +35,21 @@ class SaveToServeAppController {
       this.refreshCountdowns();
     }, 10000);
 
+    // Close dropdowns cleanly when dropdown items are clicked
+    document.addEventListener('click', (e) => {
+      const dropdownItem = e.target.closest('.dropdown-item');
+      if (dropdownItem) {
+        const dropdownMenu = dropdownItem.closest('.dropdown-menu');
+        if (dropdownMenu && typeof bootstrap !== 'undefined') {
+          const dropdownToggle = dropdownMenu.parentElement.querySelector('[data-bs-toggle="dropdown"]');
+          if (dropdownToggle) {
+            const bsDropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
+            if (bsDropdown) bsDropdown.hide();
+          }
+        }
+      }
+    });
+
     this.initInteractiveMouseEffects();
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -236,15 +251,25 @@ class SaveToServeAppController {
     }
   }
 
+  closeMobileDrawer() {
+    const offcanvasEl = document.getElementById('mobileNavOffcanvas');
+    if (offcanvasEl && typeof bootstrap !== 'undefined') {
+      const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl) || new bootstrap.Offcanvas(offcanvasEl);
+      bsOffcanvas.hide();
+    }
+  }
+
   renderNavbar() {
     const user = window.SaveToServeAuth?.getCurrentUser();
     const navContainer = document.getElementById('navbarDynamicArea');
+    const drawerBody = document.getElementById('mobileNavDrawerBody');
     const mobileBottomNav = document.getElementById('mobileBottomNav');
     if (!navContainer) return;
 
     if (!user || this.currentRoute === 'home') {
       // Clean homepage: No global links, no public clutter
       navContainer.innerHTML = '';
+      if (drawerBody) drawerBody.innerHTML = '';
       if (mobileBottomNav) {
         mobileBottomNav.classList.add('d-none');
         mobileBottomNav.innerHTML = '';
@@ -254,33 +279,87 @@ class SaveToServeAppController {
 
     const portalName = PORTAL_NAMES[user.role] || user.role.toUpperCase();
 
-    // Generate Role-Specific Navigation Links
+    // Generate Role-Specific Navigation Links & Mobile Drawer Items
     let roleNavLinks = '';
+    let drawerContent = '';
     let mobileNavLinks = '';
+
+    const isVerified = user.kycStatus === 'approved';
+    const kycBadgeText = isVerified ? 'Verified' : user.kycStatus === 'rejected' ? 'Rejected' : 'Pending Review';
+    const kycBadgeClass = isVerified ? 'bg-success' : user.kycStatus === 'rejected' ? 'bg-danger' : 'bg-warning text-dark';
+
+    const userDrawerCard = `
+      <div class="mobile-nav-user-card">
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <div class="stat-icon icon-olive" style="width:34px;height:34px;font-size:1.1rem;border-radius:8px;">
+            <i class="bi ${user.role === 'donor' ? 'bi-shop' : user.role === 'ngo' ? 'bi-building' : user.role === 'volunteer' ? 'bi-bicycle' : 'bi-shield-lock'}"></i>
+          </div>
+          <div style="line-height:1.2; overflow:hidden;">
+            <div class="fw-bold text-truncate" style="color:var(--portal-dark);font-size:0.92rem;">${user.orgName || user.name}</div>
+            <div class="small text-muted text-truncate" style="font-size:0.75rem;">${user.email || user.phone || portalName}</div>
+          </div>
+        </div>
+        <div class="d-flex align-items-center justify-content-between mt-2 pt-2 border-top">
+          <span class="badge badge-${user.role}" style="font-size:0.72rem;">${portalName}</span>
+          <span class="badge ${kycBadgeClass}" style="font-size:0.70rem;">${kycBadgeText}</span>
+        </div>
+      </div>
+    `;
 
     if (user.role === 'donor') {
       roleNavLinks = `
         <nav class="d-none d-lg-flex align-items-center gap-1">
+          <div class="dropdown">
+            <button class="nav-link-custom dropdown-toggle border-0 bg-transparent" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-grid-fill"></i> Dashboard
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#donor-portal" onclick="window.SaveToServeDonor?.switchTab('my-donations')"><i class="bi bi-list-stars text-primary"></i> My Food Listings</a></li>
+              <li><a class="dropdown-item" href="#donor-portal" onclick="window.SaveToServeDonor?.switchTab('track-pickups')"><i class="bi bi-truck text-success"></i> Track Pickups & Codes</a></li>
+              <li><a class="dropdown-item" href="#donor-portal" onclick="window.SaveToServeDonor?.switchTab('kyc')"><i class="bi bi-shield-check text-info"></i> Kitchen Verification</a></li>
+            </ul>
+          </div>
           <a href="#donor-portal" class="nav-link-custom" onclick="window.SaveToServeDonor?.switchTab('my-donations')">
-            <i class="bi bi-grid"></i> Dashboard
-          </a>
-          <a href="#donor-portal" class="nav-link-custom" onclick="window.SaveToServeDonor?.switchTab('post-donation')">
-            <i class="bi bi-plus-circle"></i> Add Food Donation
-          </a>
-          <a href="#donor-portal" class="nav-link-custom" onclick="window.SaveToServeDonor?.switchTab('my-donations')">
-            <i class="bi bi-list-ul"></i> My Donations
+            <i class="bi bi-shop"></i> My Listings
           </a>
           <a href="#donor-portal" class="nav-link-custom" onclick="window.SaveToServeDonor?.switchTab('track-pickups')">
-            <i class="bi bi-truck"></i> Track Donations
+            <i class="bi bi-truck"></i> Track Pickups
           </a>
           <a href="#donor-portal" class="nav-link-custom" onclick="window.SaveToServeDonor?.switchTab('weather-map')">
             <i class="bi bi-cloud-rain-heavy"></i> Weather Map
           </a>
-          <a href="#donor-portal" class="nav-link-custom" onclick="window.SaveToServeDonor?.switchTab('kyc')">
-            <i class="bi bi-shield-check"></i> Verification
-          </a>
+          <button class="btn btn-sm btn-olive ms-1" onclick="window.SaveToServeDonor?.switchTab('post-donation')">
+            <i class="bi bi-plus-circle"></i> Post Food
+          </button>
         </nav>
       `;
+
+      drawerContent = `
+        ${userDrawerCard}
+        <div class="d-flex flex-column gap-1 flex-grow-1">
+          <a href="#donor-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeDonor?.switchTab('my-donations');">
+            <i class="bi bi-grid-fill"></i> <span>Dashboard & Listings</span>
+          </a>
+          <a href="#donor-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeDonor?.switchTab('post-donation');">
+            <i class="bi bi-plus-circle-fill"></i> <span>Post Surplus Food</span>
+          </a>
+          <a href="#donor-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeDonor?.switchTab('track-pickups');">
+            <i class="bi bi-truck"></i> <span>Track Pickups & Codes</span>
+          </a>
+          <a href="#donor-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeDonor?.switchTab('weather-map');">
+            <i class="bi bi-cloud-rain-heavy"></i> <span>Weather Routing Map</span>
+          </a>
+          <a href="#donor-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeDonor?.switchTab('kyc');">
+            <i class="bi bi-shield-check"></i> <span>Kitchen Verification Dossier</span>
+          </a>
+        </div>
+        <div class="pt-3 border-top mt-auto">
+          <button class="btn btn-outline-danger w-100" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeApp.logout();">
+            <i class="bi bi-box-arrow-right me-1"></i> Logout
+          </button>
+        </div>
+      `;
+
       mobileNavLinks = `
         <a href="#donor-portal" class="mobile-nav-item" onclick="window.SaveToServeDonor?.switchTab('my-donations')">
           <i class="bi bi-grid"></i><span>Dashboard</span>
@@ -288,19 +367,26 @@ class SaveToServeAppController {
         <a href="#donor-portal" class="mobile-nav-item" onclick="window.SaveToServeDonor?.switchTab('post-donation')">
           <i class="bi bi-plus-circle"></i><span>Post Food</span>
         </a>
+        <a href="#donor-portal" class="mobile-nav-item" onclick="window.SaveToServeDonor?.switchTab('track-pickups')">
+          <i class="bi bi-truck"></i><span>Track</span>
+        </a>
         <a href="#donor-portal" class="mobile-nav-item" onclick="window.SaveToServeDonor?.switchTab('weather-map')">
           <i class="bi bi-cloud-rain-heavy"></i><span>Weather</span>
-        </a>
-        <a href="#donor-portal" class="mobile-nav-item" onclick="window.SaveToServeDonor?.switchTab('kyc')">
-          <i class="bi bi-shield-check"></i><span>KYC</span>
         </a>
       `;
     } else if (user.role === 'ngo') {
       roleNavLinks = `
         <nav class="d-none d-lg-flex align-items-center gap-1">
-          <a href="#ngo-portal" class="nav-link-custom" onclick="window.SaveToServeNGO?.switchTab('browse-food')">
-            <i class="bi bi-grid"></i> Dashboard
-          </a>
+          <div class="dropdown">
+            <button class="nav-link-custom dropdown-toggle border-0 bg-transparent" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-grid-fill"></i> Dashboard
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#ngo-portal" onclick="window.SaveToServeNGO?.switchTab('browse-food')"><i class="bi bi-basket2 text-success"></i> Browse Available Food</a></li>
+              <li><a class="dropdown-item" href="#ngo-portal" onclick="window.SaveToServeNGO?.switchTab('my-claims')"><i class="bi bi-bag-check text-primary"></i> My Claims & Deliveries</a></li>
+              <li><a class="dropdown-item" href="#ngo-portal" onclick="window.SaveToServeNGO?.switchTab('kyc')"><i class="bi bi-shield-check text-info"></i> Shelter Verification</a></li>
+            </ul>
+          </div>
           <a href="#ngo-portal" class="nav-link-custom" onclick="window.SaveToServeNGO?.switchTab('browse-food')">
             <i class="bi bi-basket2"></i> Browse Food
           </a>
@@ -310,11 +396,38 @@ class SaveToServeAppController {
           <a href="#ngo-portal" class="nav-link-custom" onclick="window.SaveToServeNGO?.switchTab('weather-map')">
             <i class="bi bi-cloud-rain-heavy"></i> Weather Map
           </a>
-          <a href="#ngo-portal" class="nav-link-custom" onclick="window.SaveToServeNGO?.switchTab('post-req')">
-            <i class="bi bi-megaphone"></i> Urgent Requests
-          </a>
+          <button class="btn btn-sm btn-olive ms-1" onclick="window.SaveToServeNGO?.switchTab('post-req')">
+            <i class="bi bi-megaphone"></i> Urgent Request
+          </button>
         </nav>
       `;
+
+      drawerContent = `
+        ${userDrawerCard}
+        <div class="d-flex flex-column gap-1 flex-grow-1">
+          <a href="#ngo-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeNGO?.switchTab('browse-food');">
+            <i class="bi bi-basket2-fill"></i> <span>Browse Available Food</span>
+          </a>
+          <a href="#ngo-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeNGO?.switchTab('my-claims');">
+            <i class="bi bi-bag-check-fill"></i> <span>My Claims & Deliveries</span>
+          </a>
+          <a href="#ngo-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeNGO?.switchTab('post-req');">
+            <i class="bi bi-megaphone-fill"></i> <span>Post Urgent Request</span>
+          </a>
+          <a href="#ngo-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeNGO?.switchTab('weather-map');">
+            <i class="bi bi-cloud-rain-heavy"></i> <span>Weather Map</span>
+          </a>
+          <a href="#ngo-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeNGO?.switchTab('kyc');">
+            <i class="bi bi-shield-check"></i> <span>Shelter KYC Verification</span>
+          </a>
+        </div>
+        <div class="pt-3 border-top mt-auto">
+          <button class="btn btn-outline-danger w-100" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeApp.logout();">
+            <i class="bi bi-box-arrow-right me-1"></i> Logout
+          </button>
+        </div>
+      `;
+
       mobileNavLinks = `
         <a href="#ngo-portal" class="mobile-nav-item" onclick="window.SaveToServeNGO?.switchTab('browse-food')">
           <i class="bi bi-basket2"></i><span>Browse</span>
@@ -322,33 +435,68 @@ class SaveToServeAppController {
         <a href="#ngo-portal" class="mobile-nav-item" onclick="window.SaveToServeNGO?.switchTab('my-claims')">
           <i class="bi bi-bag-check"></i><span>Claims</span>
         </a>
+        <a href="#ngo-portal" class="mobile-nav-item" onclick="window.SaveToServeNGO?.switchTab('post-req')">
+          <i class="bi bi-megaphone"></i><span>Request</span>
+        </a>
         <a href="#ngo-portal" class="mobile-nav-item" onclick="window.SaveToServeNGO?.switchTab('weather-map')">
           <i class="bi bi-cloud-rain-heavy"></i><span>Weather</span>
-        </a>
-        <a href="#ngo-portal" class="mobile-nav-item" onclick="window.SaveToServeNGO?.switchTab('post-req')">
-          <i class="bi bi-megaphone"></i><span>Requests</span>
         </a>
       `;
     } else if (user.role === 'volunteer') {
       roleNavLinks = `
         <nav class="d-none d-lg-flex align-items-center gap-1">
+          <div class="dropdown">
+            <button class="nav-link-custom dropdown-toggle border-0 bg-transparent" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-grid-fill"></i> Dashboard
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#volunteer-portal" onclick="window.SaveToServeVolunteer?.switchTab('active-tasks')"><i class="bi bi-box-seam text-warning"></i> Active Pickups & Routes</a></li>
+              <li><a class="dropdown-item" href="#volunteer-portal" onclick="window.SaveToServeVolunteer?.switchTab('available-tasks')"><i class="bi bi-bell text-success"></i> Available Pickup Tasks</a></li>
+              <li><a class="dropdown-item" href="#volunteer-portal" onclick="window.SaveToServeVolunteer?.switchTab('history')"><i class="bi bi-clock-history text-secondary"></i> Task History Log</a></li>
+              <li><a class="dropdown-item" href="#volunteer-portal" onclick="window.SaveToServeVolunteer?.switchTab('kyc')"><i class="bi bi-shield-check text-info"></i> Safety Dossier</a></li>
+            </ul>
+          </div>
           <a href="#volunteer-portal" class="nav-link-custom" onclick="window.SaveToServeVolunteer?.switchTab('active-tasks')">
-            <i class="bi bi-grid"></i> Dashboard
+            <i class="bi bi-box-seam"></i> Active Pickups
           </a>
           <a href="#volunteer-portal" class="nav-link-custom" onclick="window.SaveToServeVolunteer?.switchTab('available-tasks')">
-            <i class="bi bi-bell"></i> Available Pickup Tasks
+            <i class="bi bi-bell"></i> Available Tasks
           </a>
           <a href="#volunteer-portal" class="nav-link-custom" onclick="window.SaveToServeVolunteer?.switchTab('weather-map')">
             <i class="bi bi-cloud-rain-heavy"></i> Weather Map
           </a>
           <a href="#volunteer-portal" class="nav-link-custom" onclick="window.SaveToServeVolunteer?.switchTab('history')">
-            <i class="bi bi-clock-history"></i> Task History
-          </a>
-          <a href="#volunteer-portal" class="nav-link-custom" onclick="window.SaveToServeVolunteer?.switchTab('kyc')">
-            <i class="bi bi-shield-check"></i> Safety Dossier
+            <i class="bi bi-clock-history"></i> History
           </a>
         </nav>
       `;
+
+      drawerContent = `
+        ${userDrawerCard}
+        <div class="d-flex flex-column gap-1 flex-grow-1">
+          <a href="#volunteer-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeVolunteer?.switchTab('active-tasks');">
+            <i class="bi bi-box-seam-fill"></i> <span>Active Pickups & Routes</span>
+          </a>
+          <a href="#volunteer-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeVolunteer?.switchTab('available-tasks');">
+            <i class="bi bi-bell-fill"></i> <span>Available Pickup Tasks</span>
+          </a>
+          <a href="#volunteer-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeVolunteer?.switchTab('weather-map');">
+            <i class="bi bi-cloud-rain-heavy"></i> <span>Weather Safety Map</span>
+          </a>
+          <a href="#volunteer-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeVolunteer?.switchTab('history');">
+            <i class="bi bi-clock-history"></i> <span>Task History Log</span>
+          </a>
+          <a href="#volunteer-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeVolunteer?.switchTab('kyc');">
+            <i class="bi bi-shield-check"></i> <span>Volunteer Safety Dossier</span>
+          </a>
+        </div>
+        <div class="pt-3 border-top mt-auto">
+          <button class="btn btn-outline-danger w-100" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeApp.logout();">
+            <i class="bi bi-box-arrow-right me-1"></i> Logout
+          </button>
+        </div>
+      `;
+
       mobileNavLinks = `
         <a href="#volunteer-portal" class="mobile-nav-item" onclick="window.SaveToServeVolunteer?.switchTab('active-tasks')">
           <i class="bi bi-box-seam"></i><span>Active</span>
@@ -366,19 +514,16 @@ class SaveToServeAppController {
     } else if (user.role === 'admin') {
       roleNavLinks = `
         <nav class="d-none d-lg-flex align-items-center gap-1">
-          <a href="#admin-portal" class="nav-link-custom" onclick="window.SaveToServeAdmin?.switchTab('donor-verification')">
-            <i class="bi bi-speedometer2"></i> Dashboard
-          </a>
-          <div class="dropdown d-inline-block">
+          <div class="dropdown">
             <button class="nav-link-custom dropdown-toggle border-0 bg-transparent" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="bi bi-shield-check"></i> Verifications
+              <i class="bi bi-speedometer2"></i> Dashboard
             </button>
-            <ul class="dropdown-menu shadow-sm" style="border-radius:10px; border:1px solid var(--portal-border);">
-              <li><a class="dropdown-item py-2" href="#admin-portal" onclick="window.SaveToServeAdmin?.switchTab('donor-verification')"><i class="bi bi-shop me-2 text-primary"></i> Donor Verification</a></li>
-              <li><a class="dropdown-item py-2" href="#admin-portal" onclick="window.SaveToServeAdmin?.switchTab('ngo-verification')"><i class="bi bi-building me-2 text-success"></i> NGO Verification</a></li>
-              <li><a class="dropdown-item py-2" href="#admin-portal" onclick="window.SaveToServeAdmin?.switchTab('volunteer-verification')"><i class="bi bi-bicycle me-2 text-info"></i> Volunteer Verification</a></li>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#admin-portal" onclick="window.SaveToServeAdmin?.switchTab('donor-verification')"><i class="bi bi-shop text-primary"></i> Donor Verifications</a></li>
+              <li><a class="dropdown-item" href="#admin-portal" onclick="window.SaveToServeAdmin?.switchTab('ngo-verification')"><i class="bi bi-building text-success"></i> NGO Verifications</a></li>
+              <li><a class="dropdown-item" href="#admin-portal" onclick="window.SaveToServeAdmin?.switchTab('volunteer-verification')"><i class="bi bi-bicycle text-info"></i> Volunteer Verifications</a></li>
               <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item py-2" href="#admin-portal" onclick="window.SaveToServeAdmin?.switchTab('reconsideration-queue')"><i class="bi bi-arrow-repeat me-2 text-warning"></i> Reconsiderations Queue</a></li>
+              <li><a class="dropdown-item" href="#admin-portal" onclick="window.SaveToServeAdmin?.switchTab('reconsideration-queue')"><i class="bi bi-arrow-repeat text-warning"></i> Reconsideration Queue</a></li>
             </ul>
           </div>
           <a href="#admin-portal" class="nav-link-custom" onclick="window.SaveToServeAdmin?.switchTab('manage-donations')">
@@ -391,16 +536,49 @@ class SaveToServeAppController {
             <i class="bi bi-snow"></i> Safe Hubs
           </a>
           <a href="#impact-dashboard" class="nav-link-custom" onclick="window.SaveToServeApp.navigateTo('impact-dashboard')">
-            <i class="bi bi-graph-up-arrow"></i> Impact & Reports
+            <i class="bi bi-graph-up-arrow"></i> Impact
           </a>
         </nav>
       `;
+
+      drawerContent = `
+        ${userDrawerCard}
+        <div class="d-flex flex-column gap-1 flex-grow-1">
+          <a href="#admin-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeAdmin?.switchTab('donor-verification');">
+            <i class="bi bi-shop"></i> <span>Donor Verifications</span>
+          </a>
+          <a href="#admin-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeAdmin?.switchTab('ngo-verification');">
+            <i class="bi bi-building"></i> <span>NGO Verifications</span>
+          </a>
+          <a href="#admin-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeAdmin?.switchTab('volunteer-verification');">
+            <i class="bi bi-bicycle"></i> <span>Volunteer Verifications</span>
+          </a>
+          <a href="#admin-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeAdmin?.switchTab('reconsideration-queue');">
+            <i class="bi bi-arrow-repeat"></i> <span>Reconsiderations Queue</span>
+          </a>
+          <a href="#admin-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeAdmin?.switchTab('manage-donations');">
+            <i class="bi bi-box2-heart-fill"></i> <span>Manage All Donations</span>
+          </a>
+          <a href="#weather-rescue" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeApp.navigateTo('weather-rescue');">
+            <i class="bi bi-cloud-rain-heavy-fill"></i> <span>Weather Rescue Map</span>
+          </a>
+          <a href="#holding-hubs" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeApp.navigateTo('holding-hubs');">
+            <i class="bi bi-snow"></i> <span>Safe Holding Hubs</span>
+          </a>
+          <a href="#impact-dashboard" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeApp.navigateTo('impact-dashboard');">
+            <i class="bi bi-graph-up-arrow"></i> <span>Impact & Analytics</span>
+          </a>
+        </div>
+        <div class="pt-3 border-top mt-auto">
+          <button class="btn btn-outline-danger w-100" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeApp.logout();">
+            <i class="bi bi-box-arrow-right me-1"></i> Logout
+          </button>
+        </div>
+      `;
+
       mobileNavLinks = `
         <a href="#admin-portal" class="mobile-nav-item" onclick="window.SaveToServeAdmin?.switchTab('donor-verification')">
           <i class="bi bi-shield-check"></i><span>Verifications</span>
-        </a>
-        <a href="#admin-portal" class="mobile-nav-item" onclick="window.SaveToServeAdmin?.switchTab('reconsideration-queue')">
-          <i class="bi bi-arrow-repeat"></i><span>Reconsider</span>
         </a>
         <a href="#admin-portal" class="mobile-nav-item" onclick="window.SaveToServeAdmin?.switchTab('manage-donations')">
           <i class="bi bi-box2-heart"></i><span>Donations</span>
@@ -408,21 +586,32 @@ class SaveToServeAppController {
         <a href="#weather-rescue" class="mobile-nav-item" onclick="window.SaveToServeApp.navigateTo('weather-rescue')">
           <i class="bi bi-cloud-rain"></i><span>Weather</span>
         </a>
+        <a href="#impact-dashboard" class="mobile-nav-item" onclick="window.SaveToServeApp.navigateTo('impact-dashboard')">
+          <i class="bi bi-graph-up"></i><span>Impact</span>
+        </a>
       `;
     }
 
     navContainer.innerHTML = `
       ${roleNavLinks}
-      <div class="d-flex align-items-center gap-2 border-start ps-3 ms-2">
-        <div class="text-end d-none d-md-block" style="line-height:1.2;">
-          <div class="fw-bold small" style="color:var(--dark-olive);">${user.name}</div>
+      <div class="d-none d-lg-flex align-items-center gap-2 border-start ps-3 ms-2">
+        <div class="text-end" style="line-height:1.2;">
+          <div class="fw-bold small text-truncate" style="color:var(--portal-dark); max-width:140px;">${user.orgName || user.name}</div>
           <span class="badge badge-${user.role}" style="font-size:0.68rem;">${portalName}</span>
         </div>
         <button class="btn btn-sm btn-outline-danger" onclick="window.SaveToServeApp.logout()" title="Logout">
           <i class="bi bi-box-arrow-right"></i> Logout
         </button>
       </div>
+      <!-- Responsive Mobile Hamburger Toggle Button -->
+      <button class="btn-nav-toggle d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileNavOffcanvas" aria-controls="mobileNavOffcanvas" aria-label="Toggle navigation" title="Menu">
+        <i class="bi bi-list fs-5"></i>
+      </button>
     `;
+
+    if (drawerBody) {
+      drawerBody.innerHTML = drawerContent;
+    }
 
     if (mobileBottomNav) {
       mobileBottomNav.classList.remove('d-none');
