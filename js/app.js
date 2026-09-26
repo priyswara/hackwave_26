@@ -379,46 +379,58 @@ class SaveToServeAppController {
         <nav class="d-none d-lg-flex align-items-center gap-1">
           <div class="dropdown">
             <button class="nav-link-custom dropdown-toggle border-0 bg-transparent" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="bi bi-grid-fill"></i> Dashboard
+              <i class="bi bi-grid-fill"></i> NGO Dashboard
             </button>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#ngo-portal" onclick="window.SaveToServeNGO?.switchTab('browse-food')"><i class="bi bi-basket2 text-success"></i> Browse Available Food</a></li>
-              <li><a class="dropdown-item" href="#ngo-portal" onclick="window.SaveToServeNGO?.switchTab('my-claims')"><i class="bi bi-bag-check text-primary"></i> My Claims & Deliveries</a></li>
-              <li><a class="dropdown-item" href="#ngo-portal" onclick="window.SaveToServeNGO?.switchTab('kyc')"><i class="bi bi-shield-check text-info"></i> Shelter Verification</a></li>
+              <li><a class="dropdown-item" href="#ngo-portal" onclick="window.SaveToServeNGO?.switchTab('dashboard')"><i class="bi bi-speedometer2 text-success"></i> 1. Dashboard</a></li>
+              <li><a class="dropdown-item" href="#ngo-portal" onclick="window.SaveToServeNGO?.switchTab('browse-food')"><i class="bi bi-basket2 text-success"></i> 2. Browse Available Food</a></li>
+              <li><a class="dropdown-item" href="#ngo-portal" onclick="window.SaveToServeNGO?.switchTab('nearby-donors')"><i class="bi bi-radar text-primary"></i> 3. Nearby Donors (10 KM)</a></li>
+              <li><a class="dropdown-item" href="#ngo-portal" onclick="window.SaveToServeNGO?.switchTab('my-claims')"><i class="bi bi-bag-check text-warning"></i> 4. My Claims & Deliveries</a></li>
+              <li><a class="dropdown-item" href="#ngo-portal" onclick="window.SaveToServeNGO?.switchTab('donor-reviews')"><i class="bi bi-star-fill text-warning"></i> 5. Donor Reviews</a></li>
+              <li><a class="dropdown-item" href="#ngo-portal" onclick="window.SaveToServeNGO?.switchTab('profile')"><i class="bi bi-person-lines-fill text-info"></i> 6. NGO Profile</a></li>
             </ul>
           </div>
+          <a href="#ngo-portal" class="nav-link-custom" onclick="window.SaveToServeNGO?.switchTab('dashboard')">
+            <i class="bi bi-speedometer2"></i> Dashboard
+          </a>
           <a href="#ngo-portal" class="nav-link-custom" onclick="window.SaveToServeNGO?.switchTab('browse-food')">
             <i class="bi bi-basket2"></i> Browse Food
+          </a>
+          <a href="#ngo-portal" class="nav-link-custom" onclick="window.SaveToServeNGO?.switchTab('nearby-donors')">
+            <i class="bi bi-radar"></i> Nearby Donors
           </a>
           <a href="#ngo-portal" class="nav-link-custom" onclick="window.SaveToServeNGO?.switchTab('my-claims')">
             <i class="bi bi-bag-check"></i> My Claims
           </a>
-          <a href="#ngo-portal" class="nav-link-custom" onclick="window.SaveToServeNGO?.switchTab('weather-map')">
-            <i class="bi bi-cloud-rain-heavy"></i> Weather Map
+          <a href="#ngo-portal" class="nav-link-custom" onclick="window.SaveToServeNGO?.switchTab('donor-reviews')">
+            <i class="bi bi-star-fill text-warning"></i> Donor Reviews
           </a>
-          <button class="btn btn-sm btn-olive ms-1" onclick="window.SaveToServeNGO?.switchTab('post-req')">
-            <i class="bi bi-megaphone"></i> Urgent Request
-          </button>
+          <a href="#ngo-portal" class="nav-link-custom" onclick="window.SaveToServeNGO?.switchTab('profile')">
+            <i class="bi bi-person-lines-fill"></i> NGO Profile
+          </a>
         </nav>
       `;
 
       drawerContent = `
         ${userDrawerCard}
         <div class="d-flex flex-column gap-1 flex-grow-1">
+          <a href="#ngo-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeNGO?.switchTab('dashboard');">
+            <i class="bi bi-speedometer2"></i> <span>1. Dashboard</span>
+          </a>
           <a href="#ngo-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeNGO?.switchTab('browse-food');">
-            <i class="bi bi-basket2-fill"></i> <span>Browse Available Food</span>
+            <i class="bi bi-basket2-fill"></i> <span>2. Browse Available Food</span>
+          </a>
+          <a href="#ngo-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeNGO?.switchTab('nearby-donors');">
+            <i class="bi bi-radar"></i> <span>3. Nearby Donors (10 KM)</span>
           </a>
           <a href="#ngo-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeNGO?.switchTab('my-claims');">
-            <i class="bi bi-bag-check-fill"></i> <span>My Claims & Deliveries</span>
+            <i class="bi bi-bag-check-fill"></i> <span>4. My Claims & Deliveries</span>
           </a>
-          <a href="#ngo-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeNGO?.switchTab('post-req');">
-            <i class="bi bi-megaphone-fill"></i> <span>Post Urgent Request</span>
+          <a href="#ngo-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeNGO?.switchTab('donor-reviews');">
+            <i class="bi bi-star-fill text-warning"></i> <span>5. Donor Reviews</span>
           </a>
-          <a href="#ngo-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeNGO?.switchTab('weather-map');">
-            <i class="bi bi-cloud-rain-heavy"></i> <span>Weather Map</span>
-          </a>
-          <a href="#ngo-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeNGO?.switchTab('kyc');">
-            <i class="bi bi-shield-check"></i> <span>Shelter KYC Verification</span>
+          <a href="#ngo-portal" class="nav-drawer-link" onclick="window.SaveToServeApp.closeMobileDrawer(); window.SaveToServeNGO?.switchTab('profile');">
+            <i class="bi bi-person-lines-fill"></i> <span>6. NGO Profile</span>
           </a>
         </div>
         <div class="pt-3 border-top mt-auto">
@@ -429,17 +441,23 @@ class SaveToServeAppController {
       `;
 
       mobileNavLinks = `
+        <a href="#ngo-portal" class="mobile-nav-item" onclick="window.SaveToServeNGO?.switchTab('dashboard')">
+          <i class="bi bi-speedometer2"></i><span>Dashboard</span>
+        </a>
         <a href="#ngo-portal" class="mobile-nav-item" onclick="window.SaveToServeNGO?.switchTab('browse-food')">
           <i class="bi bi-basket2"></i><span>Browse</span>
+        </a>
+        <a href="#ngo-portal" class="mobile-nav-item" onclick="window.SaveToServeNGO?.switchTab('nearby-donors')">
+          <i class="bi bi-radar"></i><span>Nearby</span>
         </a>
         <a href="#ngo-portal" class="mobile-nav-item" onclick="window.SaveToServeNGO?.switchTab('my-claims')">
           <i class="bi bi-bag-check"></i><span>Claims</span>
         </a>
-        <a href="#ngo-portal" class="mobile-nav-item" onclick="window.SaveToServeNGO?.switchTab('post-req')">
-          <i class="bi bi-megaphone"></i><span>Request</span>
+        <a href="#ngo-portal" class="mobile-nav-item" onclick="window.SaveToServeNGO?.switchTab('donor-reviews')">
+          <i class="bi bi-star"></i><span>Reviews</span>
         </a>
-        <a href="#ngo-portal" class="mobile-nav-item" onclick="window.SaveToServeNGO?.switchTab('weather-map')">
-          <i class="bi bi-cloud-rain-heavy"></i><span>Weather</span>
+        <a href="#ngo-portal" class="mobile-nav-item" onclick="window.SaveToServeNGO?.switchTab('profile')">
+          <i class="bi bi-person"></i><span>Profile</span>
         </a>
       `;
     } else if (user.role === 'volunteer') {
@@ -913,6 +931,27 @@ class SaveToServeAppController {
                 ` : ''}
               </div>
             </div>
+
+            <!-- Donor Rating & NGO Reviews Summary -->
+            ${(() => {
+              const donorId = d.donorId || 'usr-donor-1';
+              const ratingStats = window.SaveToServeDB?.getDonorRatingStats(donorId);
+              const donorReviews = window.SaveToServeDB?.getReviewsForDonor(donorId) || [];
+              if (ratingStats && ratingStats.totalReviews > 0) {
+                return `
+                  <div class="p-2 rounded border small mb-3" style="background:#FAFDFB; border-color:#8CB8A5 !important;">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                      <span class="text-dark fw-bold"><i class="bi bi-star-fill text-warning me-1"></i>Donor Rating: <strong>${ratingStats.averageFormatted} / 5.0</strong></span>
+                      <span class="badge" style="background:#E2F1EA; color:#265944; border:1px solid #8CB8A5;">${ratingStats.totalReviews} Verified NGO Review(s)</span>
+                    </div>
+                    ${donorReviews.length > 0 ? `
+                      <p class="text-muted mb-0 small fst-italic">"${donorReviews[0].comment}" — <strong class="text-dark">${donorReviews[0].reviewerNgoName}</strong></p>
+                    ` : ''}
+                  </div>
+                `;
+              }
+              return '';
+            })()}
 
             <!-- Contextual Actions depending on user role and listing status -->
             <div class="d-flex justify-content-end gap-2 pt-2 border-top">

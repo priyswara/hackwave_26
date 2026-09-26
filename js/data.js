@@ -31,6 +31,48 @@ const INITIAL_STATE = {
       verifiedDoc: 'FSSAI License #10020043000123 (Verified)'
     },
     {
+      id: 'usr-donor-2',
+      name: 'Pooja Hegde',
+      orgName: 'Green Leaf Organic Bistro & Bakery',
+      email: 'greenleaf@savetoserve.org',
+      phone: '+91 98765 22334',
+      role: 'donor',
+      password: 'password123',
+      kycStatus: 'approved',
+      verificationDetails: {
+        docType: 'FSSAI Food Safety License',
+        docNumber: 'FSSAI-KA-2025-88129',
+        submittedAt: '2026-09-03T10:00:00Z',
+        reviewedAt: '2026-09-04T11:00:00Z',
+        rejectionReason: ''
+      },
+      address: '7th Main Road, Koramangala 1st Block, Bengaluru',
+      coords: [12.9345, 77.6101],
+      registeredAt: '2026-09-03T10:00:00Z',
+      verifiedDoc: 'FSSAI License #KA-2025-88129 (Verified)'
+    },
+    {
+      id: 'usr-donor-distant',
+      name: 'Chef Vikram Sethi',
+      orgName: 'Whitefield Tech Park Grand Cafeteria',
+      email: 'whitefield@savetoserve.org',
+      phone: '+91 98765 99881',
+      role: 'donor',
+      password: 'password123',
+      kycStatus: 'approved',
+      verificationDetails: {
+        docType: 'FSSAI Food Safety License',
+        docNumber: 'FSSAI-KA-2024-55412',
+        submittedAt: '2026-08-20T10:00:00Z',
+        reviewedAt: '2026-08-21T11:00:00Z',
+        rejectionReason: ''
+      },
+      address: 'ITPB Road, Whitefield, Bengaluru',
+      coords: [12.9856, 77.7460],
+      registeredAt: '2026-08-20T10:00:00Z',
+      verifiedDoc: 'FSSAI License #KA-2024-55412 (Verified)'
+    },
+    {
       id: 'usr-ngo-1',
       name: 'Sister Ananya Roy',
       orgName: 'Asha Food & Hope Shelter',
@@ -48,7 +90,23 @@ const INITIAL_STATE = {
       },
       address: '42 Shelter Lane, Austin Town, Bengaluru',
       coords: [12.9611, 77.6145],
-      beneficiaryCapacity: 120,
+      logoUrl: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=200&auto=format&fit=crop&q=60',
+      description: 'Asha Food & Hope Shelter provides nutritious daily meals, safe emergency shelter, and community support to vulnerable individuals and destitute families across central Bengaluru.',
+      mission: 'Zero hunger and zero food waste in our community through rapid surplus recovery, dignified food distribution, and empathetic care.',
+      contactPerson: 'Sister Ananya Roy (Director of Shelter Operations)',
+      peopleServed: 145,
+      beneficiaryCapacity: 160,
+      staffCount: 12,
+      volunteerCount: 38,
+      servedCategories: ['Children', 'Elderly People', 'Homeless People', 'Families in Need'],
+      storageCapacity: {
+        coldStorageLitres: 450,
+        dryStorageKg: 1200,
+        refrigerationUnits: 4,
+        transportVehicles: '1 Insulated Delivery Van + 1 Cargo E-Rickshaw'
+      },
+      operatingHours: '07:00 AM - 10:00 PM (Daily)',
+      foodCollectionAvailability: 'Immediate self-collection with NGO van available 08:00 - 21:00; 24/7 staff on-site to receive courier deliveries.',
       registeredAt: '2026-09-05T11:30:00Z',
       verifiedDoc: 'NGO Darpan Reg #KA/2021/02981 (Verified)'
     },
@@ -350,6 +408,148 @@ const INITIAL_STATE = {
       weatherRescuePlan: null,
       createdAt: new Date(Date.now() - 6 * 3600000).toISOString(),
       isDemo: true
+    },
+    {
+      id: 'DON-2026-107',
+      foodName: '40 Servings Organic Lentil Soup & Quinoa Bowls',
+      category: 'Cooked Meal',
+      portions: 40,
+      quantityKg: 14.0,
+      foodType: 'veg',
+      prepTime: new Date(Date.now() - 1 * 3600000).toISOString(),
+      safeUntil: new Date(Date.now() + 3.5 * 3600000).toISOString(),
+      donorId: 'usr-donor-2',
+      donorName: 'Pooja Hegde',
+      donorOrg: 'Green Leaf Organic Bistro & Bakery',
+      donorPhone: '+91 98765 22334',
+      donorAddress: '7th Main Road, Koramangala 1st Block, Bengaluru',
+      donorCoords: [12.9345, 77.6101],
+      storageInfo: 'Sealed stainless steel thermal kettles. Hot and wholesome.',
+      imageUrl: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=500&auto=format&fit=crop&q=60',
+      status: 'available',
+      claimedByNgoId: null,
+      claimedByNgoName: null,
+      claimTimestamp: null,
+      assignedVolunteerId: null,
+      assignedVolunteerName: null,
+      pickupCode: 'STS-9124',
+      pickupTimestamp: null,
+      deliveryTimestamp: null,
+      distributionTimestamp: null,
+      beneficiariesReached: 0,
+      qrVoucherCode: 'VOUCHER-STS-107',
+      qrVoucherRedeemed: false,
+      holdingHubId: null,
+      weatherRescuePlan: null,
+      createdAt: new Date(Date.now() - 45 * 60000).toISOString(),
+      isDemo: true
+    },
+    {
+      id: 'DON-2026-108',
+      foodName: '30 Packs Fresh Harvest Salad & Seed Rolls',
+      category: 'Produce',
+      portions: 30,
+      quantityKg: 9.0,
+      foodType: 'vegan',
+      prepTime: new Date(Date.now() - 2.5 * 3600000).toISOString(),
+      safeUntil: new Date(Date.now() + 1.5 * 3600000).toISOString(), // Approaching expiry (< 2 hours)
+      donorId: 'usr-donor-2',
+      donorName: 'Pooja Hegde',
+      donorOrg: 'Green Leaf Organic Bistro & Bakery',
+      donorPhone: '+91 98765 22334',
+      donorAddress: '7th Main Road, Koramangala 1st Block, Bengaluru',
+      donorCoords: [12.9345, 77.6101],
+      storageInfo: 'Packed in eco boxes with cold-gel insulation. Immediate consumption advised.',
+      imageUrl: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&auto=format&fit=crop&q=60',
+      status: 'available',
+      claimedByNgoId: null,
+      claimedByNgoName: null,
+      claimTimestamp: null,
+      assignedVolunteerId: null,
+      assignedVolunteerName: null,
+      pickupCode: 'STS-7719',
+      pickupTimestamp: null,
+      deliveryTimestamp: null,
+      distributionTimestamp: null,
+      beneficiariesReached: 0,
+      qrVoucherCode: 'VOUCHER-STS-108',
+      qrVoucherRedeemed: false,
+      holdingHubId: null,
+      weatherRescuePlan: null,
+      createdAt: new Date(Date.now() - 2 * 3600000).toISOString(),
+      isDemo: true
+    },
+    {
+      id: 'DON-2026-109',
+      foodName: '50 Portions Veg Fried Rice & Manchurian',
+      category: 'Cooked Meal',
+      portions: 50,
+      quantityKg: 18.0,
+      foodType: 'veg',
+      prepTime: new Date(Date.now() - 1 * 3600000).toISOString(),
+      safeUntil: new Date(Date.now() + 4 * 3600000).toISOString(),
+      donorId: 'usr-donor-distant',
+      donorName: 'Chef Vikram Sethi',
+      donorOrg: 'Whitefield Tech Park Grand Cafeteria',
+      donorPhone: '+91 98765 99881',
+      donorAddress: 'ITPB Road, Whitefield, Bengaluru',
+      donorCoords: [12.9856, 77.7460], // > 10 km from Austin Town NGO [12.9611, 77.6145] (~14.8 km)
+      storageInfo: 'Packed in bulk insulated thermal cambros.',
+      imageUrl: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=500&auto=format&fit=crop&q=60',
+      status: 'available',
+      claimedByNgoId: null,
+      claimedByNgoName: null,
+      claimTimestamp: null,
+      assignedVolunteerId: null,
+      assignedVolunteerName: null,
+      pickupCode: 'STS-8842',
+      pickupTimestamp: null,
+      deliveryTimestamp: null,
+      distributionTimestamp: null,
+      beneficiariesReached: 0,
+      qrVoucherCode: 'VOUCHER-STS-109',
+      qrVoucherRedeemed: false,
+      holdingHubId: null,
+      weatherRescuePlan: null,
+      createdAt: new Date(Date.now() - 30 * 60000).toISOString(),
+      isDemo: true
+    }
+  ],
+
+  reviews: [
+    {
+      id: 'REV-001',
+      ngoId: 'usr-ngo-1',
+      ngoName: 'Asha Food & Hope Shelter',
+      reviewerId: 'usr-donor-1',
+      reviewerName: 'Chef Rajesh Sharma',
+      reviewerRole: 'donor',
+      reviewerOrg: 'Spice Symphony Grand Banquet',
+      transactionId: 'DON-2026-103',
+      transactionFoodName: '40 Fresh Baked Whole Wheat Breads & Buns',
+      rating: 5,
+      comment: 'Exemplary coordination! Sister Ananya and her team received the 40 fresh bread packs promptly and distributed them to shelter residents within the hour. True partners in zero food waste.',
+      createdAt: new Date(Date.now() - 2.5 * 3600000).toISOString(),
+      isVerifiedTransaction: true,
+      reported: false,
+      reportReason: ''
+    },
+    {
+      id: 'REV-002',
+      ngoId: 'usr-ngo-1',
+      ngoName: 'Asha Food & Hope Shelter',
+      reviewerId: 'usr-vol-1',
+      reviewerName: 'Karan Verma',
+      reviewerRole: 'volunteer',
+      reviewerOrg: 'Save to Serve Volunteer Corps',
+      transactionId: 'DON-2026-103',
+      transactionFoodName: '40 Fresh Baked Whole Wheat Breads & Buns',
+      rating: 5,
+      comment: 'Super fast and organized handoff at the Austin Town Shelter gate. The shelter staff had thermal storage ready to store the food immediately.',
+      createdAt: new Date(Date.now() - 2 * 3600000).toISOString(),
+      isVerifiedTransaction: true,
+      reported: false,
+      reportReason: ''
     }
   ],
 
@@ -522,11 +722,26 @@ class SaveToServeStore {
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed.users && parsed.donations && parsed.holdingHubs) {
-          // Ensure all default seed users exist
+          // Ensure reviews array exists
+          if (!parsed.reviews || !Array.isArray(parsed.reviews)) {
+            parsed.reviews = JSON.parse(JSON.stringify(INITIAL_STATE.reviews || []));
+          } else if (parsed.reviews.length === 0 && INITIAL_STATE.reviews && INITIAL_STATE.reviews.length > 0) {
+            parsed.reviews = JSON.parse(JSON.stringify(INITIAL_STATE.reviews));
+          }
+
+          // Ensure all default seed users exist and merge any new profile properties
           INITIAL_STATE.users.forEach(seedUser => {
-            const exists = parsed.users.find(u => u.email.toLowerCase() === seedUser.email.toLowerCase());
-            if (!exists) {
-              parsed.users.push(seedUser);
+            const existingUser = parsed.users.find(u => u.id === seedUser.id || u.email.toLowerCase() === seedUser.email.toLowerCase());
+            if (!existingUser) {
+              parsed.users.push(JSON.parse(JSON.stringify(seedUser)));
+            } else if (seedUser.role === 'ngo') {
+              // Ensure newly added NGO profile fields are present if not yet set
+              const ngoFields = ['logoUrl', 'description', 'mission', 'contactPerson', 'peopleServed', 'beneficiaryCapacity', 'staffCount', 'volunteerCount', 'servedCategories', 'storageCapacity', 'operatingHours', 'foodCollectionAvailability'];
+              ngoFields.forEach(field => {
+                if (existingUser[field] === undefined && seedUser[field] !== undefined) {
+                  existingUser[field] = seedUser[field];
+                }
+              });
             }
           });
 
@@ -1240,7 +1455,362 @@ class SaveToServeStore {
       kgConversionFactor: this.state.settings.kgPerPortion || 0.35
     };
   }
+
+  // --- Geographic Distance Calculations (Haversine Formula) ---
+  static calculateDistanceKm(lat1, lon1, lat2, lon2) {
+    if (lat1 === undefined || lon1 === undefined || lat2 === undefined || lon2 === undefined || lat1 === null || lon1 === null || lat2 === null || lon2 === null) return null;
+    const nLat1 = parseFloat(lat1);
+    const nLon1 = parseFloat(lon1);
+    const nLat2 = parseFloat(lat2);
+    const nLon2 = parseFloat(lon2);
+    if (isNaN(nLat1) || isNaN(nLon1) || isNaN(nLat2) || isNaN(nLon2)) return null;
+
+    const R = 6371; // Earth's mean radius in km
+    const dLat = (nLat2 - nLat1) * Math.PI / 180;
+    const dLon = (nLon2 - nLon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(nLat1 * Math.PI / 180) * Math.cos(nLat2 * Math.PI / 180) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return parseFloat((R * c).toFixed(1));
+  }
+
+  calculateDistanceKm(lat1, lon1, lat2, lon2) {
+    return SaveToServeStore.calculateDistanceKm(lat1, lon1, lat2, lon2);
+  }
+
+  /**
+   * Query all distinct donors and their available non-expired food listings within a given radius in KM.
+   * Calculates actual geometric Haversine distance using stored coordinates.
+   */
+  getNearbyDonorsWithListings(ngoCoords, radiusKm = 10) {
+    this.checkAndExpireDonations();
+    if (!ngoCoords || !Array.isArray(ngoCoords) || ngoCoords.length < 2 || isNaN(parseFloat(ngoCoords[0])) || isNaN(parseFloat(ngoCoords[1]))) {
+      return {
+        ngoCoordsValid: false,
+        ngoCoords: null,
+        radiusKm,
+        donors: [],
+        availableListings: [],
+        totalDistinctDonors: 0,
+        totalListingsCount: 0,
+        totalPortions: 0,
+        totalQuantityKg: 0,
+        approachingExpiryCount: 0
+      };
+    }
+
+    const ngoLat = parseFloat(ngoCoords[0]);
+    const ngoLon = parseFloat(ngoCoords[1]);
+    const now = Date.now();
+    const availableDonations = this.state.donations.filter(d => 
+      d.status === 'available' && 
+      d.safeUntil && 
+      new Date(d.safeUntil).getTime() > now
+    );
+
+    const donorMap = new Map();
+
+    availableDonations.forEach(donation => {
+      let donorCoords = donation.donorCoords;
+      if (!donorCoords && donation.donorId) {
+        const donorUser = this.getUserById(donation.donorId);
+        if (donorUser && donorUser.coords) donorCoords = donorUser.coords;
+      }
+
+      if (donorCoords && Array.isArray(donorCoords) && donorCoords.length === 2) {
+        const distKm = SaveToServeStore.calculateDistanceKm(ngoLat, ngoLon, donorCoords[0], donorCoords[1]);
+        if (distKm !== null && distKm <= radiusKm) {
+          const donorKey = donation.donorId || donation.donorOrg || `${donorCoords[0]},${donorCoords[1]}`;
+          if (!donorMap.has(donorKey)) {
+            const donorUser = donation.donorId ? this.getUserById(donation.donorId) : null;
+            const donorId = donation.donorId || 'usr-donor-1';
+            const ratingStats = this.getDonorRatingStats(donorId);
+            donorMap.set(donorKey, {
+              donorId: donorId,
+              donorName: donation.donorName || (donorUser ? donorUser.name : 'Verified Donor Kitchen'),
+              donorOrg: donation.donorOrg || (donorUser ? donorUser.orgName : 'Donor Kitchen'),
+              donorPhone: donation.donorPhone || (donorUser ? donorUser.phone : ''),
+              donorAddress: donation.donorAddress || (donorUser ? donorUser.address : 'Bengaluru'),
+              donorCoords: donorCoords,
+              distanceKm: distKm,
+              ratingStats: ratingStats,
+              averageRating: ratingStats.averageRating,
+              reviewCount: ratingStats.totalReviews,
+              listings: []
+            });
+          }
+
+          const donorEntry = donorMap.get(donorKey);
+          donorEntry.listings.push({
+            ...donation,
+            distanceKm: distKm
+          });
+        }
+      }
+    });
+
+    const donorList = Array.from(donorMap.values()).sort((a, b) => a.distanceKm - b.distanceKm);
+
+    // Flat list of nearby active listings
+    const allNearbyListings = [];
+    donorList.forEach(d => {
+      d.listings.forEach(l => allNearbyListings.push(l));
+    });
+
+    const totalPortions = allNearbyListings.reduce((sum, l) => sum + (l.portions || 0), 0);
+    const totalQuantityKg = parseFloat(allNearbyListings.reduce((sum, l) => sum + (l.quantityKg || (l.portions * 0.35)), 0).toFixed(1));
+    const approachingExpiryCount = allNearbyListings.filter(l => {
+      const diffHours = (new Date(l.safeUntil).getTime() - now) / 3600000;
+      return diffHours <= 2 && diffHours > 0;
+    }).length;
+
+    return {
+      ngoCoordsValid: true,
+      ngoCoords: [ngoLat, ngoLon],
+      radiusKm,
+      donors: donorList,
+      availableListings: allNearbyListings,
+      totalDistinctDonors: donorList.length,
+      totalListingsCount: allNearbyListings.length,
+      totalPortions,
+      totalQuantityKg,
+      approachingExpiryCount
+    };
+  }
+
+  // --- Donor Reviews (Written by NGOs about Donors) ---
+  getReviews() {
+    return this.state.reviews || [];
+  }
+
+  getReviewsForDonor(donorId) {
+    const all = this.state.reviews || [];
+    return all.filter(r => r.donorId === donorId && !r.reported);
+  }
+
+  getDonorRatingStats(donorId) {
+    const reviews = this.getReviewsForDonor(donorId);
+    if (reviews.length === 0) {
+      return {
+        averageRating: 0,
+        averageFormatted: '0.0',
+        totalReviews: 0,
+        breakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+      };
+    }
+
+    const breakdown = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    let sum = 0;
+
+    reviews.forEach(r => {
+      const star = Math.max(1, Math.min(5, Math.round(r.rating || 5)));
+      breakdown[star] = (breakdown[star] || 0) + 1;
+      sum += (r.rating || 5);
+    });
+
+    const avg = sum / reviews.length;
+    return {
+      averageRating: parseFloat(avg.toFixed(1)),
+      averageFormatted: avg.toFixed(1),
+      totalReviews: reviews.length,
+      breakdown
+    };
+  }
+
+  getAllDonorReviews() {
+    const all = this.state.reviews || [];
+    return all.filter(r => r.donorId && !r.reported);
+  }
+
+  getEligibleCompletedDonationsForDonorReview(ngoId) {
+    if (!ngoId) return [];
+    const completed = this.state.donations.filter(d => 
+      d.status === 'completed' &&
+      d.claimedByNgoId === ngoId
+    );
+
+    const existingReviews = this.state.reviews || [];
+    // Filter out completed donations where this NGO has already submitted a review
+    return completed.filter(d => {
+      return !existingReviews.some(r => r.transactionId === d.id && (r.reviewerNgoId === ngoId || r.reviewerId === ngoId));
+    });
+  }
+
+  addDonorReview(reviewData) {
+    const { donorId, reviewerNgoId, transactionId, rating, comment } = reviewData;
+    if (!donorId || !reviewerNgoId || !transactionId) {
+      return { success: false, message: 'Missing required review fields.' };
+    }
+
+    const donation = this.getDonationById(transactionId);
+    if (!donation) {
+      return { success: false, message: 'Referenced food donation does not exist.' };
+    }
+
+    if (donation.status !== 'completed') {
+      return { success: false, message: 'Reviews can only be submitted for completed food collections.' };
+    }
+
+    if (donation.claimedByNgoId !== reviewerNgoId) {
+      return { success: false, message: 'Your NGO was not the recipient for this donation transaction.' };
+    }
+
+    if (donation.donorId !== donorId && donation.donorOrg !== donorId) {
+      return { success: false, message: 'Transaction donor does not match the target donor.' };
+    }
+
+    this.state.reviews = this.state.reviews || [];
+    const existing = this.state.reviews.find(r => r.transactionId === transactionId && (r.reviewerNgoId === reviewerNgoId || r.reviewerId === reviewerNgoId));
+    if (existing) {
+      return { success: false, message: 'A verified review has already been submitted for this donation transaction.' };
+    }
+
+    const ngoUser = this.getUserById(reviewerNgoId);
+    const donorUser = this.getUserById(donorId);
+    const numRating = Math.max(1, Math.min(5, parseInt(rating) || 5));
+
+    const newReview = {
+      id: 'REV-DONOR-' + Date.now().toString(36),
+      donorId,
+      donorOrg: donorUser ? (donorUser.orgName || donorUser.name) : (donation.donorOrg || 'Donor Kitchen'),
+      donorAddress: donorUser ? donorUser.address : (donation.donorAddress || 'Bengaluru'),
+      reviewerNgoId,
+      reviewerNgoName: ngoUser ? (ngoUser.orgName || ngoUser.name) : (donation.claimedByNgoName || 'NGO Shelter'),
+      reviewerName: ngoUser ? ngoUser.name : 'Authorized NGO Staff',
+      transactionId,
+      transactionFoodName: donation.foodName,
+      portionsRescued: donation.portions,
+      rating: numRating,
+      comment: (comment || '').trim(),
+      createdAt: new Date().toISOString(),
+      isVerifiedTransaction: true,
+      reported: false,
+      reportReason: ''
+    };
+
+    this.state.reviews.unshift(newReview);
+    this.saveState();
+
+    this.logActivity(newReview.reviewerNgoName, `Submitted a ${numRating}-star verified donor review for ${newReview.donorOrg}`, transactionId, 'Donor Review');
+
+    this.addNotification({
+      recipientRole: 'donor',
+      recipientId: donorId,
+      title: `⭐ New ${numRating}-Star Review from ${newReview.reviewerNgoName}`,
+      message: `${newReview.reviewerNgoName} reviewed your food collection for "${donation.foodName}": "${newReview.comment.substring(0, 60)}..."`,
+      type: 'review'
+    });
+
+    this.notifySubscribers('REVIEW_ADDED', newReview);
+    return { success: true, review: newReview };
+  }
+
+  // --- Legacy NGO Reviews & Helper Compatibility ---
+  getReviewsForNgo(ngoId) {
+    const all = this.state.reviews || [];
+    return all.filter(r => r.ngoId === ngoId);
+  }
+
+  getNgoRatingStats(ngoId) {
+    const reviews = this.getReviewsForNgo(ngoId).filter(r => !r.reported);
+    if (reviews.length === 0) {
+      return {
+        averageRating: 0,
+        averageFormatted: '0.0',
+        totalReviews: 0,
+        breakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+      };
+    }
+
+    const breakdown = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    let sum = 0;
+
+    reviews.forEach(r => {
+      const star = Math.max(1, Math.min(5, Math.round(r.rating || 5)));
+      breakdown[star] = (breakdown[star] || 0) + 1;
+      sum += (r.rating || 5);
+    });
+
+    const averageRating = sum / reviews.length;
+
+    return {
+      averageRating: parseFloat(averageRating.toFixed(1)),
+      averageFormatted: averageRating.toFixed(1),
+      totalReviews: reviews.length,
+      breakdown
+    };
+  }
+
+  addReview(reviewData) {
+    return this.addDonorReview(reviewData);
+  }
+
+  reportReview(reviewId, reason, reportedByUserId) {
+    this.state.reviews = this.state.reviews || [];
+    const review = this.state.reviews.find(r => r.id === reviewId);
+    if (!review) return { success: false, message: 'Review not found.' };
+
+    review.reported = true;
+    review.reportReason = (reason || 'Inappropriate content').trim();
+    review.reportedAt = new Date().toISOString();
+    review.reportedBy = reportedByUserId || 'User';
+    this.saveState();
+
+    this.logActivity('Review Moderation Desk', `Reported review ${reviewId} for investigation: "${review.reportReason}"`, reviewId, 'Review Reported');
+
+    this.addNotification({
+      recipientRole: 'admin',
+      title: `🚩 Review Reported for Moderation`,
+      message: `Review #${reviewId} on ${review.donorOrg || review.ngoName || 'Donor'} was flagged: "${review.reportReason}".`,
+      type: 'moderation'
+    });
+
+    this.notifySubscribers('REVIEW_REPORTED', review);
+    return { success: true, review };
+  }
+
+  // --- NGO & User Profile Management ---
+  updateUserProfile(userId, profileData) {
+    const user = this.getUserById(userId);
+    if (!user) return { success: false, message: 'User not found.' };
+
+    const allowedFields = [
+      'name', 'orgName', 'email', 'phone', 'address', 'coords',
+      'logoUrl', 'description', 'mission', 'contactPerson',
+      'peopleServed', 'beneficiaryCapacity', 'staffCount', 'volunteerCount',
+      'servedCategories', 'storageCapacity', 'operatingHours',
+      'foodCollectionAvailability', 'vehicleType'
+    ];
+
+    allowedFields.forEach(field => {
+      if (profileData[field] !== undefined) {
+        user[field] = profileData[field];
+      }
+    });
+
+    this.saveState();
+    this.logActivity(user.name, `Updated organization profile information`, user.id, 'Profile Updated');
+    this.notifySubscribers('USER_UPDATED', user);
+    return { success: true, user };
+  }
+
+  updateNgoLocation(userId, address, coords) {
+    const user = this.getUserById(userId);
+    if (!user) return { success: false, message: 'User not found.' };
+
+    if (address) user.address = address.trim();
+    if (coords && Array.isArray(coords) && coords.length === 2) {
+      user.coords = [parseFloat(coords[0]), parseFloat(coords[1])];
+    }
+
+    this.saveState();
+    this.logActivity(user.name, `Updated NGO location coordinates to [${user.coords.join(', ')}]`, user.id, 'Location Updated');
+    this.notifySubscribers('USER_UPDATED', user);
+    return { success: true, user };
+  }
 }
 
 window.SaveToServeDB = new SaveToServeStore();
 window.RainRouteDB = window.SaveToServeDB;
+
